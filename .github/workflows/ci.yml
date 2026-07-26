@@ -1,0 +1,38 @@
+name: Validate device integration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Uni-Lab environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          use-mamba: true
+          python-version: "3.11.14"
+          channels: conda-forge,robostack-staging,uni-lab,defaults
+          channel-priority: flexible
+          activate-environment: unilab
+          auto-update-conda: false
+      - name: Install Uni-Lab-OS and test tools
+        shell: bash -el {0}
+        run: |
+          mamba install -n unilab uni-lab::unilabos -c uni-lab -c robostack-staging -c conda-forge -y
+          python -m pip install --no-deps -e packages/szlab_poly_studio -e packages/ai4c_robot
+          python -m pip install pytest jsonschema PyYAML ruff
+      - name: Check external packages
+        shell: bash -el {0}
+        run: ./scripts/check-packages.sh
+      - name: Run integration tests
+        shell: bash -el {0}
+        run: python -m pytest
+      - name: Lint maintained Python
+        shell: bash -el {0}
+        run: python -m ruff check packages tests

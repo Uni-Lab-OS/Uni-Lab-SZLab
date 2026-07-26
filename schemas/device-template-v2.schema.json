@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uni-lab.local/schemas/device-template-v2.schema.json",
+  "title": "Uni-Lab device template v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "device", "actions"],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "device": { "$ref": "#/$defs/device" },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/action" }
+    }
+  },
+  "$defs": {
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "category"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*$" },
+        "display_name": { "type": "string", "minLength": 1 },
+        "category": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": ["string", "number", "integer", "boolean", "object", "array"]
+        },
+        "required": { "type": "boolean" },
+        "minimum": { "type": "number" },
+        "maximum": { "type": "number" }
+      }
+    },
+    "materialPort": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "resource_type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "resource_type": { "type": "string", "minLength": 1 },
+        "same_identity_as": { "type": "string", "minLength": 1 }
+      }
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "inputs", "outputs"],
+      "properties": {
+        "mode": {
+          "enum": ["none", "observe", "pass_through", "transform", "consume", "produce", "move"]
+        },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/materialPort" }
+        },
+        "outputs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/materialPort" }
+        }
+      }
+    },
+    "resourceClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resource_type", "selector", "scope", "mode"],
+      "properties": {
+        "resource_ref": { "type": "string", "minLength": 1 },
+        "resource_type": { "type": "string", "minLength": 1 },
+        "selector": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "integer", "minimum": 1, "default": 1 },
+        "scope": { "enum": ["action", "workflow_block", "until_handoff", "persistent"] },
+        "mode": { "enum": ["exclusive", "shared"] }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimated_duration_s"],
+      "properties": {
+        "estimated_duration_s": { "type": "number", "minimum": 0 },
+        "timeout_s": { "type": "number", "exclusiveMinimum": 0 },
+        "setup_s": { "type": "number", "minimum": 0 },
+        "cleanup_s": { "type": "number", "minimum": 0 }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["idempotency", "cancel", "timeout", "disconnect", "estop"],
+      "properties": {
+        "idempotency": { "type": "string", "minLength": 1 },
+        "cancel": { "type": "string", "minLength": 1 },
+        "timeout": { "type": "string", "minLength": 1 },
+        "disconnect": { "type": "string", "minLength": 1 },
+        "estop": { "type": "string", "minLength": 1 }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "execution_kind", "params", "results", "material", "resource_claims", "timing"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+        "description": { "type": "string" },
+        "execution_kind": { "enum": ["atomic", "device_macro", "manual", "code"] },
+        "params": { "type": "array", "items": { "$ref": "#/$defs/parameter" } },
+        "results": { "type": "array", "items": { "$ref": "#/$defs/parameter" } },
+        "material": { "$ref": "#/$defs/material" },
+        "resource_claims": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resourceClaim" }
+        },
+        "timing": { "$ref": "#/$defs/timing" },
+        "recovery": { "$ref": "#/$defs/recovery" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "execution_kind": { "const": "device_macro" } },
+            "required": ["execution_kind"]
+          },
+          "then": { "required": ["recovery"] }
+        }
+      ]
+    }
+  }
+}

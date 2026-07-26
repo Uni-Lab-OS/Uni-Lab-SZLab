@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unilabos-szlab-poly-studio"
+version = "0.1.0"
+description = "Uni-Lab-OS external device package for the SZLab polymer studio"
+requires-python = ">=3.11"
+dependencies = [
+  "opcua>=0.98.13",
+  "pylabrobot>=0.1.4",
+  "requests>=2.31",
+]
+
+[project.optional-dependencies]
+runtime = ["unilabos>=0.11.3"]
+
+[tool.setuptools.packages.find]
+include = ["szlab_poly_studio*"]
+
+[tool.setuptools.package-data]
+szlab_poly_studio = [
+  "*.csv",
+  "*.json",
+  "profile/*.yaml",
+  "workflows/*.py",
+  "magnetic_stirring/*.csv",
+  "photoshotting/*.csv",
+  "pump/*.csv",
+  "decap_s08/*.csv",
+  "s07_solid_addition/*.csv",
+  "s07_solid_addition/*.json",
+  "s09_pipetting_station/*.csv",
+]

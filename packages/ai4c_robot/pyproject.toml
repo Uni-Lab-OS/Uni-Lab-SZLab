@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unilabos-ai4c-robot"
+version = "0.1.0"
+description = "Uni-Lab-OS external device package for the AI4C PLC and robot arm"
+requires-python = ">=3.11"
+dependencies = [
+  "opcua>=0.98.13",
+  "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+runtime = ["unilabos>=0.11.3"]
+
+[tool.setuptools.packages.find]
+include = ["ai4c_robot*"]
+
+[tool.setuptools.package-data]
+ai4c_robot = [
+  "*.csv",
+  "profile/*.yaml",
+  "workflows/*.py",
+]

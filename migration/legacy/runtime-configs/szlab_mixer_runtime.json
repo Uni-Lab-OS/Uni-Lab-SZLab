@@ -1,0 +1,174 @@
+{
+  "device_factory": {
+    "plc_device_id": "szlab_poly_plc",
+    "devices": {
+      "szlab_poly_plc": "unilabos.devices.workstation.szlab_poly_studio.plc.SZLabPolyPLCDevice",
+      "szlab_mixer_stirrer": "unilabos.devices.workstation.szlab_poly_studio.magnetic_stirring.magnetic_stirring.SzlabMixerMagneticStirrerDevice",
+      "szlab_mixer_photoshotting": "unilabos.devices.workstation.szlab_poly_studio.photoshotting.photoshotting.SzlabMixerPhotoShottingDevice",
+      "szlab_mixer_robot": "unilabos.devices.workstation.szlab_poly_studio.robot.robot.SzlabMixerRobotDevice"
+    }
+  },
+  "opc_snapshot": {
+    "common_variables": [],
+    "action_variables": {
+      "take_photo": [
+        "S05加工完成",
+        "S05拍照结果"
+      ],
+      "submit_pick_from_s04": [
+        "S04取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s04": [
+        "S04取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s05": [
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s05": [
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s01": [
+        "S01出入料产品",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s01_position": [
+        "S01取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s02": [
+        "S02取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s02": [
+        "S02取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s03": [
+        "S03取放料产品",
+        "S03取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s03": [
+        "S03取放料产品",
+        "S03取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s04": [
+        "S04取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s04": [
+        "S04取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s05": [
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s05": [
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s06": [
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s06": [
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s071": [
+        "S071取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s071": [
+        "S071取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s072": [
+        "S072取放料产品",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s072": [
+        "S072取放料产品",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s08": [
+        "S08取放料产品",
+        "S08取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s08": [
+        "S08取放料产品",
+        "S08取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s09": [
+        "S09取放料产品",
+        "S09取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s09": [
+        "S09取放料产品",
+        "S09取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s10": [
+        "S10取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s10": [
+        "S10取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_place_to_s11": [
+        "S11取放料产品",
+        "S11取放料编号",
+        "PLC_R任务号"
+      ],
+      "submit_pick_from_s11": [
+        "S11取放料产品",
+        "S11取放料编号",
+        "PLC_R任务号"
+      ]
+    },
+    "param_variables": {
+      "run_stirring": [
+        {
+          "param": "position",
+          "template": "S04{position}允许加工"
+        },
+        {
+          "param": "position",
+          "template": "S04{position}磁搅工艺选择"
+        },
+        {
+          "param": "position",
+          "template": "S04{position}参数写入完成"
+        },
+        {
+          "param": "position",
+          "template": "S04{position}加工完成"
+        },
+        {
+          "param": "position",
+          "template": "磁搅温度反馈_上位机[{position_minus_1}]"
+        },
+        {
+          "param": "position",
+          "template": "磁搅速度设置_上位机[{position_minus_1}]"
+        },
+        {
+          "param": "position",
+          "template": "磁搅温度设置_上位机[{position_minus_1}]"
+        },
+        {
+          "param": "position",
+          "template": "磁搅时间设置_上位机[{position_minus_1}]"
+        },
+        {
+          "param": "position",
+          "template": "磁搅安全温度设置_上位机[{position_minus_1}]"
+        }
+      ]
+    }
+  }
+}

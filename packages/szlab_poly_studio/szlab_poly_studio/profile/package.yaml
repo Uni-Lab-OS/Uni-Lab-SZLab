@@ -1,0 +1,55 @@
+schema_version: 1
+profile_id: szlab_poly_studio
+description: 苏州聚合物工作站外部设备包、物料拓扑与 Python 工作流
+device_spec: device.yaml
+default_device_binding:
+  device_id: szlab_poly_studio
+  driver_key: generic_plc_macro
+  connection_ref: SZLAB_PLC_CONNECTION
+resource_topology:
+  resources:
+    - {id: szlab_poly_studio, resource_type: device}
+    - {id: robot, resource_type: robotic_arm}
+    - {id: s04, resource_type: stirrer_station}
+    - {id: s05, resource_type: imaging_station}
+    - {id: s06, resource_type: liquid_addition_station}
+    - {id: s07, resource_type: solid_addition_station}
+    - {id: s08, resource_type: cap_station}
+    - {id: s09, resource_type: pipetting_station}
+    - {id: s1_loading_buffer, resource_type: szlab_poly_s1_loading_buffer_warehouse}
+    - {id: s2_tip, resource_type: szlab_poly_s2_tip_placeholder_warehouse}
+    - {id: s3_beaker, resource_type: szlab_poly_s3_unused_beaker_warehouse}
+    - {id: s3_vial, resource_type: szlab_poly_s3_unused_sample_vial_warehouse}
+    - {id: powder_container, resource_type: szlab_poly_powder_container_placeholder_warehouse}
+    - {id: s10_reagent, resource_type: szlab_poly_s10_liquid_reagent_placeholder_warehouse}
+    - {id: s11_beaker, resource_type: szlab_poly_s11_used_beaker_warehouse}
+    - {id: s11_vial, resource_type: szlab_poly_s11_used_sample_vial_warehouse}
+driver_config:
+  macros:
+    run_stirring:
+      - call: run_stirring
+        args:
+          - {input: position}
+          - {input: speed}
+          - {input: temperature}
+          - {input: duration}
+    take_photo:
+      - {call: take_photo, args: [{input: sample_id}]}
+    run_solvent_addition:
+      - {call: run_solvent_addition, args: [{input: pump}, {input: volume}]}
+    dose_powder:
+      - {call: dose_powder, args: [{input: cartridge_position}, {input: target_weight}]}
+    process_cap:
+      - call: process_cap
+        args:
+          - {input: operation}
+          - {input: vial_type}
+          - {input: sample_id_1}
+          - {input: sample_id_2}
+          - {input: sample_id_3}
+    add_liquid:
+      - {call: add_liquid, args: [{input: liquid_bottle_index}, {input: volume_ul}]}
+    move_material:
+      - {call: move_material, args: [{input: source}, {input: target}, {input: position}]}
+workflow_importers:
+  - {schema: unilab.python/v1, kind: workflow, codec: python_ast_v1}
