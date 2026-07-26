@@ -56,5 +56,9 @@ authoring bridge 以 OfflineOS 模式加载两套 Profile 和 `deployment/graphs
 拆包后的 SZLab 定向 E2E 进一步使用只含 SZLab 的 graph/Profile，验证 22 个物料聚合、S04
 三节点 Python 工作流、2D 与 2.5D 视图。截图见 `docs/E2E_SCREENSHOTS.md`。
 
+全工作流 E2E 自动发现并逐一验证两个包中的 13 个 Python 源码（SZLab 12、AI4C 1），每个均
+经直接 API 编译、前端按钮编译和 Canonical 校验后截图；总览见
+`docs/ALL_WORKFLOW_SCREENSHOTS.md`。
+
 真实 PLC、机械臂、相机和执行机构未在这轮自动验证中上电。本地图对所有直连 OPC UA 设备使用
 `auto_connect: false`；真机验收项见 `docs/HARDWARE_BRINGUP.md`。

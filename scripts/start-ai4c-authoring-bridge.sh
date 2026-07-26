@@ -10,7 +10,7 @@ runtime_dir="${UNILAB_AI4C_RUNTIME_DIR:-${repo_root}/runtime/ai4c}"
 mkdir -p "${runtime_dir}"
 export PYTHONPATH="${unilab_os_root}:${repo_root}/packages/ai4c_robot${PYTHONPATH:+:${PYTHONPATH}}"
 
-exec "${unilab_python}" -m unilabos.app.local_bridge.server \
+exec "${unilab_python}" "${repo_root}/deployment/local_bridge_entrypoint.py" \
   --host 127.0.0.1 \
   --schedule-port "${UNILAB_SCHEDULE_PORT:-8890}" \
   --api-port "${UNILAB_API_PORT:-8014}" \

@@ -111,8 +111,13 @@ pnpm dev
 ./scripts/start-ai4c-authoring-bridge.sh
 ```
 
+这些启动脚本通过 `deployment/local_bridge_entrypoint.py` 仅加载仓库所需的内置
+`generic_plc_macro` 配置，避免当前 Python 环境中其他已安装设备插件影响本仓库的独立调试。
+
 SZLab 最新前端 E2E 截图见
 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)。
+全部 13 个生产工作流的代码与 DAG 截图见
+[`docs/ALL_WORKFLOW_SCREENSHOTS.md`](docs/ALL_WORKFLOW_SCREENSHOTS.md)。
 
 ## OS 测试模式
 

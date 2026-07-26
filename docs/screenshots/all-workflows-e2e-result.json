@@ -1,0 +1,376 @@
+{
+  "outcome": "passed",
+  "frontendUrl": "http://127.0.0.1:4173",
+  "osUrl": "http://127.0.0.1:8014",
+  "total": 13,
+  "packages": {
+    "SZLab": 12,
+    "AI4C": 1
+  },
+  "workflows": [
+    {
+      "order": 1,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/magnetic_stirring.py",
+      "source_file": "magnetic_stirring.py",
+      "workflow_id": "szlab_magnetic_stirring_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "screenshot": "workflows/01-szlab_magnetic_stirring_workflow.png"
+    },
+    {
+      "order": 2,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/photoshotting.py",
+      "source_file": "photoshotting.py",
+      "workflow_id": "szlab_photoshotting_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "screenshot": "workflows/02-szlab_photoshotting_workflow.png"
+    },
+    {
+      "order": 3,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/robot_action.py",
+      "source_file": "robot_action.py",
+      "workflow_id": "szlab_robot_action_workflow",
+      "node_count": 2,
+      "edge_count": 1,
+      "screenshot": "workflows/03-szlab_robot_action_workflow.png"
+    },
+    {
+      "order": 4,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s04_robot_stirring.py",
+      "source_file": "s04_robot_stirring.py",
+      "workflow_id": "s04_robot_stirring_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "screenshot": "workflows/04-s04_robot_stirring_workflow.png"
+    },
+    {
+      "order": 5,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s06_robot.py",
+      "source_file": "s06_robot.py",
+      "workflow_id": "s06_robot_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "screenshot": "workflows/05-s06_robot_workflow.png"
+    },
+    {
+      "order": 6,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s07_robot.py",
+      "source_file": "s07_robot.py",
+      "workflow_id": "s07_robot_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "screenshot": "workflows/06-s07_robot_workflow.png"
+    },
+    {
+      "order": 7,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s07_solid_addition.py",
+      "source_file": "s07_solid_addition.py",
+      "workflow_id": "szlab_s07_solid_addition_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "screenshot": "workflows/07-szlab_s07_solid_addition_workflow.png"
+    },
+    {
+      "order": 8,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s08_cap.py",
+      "source_file": "s08_cap.py",
+      "workflow_id": "s08_cap_workflow",
+      "node_count": 2,
+      "edge_count": 1,
+      "screenshot": "workflows/08-s08_cap_workflow.png"
+    },
+    {
+      "order": 9,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/s09_pipetting.py",
+      "source_file": "s09_pipetting.py",
+      "workflow_id": "szlab_s09_pipetting_workflow",
+      "node_count": 4,
+      "edge_count": 3,
+      "screenshot": "workflows/09-szlab_s09_pipetting_workflow.png"
+    },
+    {
+      "order": 10,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/stack_s05_s06.py",
+      "source_file": "stack_s05_s06.py",
+      "workflow_id": "szlab_stack_s05_s06_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "screenshot": "workflows/10-szlab_stack_s05_s06_workflow.png"
+    },
+    {
+      "order": 11,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/szlab_mixer.py",
+      "source_file": "szlab_mixer.py",
+      "workflow_id": "szlab_mixer_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "screenshot": "workflows/11-szlab_mixer_workflow.png"
+    },
+    {
+      "order": 12,
+      "package": "SZLab",
+      "source": "packages/szlab_poly_studio/szlab_poly_studio/workflows/szlab_mixer_pump_production.py",
+      "source_file": "szlab_mixer_pump_production.py",
+      "workflow_id": "szlab_mixer_pump_production",
+      "node_count": 1,
+      "edge_count": 0,
+      "screenshot": "workflows/12-szlab_mixer_pump_production.png"
+    },
+    {
+      "order": 13,
+      "package": "AI4C",
+      "source": "packages/ai4c_robot/ai4c_robot/workflows/ai4c_canvas_workflow.py",
+      "source_file": "ai4c_canvas_workflow.py",
+      "workflow_id": "szlab_canvas_workflow",
+      "node_count": 8,
+      "edge_count": 7,
+      "screenshot": "workflows/13-szlab_canvas_workflow.png"
+    }
+  ],
+  "apiCalls": [
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/health"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/health"
+    },
+    {
+      "method": "GET",
+      "status": 404,
+      "url": "http://127.0.0.1:8014/api/v1/online-devices"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/generate-python"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+    }
+  ],
+  "httpFailures": [
+    {
+      "method": "GET",
+      "status": 404,
+      "url": "http://127.0.0.1:8014/api/v1/online-devices"
+    }
+  ],
+  "browserErrors": [],
+  "compatibilityWarnings": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "WebSocket connection to 'ws://127.0.0.1:8014/ws/device_status' failed: Error during WebSocket handshake: Unexpected response code: 403"
+  ]
+}

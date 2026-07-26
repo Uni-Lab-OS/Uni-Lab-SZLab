@@ -1,5 +1,8 @@
 # SZLab 最新前端 E2E 截图
 
+本页聚焦 SZLab 物料视图和一个代表性工作流。全部 13 个生产工作流截图见
+[`ALL_WORKFLOW_SCREENSHOTS.md`](ALL_WORKFLOW_SCREENSHOTS.md)。
+
 截图由 `uni-lab-fe@d734337f63da832c11d704013be0d80f98681116`、SZLab 独立 Profile、
 `deployment/graphs/szlab-local-debug.json` 和 OfflineOS bridge 共同生成。浏览器视口为
 1920×1200。

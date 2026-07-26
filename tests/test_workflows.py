@@ -77,3 +77,35 @@ def test_legacy_json_action_sequences_are_preserved(
             action_catalog=action_catalog,
         )
         assert [invocation.action_ref for invocation in revision.invocations] == expected
+
+
+def test_e2e_screenshots_cover_every_production_workflow(
+    repo_root: Path,
+    action_catalog: dict,
+) -> None:
+    result_path = repo_root / "docs" / "screenshots" / "all-workflows-e2e-result.json"
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert result["outcome"] == "passed"
+    assert result["total"] == 13
+    assert result["packages"] == {"SZLab": 12, "AI4C": 1}
+    assert result["browserErrors"] == []
+    assert [item["order"] for item in result["workflows"]] == list(range(1, 14))
+
+    compiled_ids: set[str] = set()
+    for item in result["workflows"]:
+        source_path = repo_root / item["source"]
+        screenshot_path = repo_root / "docs" / "screenshots" / item["screenshot"]
+        revision = compile_python_script(
+            source_path.read_text(encoding="utf-8"),
+            action_catalog=action_catalog,
+        )
+
+        assert revision.workflow_id == item["workflow_id"]
+        assert len(revision.invocations) == item["node_count"]
+        assert len(revision.control_edges) == item["edge_count"]
+        assert screenshot_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        assert screenshot_path.stat().st_size > 100_000
+        compiled_ids.add(revision.workflow_id)
+
+    assert len(compiled_ids) == 13
