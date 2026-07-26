@@ -23,6 +23,8 @@
 - Python 工作流：13 个源码全部通过 AST 编译；12 个 local UI preset 全部有迁移映射
 - Schema：Profile v1 与 device-template v2 的仓库副本和模板提交逐字节一致
 - Wheel：两个包均可构建，且包含 Profile、工作流和 CSV 数据
+- 包边界：SZLab 与 AI4C 无交叉导入，可分别 check、build 和启动本地 bridge；独立 bridge
+  分别暴露 78/19 个动作，AI4C 图只包含自己的 2 个对象
 
 核心复现命令：
 
@@ -50,6 +52,9 @@ authoring bridge 以 OfflineOS 模式加载两套 Profile 和 `deployment/graphs
 - 最新 `uni-lab-fe` 的 typecheck、67 项测试和 production Web build 全部通过；
 - 浏览器从前端 origin 访问 bridge，工作流/物料 UI 可见，并读取 24 个物料实例、97 个动作；
   浏览器端编译 S04 工作流无诊断、无控制台错误。
+
+拆包后的 SZLab 定向 E2E 进一步使用只含 SZLab 的 graph/Profile，验证 22 个物料聚合、S04
+三节点 Python 工作流、2D 与 2.5D 视图。截图见 `docs/E2E_SCREENSHOTS.md`。
 
 真实 PLC、机械臂、相机和执行机构未在这轮自动验证中上电。本地图对所有直连 OPC UA 设备使用
 `auto_connect: false`；真机验收项见 `docs/HARDWARE_BRINGUP.md`。

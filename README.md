@@ -13,6 +13,27 @@
 [`NOTICE`](NOTICE)，迁移映射见 [`migration/manifest.yaml`](migration/manifest.yaml)。
 本地联调证据与复现命令见 [`docs/VALIDATION.md`](docs/VALIDATION.md)。
 
+## 两个独立设备包
+
+本仓库采用 monorepo 管理，但 SZLab 和 AI4C 是两个互不交叉导入、可分别安装和发布的 Python
+distribution：
+
+| 包 | Distribution | Profile | 独立调试图 |
+| --- | --- | --- | --- |
+| SZLab | `unilabos-szlab-poly-studio` | `packages/szlab_poly_studio/package.yaml` | `deployment/graphs/szlab-local-debug.json` |
+| AI4C | `unilabos-ai4c-robot` | `packages/ai4c_robot/package.yaml` | `deployment/graphs/ai4c-local-debug.json` |
+
+分别检查和构建：
+
+```bash
+./scripts/check-szlab-package.sh
+./scripts/check-ai4c-package.sh
+./scripts/build-szlab-package.sh
+./scripts/build-ai4c-package.sh
+```
+
+wheel 分别输出到 `dist/szlab/` 和 `dist/ai4c/`。
+
 ## 仓库结构
 
 ```text
@@ -82,6 +103,16 @@ pnpm dev
 
 生产工作流源码位于两个包的 `workflows/` 下。工作流只经过 Uni-Lab-OS Python AST
 编译器生成 Canonical v2，不使用 `eval` 或 `exec`。
+
+只启动 SZLab 或 AI4C 时分别使用：
+
+```bash
+./scripts/start-szlab-authoring-bridge.sh
+./scripts/start-ai4c-authoring-bridge.sh
+```
+
+SZLab 最新前端 E2E 截图见
+[`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)。
 
 ## OS 测试模式
 
