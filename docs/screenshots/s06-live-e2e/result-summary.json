@@ -1,0 +1,17 @@
+{
+  "outcome": "passed",
+  "runId": "cbace3de8a584aab82c39c952c449179",
+  "workflowId": "s06_robot_workflow",
+  "nodeCount": 3,
+  "edgeCount": 2,
+  "nodeStates": [
+    "success",
+    "success",
+    "success"
+  ],
+  "screenshots": [
+    "s06-workflow-running.png",
+    "s06-workflow-completed.png",
+    "s06-workflow-events.png"
+  ]
+}

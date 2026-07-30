@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 SCRIPT_PATH = Path(__file__).parents[1] / "scripts" / "szlab_workflow_handshake.py"
 SPEC = importlib.util.spec_from_file_location("szlab_workflow_handshake", SCRIPT_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -32,11 +31,11 @@ class MemoryAdapter:
         self.values[name] = value
 
 
-def test_catalog_lists_all_workflows_and_five_supported_actions() -> None:
+def test_catalog_lists_all_workflows_and_seven_supported_actions() -> None:
     specs = handshake.build_workflow_specs()
 
     assert len(specs) == 12
-    assert len(handshake.SUPPORTED_ACTIONS) == 5
+    assert len(handshake.SUPPORTED_ACTIONS) == 7
     assert {item.workflow_id for item in specs} == {
         "szlab_magnetic_stirring_workflow",
         "szlab_photoshotting_workflow",
@@ -144,6 +143,83 @@ def test_s06_handshake_produces_fresh_done_cycle() -> None:
     ]
     assert adapter.read(handshake.S06_DONE) is False
     assert adapter.read(handshake.S06_ALLOW) is True
+
+
+def test_s06_robot_workflow_runs_place_pump_pick_and_resets_sensor() -> None:
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        pump=1,
+        process_delay=0.5,
+        workflow="s06_robot_workflow",
+    )
+    simulator.initialize()
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
+
+    adapter.write(handshake.ROBOT_TASK_NUMBER, 11)
+    adapter.write(handshake.ROBOT_WRITE_DONE, True)
+    accepted = simulator.step(now=0.0)
+    completed = simulator.step(now=0.5)
+    assert [(event.action, event.phase) for event in accepted] == [
+        (handshake.S06_PLACE_ACTION, "accepted")
+    ]
+    assert [(event.action, event.phase) for event in completed] == [
+        (handshake.S06_PLACE_ACTION, "completed")
+    ]
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is True
+    assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 11
+
+    adapter.write(handshake.ROBOT_WRITE_DONE, False)
+    adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
+    reset = simulator.step(now=0.6)
+    assert [(event.action, event.phase) for event in reset] == [
+        (handshake.S06_PLACE_ACTION, "reset")
+    ]
+    assert adapter.read(handshake.ROBOT_WRITE_ALLOWED) is True
+    assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 0
+
+    adapter.write(handshake.S06_PROCESS, 1)
+    adapter.write(handshake.S06_PARAMS_WRITTEN, True)
+    accepted = simulator.step(now=1.0)
+    completed = simulator.step(now=1.5)
+    assert [(event.action, event.phase) for event in accepted] == [
+        (handshake.S06_PUMP_ACTION, "accepted")
+    ]
+    assert [(event.action, event.phase) for event in completed] == [
+        (handshake.S06_PUMP_ACTION, "completed")
+    ]
+    assert adapter.read(handshake.S06_DONE) is True
+
+    adapter.write(handshake.S06_PROCESS, 0)
+    adapter.write(handshake.S06_PARAMS_WRITTEN, False)
+    reset = simulator.step(now=1.6)
+    assert [(event.action, event.phase) for event in reset] == [
+        (handshake.S06_PUMP_ACTION, "reset")
+    ]
+    assert adapter.read(handshake.S06_DONE) is False
+
+    adapter.write(handshake.ROBOT_TASK_NUMBER, 12)
+    adapter.write(handshake.ROBOT_WRITE_DONE, True)
+    accepted = simulator.step(now=2.0)
+    completed = simulator.step(now=2.5)
+    assert [(event.action, event.phase) for event in accepted] == [
+        (handshake.S06_PICK_ACTION, "accepted")
+    ]
+    assert [(event.action, event.phase) for event in completed] == [
+        (handshake.S06_PICK_ACTION, "completed")
+    ]
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
+    assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 12
+    assert simulator.completed_actions == 3
+    assert simulator.all_cycles_idle() is False
+
+    adapter.write(handshake.ROBOT_WRITE_DONE, False)
+    adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
+    reset = simulator.step(now=2.6)
+    assert [(event.action, event.phase) for event in reset] == [
+        (handshake.S06_PICK_ACTION, "reset")
+    ]
+    assert simulator.all_cycles_idle() is True
 
 
 def test_cleanup_only_resets_simulator_owned_outputs() -> None:

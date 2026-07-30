@@ -7,13 +7,18 @@
 2. ``check``：只读检查远端 OPC UA 中可自动判定的先决条件。
 3. ``serve``：写入首批测试先决条件，并监听 PC→PLC 信号，模拟 PLC 握手。
 
-首批覆盖五个工作流动作：
+当前覆盖七个工作流动作：
 
 - ``szlab_mixer_robot.submit_place_to_s04``（机器人任务号 7）
 - ``szlab_mixer_stirrer.run_stirring``
 - ``szlab_mixer_robot.submit_pick_from_s04``（机器人任务号 8）
 - ``szlab_mixer_photoshotting.take_photo``（当前为只读完成信号）
 - ``szlab_mixer_pump.run_solvent_addition``
+- ``szlab_mixer_robot.submit_place_to_s06``（机器人任务号 11）
+- ``szlab_mixer_robot.submit_pick_from_s06``（机器人任务号 12）
+
+使用 ``--workflow s06_robot_workflow`` 可完整模拟 ``s06_robot.py``：
+机器人放料、S06 加液、机器人取料。
 
 本文件不依赖 Uni-Lab-OS 进程，也不创建 OPC UA 节点；它只连接由 CSV
 创建好的节点。请使用包含 ``python-opcua`` 的 unilab Python 环境运行。
@@ -59,7 +64,25 @@ SUPPORTED_ACTIONS = (
     "szlab_mixer_robot.submit_pick_from_s04",
     "szlab_mixer_photoshotting.take_photo",
     "szlab_mixer_pump.run_solvent_addition",
+    "szlab_mixer_robot.submit_place_to_s06",
+    "szlab_mixer_robot.submit_pick_from_s06",
 )
+
+S04_PLACE_ACTION = SUPPORTED_ACTIONS[0]
+S04_STIR_ACTION = SUPPORTED_ACTIONS[1]
+S04_PICK_ACTION = SUPPORTED_ACTIONS[2]
+S06_PUMP_ACTION = SUPPORTED_ACTIONS[4]
+S06_PLACE_ACTION = SUPPORTED_ACTIONS[5]
+S06_PICK_ACTION = SUPPORTED_ACTIONS[6]
+
+ROBOT_ACTION_BY_TASK = {
+    7: S04_PLACE_ACTION,
+    8: S04_PICK_ACTION,
+    11: S06_PLACE_ACTION,
+    12: S06_PICK_ACTION,
+}
+
+SimulatorWorkflow = Literal["all", "s06_robot_workflow"]
 
 
 def s04_station(position: int) -> str:
@@ -180,7 +203,13 @@ def _opc_readable(subject: str, *, note: str = "") -> Requirement:
     )
 
 
-def _manual(kind: Literal["config", "file", "parameter"], subject: str, expectation: str, *, note: str = "") -> Requirement:
+def _manual(
+    kind: Literal["config", "file", "parameter"],
+    subject: str,
+    expectation: str,
+    *,
+    note: str = "",
+) -> Requirement:
     return Requirement(
         kind=kind,
         subject=subject,
@@ -443,7 +472,7 @@ class _Cycle:
 
 
 class WorkflowHandshakeSimulator:
-    """五个动作的独立 PLC 握手状态机 module。"""
+    """七个动作的独立 PLC 握手状态机 module。"""
 
     def __init__(
         self,
@@ -452,21 +481,40 @@ class WorkflowHandshakeSimulator:
         position: int = 1,
         pump: int = 1,
         process_delay: float = 0.5,
+        workflow: SimulatorWorkflow = "all",
     ) -> None:
         if int(position) not in range(1, 7):
             raise ValueError("position 必须在 1-6 范围内")
         if int(pump) not in (1, 2, 3):
             raise ValueError("pump 必须是 1、2 或 3")
+        if workflow not in ("all", "s06_robot_workflow"):
+            raise ValueError(f"不支持的握手工作流: {workflow}")
         self.adapter = adapter
         self.position = int(position)
         self.pump = int(pump)
         self.process_delay = max(float(process_delay), 0.0)
+        self.workflow = workflow
         self.robot = _Cycle()
         self.stirrer = _Cycle(position=self.position)
         self.pump_cycle = _Cycle(process=self.pump)
         self.completed_actions = 0
 
     def initialization_values(self) -> dict[str, Any]:
+        if self.workflow == "s06_robot_workflow":
+            values: dict[str, Any] = {
+                ROBOT_HOME: True,
+                ROBOT_WRITE_ALLOWED: True,
+                ROBOT_WRITE_DONE: False,
+                ROBOT_TASK_COMPLETE: 0,
+                S06_READY: True,
+                S06_ALLOW: True,
+                S06_DONE: False,
+                S06_BEAKER_SENSOR: False,
+            }
+            for index in ((1, 2) if self.pump == 3 else (self.pump,)):
+                values[S06_STORAGE_BOTTLE_SENSOR[index]] = True
+            return values
+
         values: dict[str, Any] = {
             ROBOT_HOME: True,
             ROBOT_WRITE_ALLOWED: True,
@@ -487,6 +535,20 @@ class WorkflowHandshakeSimulator:
         return values
 
     def cleanup_values(self) -> dict[str, Any]:
+        if self.workflow == "s06_robot_workflow":
+            values: dict[str, Any] = {
+                ROBOT_HOME: False,
+                ROBOT_WRITE_ALLOWED: False,
+                ROBOT_TASK_COMPLETE: 0,
+                S06_READY: False,
+                S06_ALLOW: False,
+                S06_DONE: False,
+                S06_BEAKER_SENSOR: False,
+            }
+            for index in ((1, 2) if self.pump == 3 else (self.pump,)):
+                values[S06_STORAGE_BOTTLE_SENSOR[index]] = False
+            return values
+
         values: dict[str, Any] = {
             ROBOT_HOME: False,
             ROBOT_WRITE_ALLOWED: False,
@@ -523,11 +585,20 @@ class WorkflowHandshakeSimulator:
                 result.append((name, False, expected, f"{type(exc).__name__}: {exc}"))
         return result
 
+    def all_cycles_idle(self) -> bool:
+        """全部已接收动作均完成 PC 复位后才允许自动退出。"""
+
+        cycles = [self.robot, self.pump_cycle]
+        if self.workflow == "all":
+            cycles.append(self.stirrer)
+        return all(cycle.phase == "idle" for cycle in cycles)
+
     def step(self, now: float | None = None) -> list[HandshakeEvent]:
         now = time.monotonic() if now is None else float(now)
         events: list[HandshakeEvent] = []
         events.extend(self._step_robot(now))
-        events.extend(self._step_stirrer(now))
+        if self.workflow == "all":
+            events.extend(self._step_stirrer(now))
         events.extend(self._step_pump(now))
         self.completed_actions += sum(event.phase == "completed" for event in events)
         return events
@@ -538,12 +609,19 @@ class WorkflowHandshakeSimulator:
         if cycle.phase == "idle":
             write_done = bool(self.adapter.read(ROBOT_WRITE_DONE))
             task = int(self.adapter.read(ROBOT_TASK_NUMBER) or 0)
-            if write_done and task in (7, 8):
-                position = int(self.adapter.read(S04_ROBOT_POSITION) or 0)
-                if position != self.position:
-                    raise RuntimeError(
-                        f"机器人 S04 位置不匹配：脚本监听 {self.position}，收到 {position}"
-                    )
+            allowed_tasks = (
+                (11, 12)
+                if self.workflow == "s06_robot_workflow"
+                else tuple(ROBOT_ACTION_BY_TASK)
+            )
+            if write_done and task in allowed_tasks:
+                position = 0
+                if task in (7, 8):
+                    position = int(self.adapter.read(S04_ROBOT_POSITION) or 0)
+                    if position != self.position:
+                        raise RuntimeError(
+                            f"机器人 S04 位置不匹配：脚本监听 {self.position}，收到 {position}"
+                        )
                 self.adapter.write(ROBOT_WRITE_ALLOWED, False)
                 self.adapter.write(ROBOT_HOME, False)
                 self.adapter.write(ROBOT_TASK_COMPLETE, 0)
@@ -551,33 +629,44 @@ class WorkflowHandshakeSimulator:
                 cycle.process = task
                 cycle.position = position
                 cycle.due_at = now + self.process_delay
-                action = (
-                    SUPPORTED_ACTIONS[0]
-                    if task == 7
-                    else SUPPORTED_ACTIONS[2]
-                )
+                action = ROBOT_ACTION_BY_TASK[task]
                 events.append(
                     HandshakeEvent(
                         action,
                         "accepted",
-                        {"task_number": task, "position": position},
+                        {
+                            "task_number": task,
+                            "station": "S04" if task in (7, 8) else "S06",
+                            **({"position": position} if task in (7, 8) else {}),
+                        },
                     )
                 )
         elif cycle.phase == "executing" and now >= cycle.due_at:
-            occupied = cycle.process == 7
-            self.adapter.write(s04_sensor(cycle.position), occupied)
+            occupied = cycle.process in (7, 11)
+            sensor_variable = (
+                s04_sensor(cycle.position)
+                if cycle.process in (7, 8)
+                else S06_BEAKER_SENSOR
+            )
+            self.adapter.write(sensor_variable, occupied)
             self.adapter.write(ROBOT_HOME, True)
             self.adapter.write(ROBOT_TASK_COMPLETE, cycle.process)
             cycle.phase = "await_reset"
-            action = SUPPORTED_ACTIONS[0] if cycle.process == 7 else SUPPORTED_ACTIONS[2]
+            action = ROBOT_ACTION_BY_TASK[cycle.process]
             events.append(
                 HandshakeEvent(
                     action,
                     "completed",
                     {
                         "task_number": cycle.process,
-                        "position": cycle.position,
+                        "station": "S04" if cycle.process in (7, 8) else "S06",
+                        **(
+                            {"position": cycle.position}
+                            if cycle.process in (7, 8)
+                            else {}
+                        ),
                         "occupied": occupied,
+                        "sensor_variable": sensor_variable,
                     },
                 )
             )
@@ -589,7 +678,7 @@ class WorkflowHandshakeSimulator:
                 self.adapter.write(ROBOT_WRITE_ALLOWED, True)
                 events.append(
                     HandshakeEvent(
-                        SUPPORTED_ACTIONS[0] if cycle.process == 7 else SUPPORTED_ACTIONS[2],
+                        ROBOT_ACTION_BY_TASK[cycle.process],
                         "reset",
                         {"task_number": cycle.process},
                     )
@@ -696,7 +785,7 @@ class WorkflowHandshakeSimulator:
 
 def _print_catalog(specs: tuple[WorkflowSpec, ...]) -> None:
     print(f"当前工作流数量: {len(specs)}")
-    print(f"首批可交互动作数量: {len(SUPPORTED_ACTIONS)}")
+    print(f"可交互动作数量: {len(SUPPORTED_ACTIONS)}")
     print()
     for spec in specs:
         print(f"[{spec.workflow_id}]")
@@ -762,6 +851,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--password", default="")
     parser.add_argument("--position", type=int, default=1, help="S04 位置，1-6")
     parser.add_argument("--pump", type=int, default=1, choices=(1, 2, 3))
+    parser.add_argument(
+        "--workflow",
+        choices=("all", "s06_robot_workflow"),
+        default="all",
+        help="serve/check 的握手场景；完整运行 s06_robot.py 时选择 s06_robot_workflow",
+    )
     parser.add_argument("--poll-interval", type=float, default=0.1)
     parser.add_argument("--process-delay", type=float, default=0.5)
     parser.add_argument(
@@ -781,6 +876,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     specs = build_workflow_specs(position=args.position, pump=args.pump)
+    if args.workflow != "all":
+        specs = tuple(spec for spec in specs if spec.workflow_id == args.workflow)
     if args.command == "list":
         _print_catalog(specs)
         return 0
@@ -803,8 +900,9 @@ def main(argv: list[str] | None = None) -> int:
             position=args.position,
             pump=args.pump,
             process_delay=args.process_delay,
+            workflow=args.workflow,
         )
-        print("写入首批动作的仿真先决条件...")
+        print(f"写入握手场景 {args.workflow!r} 的仿真先决条件...")
         simulator.initialize()
         checks = simulator.check_supported_prerequisites()
         failed = [item for item in checks if not item[1]]
@@ -818,7 +916,10 @@ def main(argv: list[str] | None = None) -> int:
             return 3
 
         print("握手仿真器已启动；按 Ctrl+C 停止。")
-        print("S05 为只读完成信号，已保持 S05加工完成=True、S05拍照结果=1。")
+        if args.workflow == "all":
+            print("S05 为只读完成信号，已保持 S05加工完成=True、S05拍照结果=1。")
+        else:
+            print("S06 完整握手：任务 11 放料 → 泵加工 → 任务 12 取料。")
         stop_requested = False
 
         def _request_stop(_signum: int, _frame: Any) -> None:
@@ -831,7 +932,11 @@ def main(argv: list[str] | None = None) -> int:
             while not stop_requested:
                 for event in simulator.step():
                     print(_event_line(event), flush=True)
-                if args.max_actions > 0 and simulator.completed_actions >= args.max_actions:
+                if (
+                    args.max_actions > 0
+                    and simulator.completed_actions >= args.max_actions
+                    and simulator.all_cycles_idle()
+                ):
                     print(f"已完成 {simulator.completed_actions} 个动作，退出握手循环。")
                     break
                 time.sleep(max(args.poll_interval, 0.01))

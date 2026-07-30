@@ -244,6 +244,24 @@ cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
   --poll-interval 0.1
 ```
 
+完整运行 `packages/szlab_poly_studio/szlab_poly_studio/workflows/s06_robot.py`
+时使用 S06 专用场景：
+
+```bash
+/home/changjunhan/.micromamba/envs/unilab/bin/python -u \
+  scripts/szlab_workflow_handshake.py serve \
+  --workflow s06_robot_workflow \
+  --url 'opc.tcp://opcua.ideawit.com:4855/xuse_sim' \
+  --node-prefix 'ns=4;s=上位机通讯|' \
+  --pump 1 \
+  --process-delay 0.5 \
+  --poll-interval 0.1 \
+  --max-actions 3
+```
+
+该场景从 `S06` 无烧杯开始，依次响应机器人任务号 11、S06 加液和机器人任务号
+12；`--max-actions 3` 会等最后一个动作的 PC 复位完成后再退出。
+
 `-u` 用于立即输出握手事件。默认持续运行，按 `Ctrl+C` 后清理脚本负责的 PLC→PC
 仿真信号。自动完成指定数量动作后退出可增加：
 
@@ -329,7 +347,7 @@ ss -ltnp | rg ':(5173|8015|8892|18003)\b'
 期望 Edge 和前端均返回 HTTP 200。Edge 初始化期间
 `/internal/v1/runtime-actions` 可能短暂返回 503，等 `Host node initialized` 后重试。
 
-## 7. 首批五个握手动作
+## 7. 当前七个握手动作
 
 | 序号 | 工作流动作 | PC→PLC 触发 | 仿真器响应 |
 | --- | --- | --- | --- |
@@ -338,6 +356,8 @@ ss -ltnp | rg ':(5173|8015|8892|18003)\b'
 | 3 | `submit_pick_from_s04` | 位置、任务号 8、任务写入完成 | 完成码 8、目标位传感器置 False |
 | 4 | `take_photo` | 当前驱动没有独立启动写入 | 保持 `S05加工完成=True`、`S05拍照结果=1` |
 | 5 | `run_solvent_addition` | S06 工艺选择、添加量、参数写入完成 | 产生新的 `False→True` 加工完成周期并响应复位 |
+| 6 | `submit_place_to_s06` | 任务号 11、任务写入完成 | 完成码 11、S06 烧杯传感器置 True |
+| 7 | `submit_pick_from_s06` | 任务号 12、任务写入完成 | 完成码 12、S06 烧杯传感器置 False |
 
 S05 当前只能用既有完成/结果节点模拟。它不是完整的“启动—加工—完成—复位”握手；
 在 PLC 接口增加明确的 S05 启动与复位变量之前，不应伪造不存在的节点。
@@ -361,9 +381,10 @@ S05 当前只能用既有完成/结果节点模拟。它不是完整的“启动
 | `szlab_mixer_workflow` | S06 条件满足；不跳过机械臂时必须配置两个机械臂位置 |
 | `szlab_mixer_pump_production` | 同上，S06 完成信号必须从 False 开始新周期 |
 
-首批握手器为了直接测试 S06 泵动作，会初始化 `S06` 烧杯在位为 True；这与
-`s06_robot_workflow` 的“机械臂放料前工位为空”不是同一个测试场景。测试完整 S06
-机械臂工作流时，需要扩展任务号 11/12 的机械臂握手状态机后再运行。
+默认 `all` 场景为了直接测试 S06 泵动作，会初始化 `S06` 烧杯在位为 True。
+完整测试 `s06_robot_workflow` 时必须增加
+`--workflow s06_robot_workflow`；该场景会初始化为空，并由任务号 11/12 驱动
+烧杯传感器的 False→True→False 状态变化。
 
 ## 9. 提交已编译的 S04 三动作工作流
 
