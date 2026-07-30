@@ -22,7 +22,6 @@ from szlab_poly_studio.s09_pipetting_station.sensors import (
     S09_STATION_STATUS_VAR,
     S09_TIP_BOX_VAR,
     S09_TIP_VAR,
-    s09_opcua_node_id_map,
     s09_remaining_volume_var,
     s09_remaining_volume_vars,
     validate_home_position,
@@ -32,6 +31,7 @@ from szlab_poly_studio.s09_pipetting_station.sensors import (
     validate_tip,
     validate_tip_box,
 )
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
@@ -47,7 +47,7 @@ S09_VOLUME_UL_MAX = 5000.0
     category=["liquid_handler"],
     description="SZLab Poly Studio S09 移液/加液工位设备",
 )
-class SzlabMixerPipettingStationDevice:
+class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
     def __init__(
         self,
         url: str = DEFAULT_OPCUA_URL,
@@ -60,39 +60,24 @@ class SzlabMixerPipettingStationDevice:
         use_plc_gateway: bool = False,
         opcua_client: Any | None = None,
         opcua_node_id_map: dict[str, str] | None = None,
+        plc_gateway: Any = None,
+        plc_action_timeout: float = 300.0,
+        plc_server_wait_timeout: float = 10.0,
         **kwargs,
     ):
+        del username, password, csv_path, auto_connect, use_plc_gateway
+        del opcua_node_id_map, kwargs
         self.url = url
         self.timeout = timeout
-        self.plc_device_id = plc_device_id
-        self._plc_gateway = None
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway if plc_gateway is not None else opcua_client,
+            plc_action_timeout=plc_action_timeout,
+            plc_server_wait_timeout=plc_server_wait_timeout,
+        )
         self._status = "Idle"
         self._bindings: dict[int, str] = {}
         self._last_process: dict[str, Any] = {}
-
-        if use_plc_gateway:
-            self._client = opcua_client
-            return
-        if opcua_client is not None:
-            self._client = opcua_client
-            return
-
-        client_kwargs: dict[str, Any] = {
-            "url": url,
-            "username": username,
-            "password": password,
-            "auto_connect": auto_connect,
-            "opcua_node_id_map": opcua_node_id_map or s09_opcua_node_id_map(),
-        }
-        if csv_path is not None:
-            client_kwargs["csv_path"] = csv_path
-        from szlab_poly_studio.plc import SZLabPolyPLCDevice
-
-        self._client = SZLabPolyPLCDevice(**client_kwargs)
-
-    @not_action
-    def set_plc_gateway(self, plc_gateway) -> None:
-        self._plc_gateway = plc_gateway
 
     @property
     @topic_config()

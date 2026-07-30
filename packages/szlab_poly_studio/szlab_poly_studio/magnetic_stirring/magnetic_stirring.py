@@ -11,7 +11,6 @@ from szlab_poly_studio.magnetic_stirring.sensors import (
     s04_allow_var,
     s04_done_var,
     s04_duration_var,
-    s04_opcua_node_id_map,
     s04_params_written_var,
     s04_process_var,
     s04_safe_temperature_var,
@@ -20,6 +19,7 @@ from szlab_poly_studio.magnetic_stirring.sensors import (
     s04_temperature_var,
 )
 from szlab_poly_studio.plc import wait_variable_true
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
@@ -33,7 +33,7 @@ DEFAULT_OPCUA_URL = os.environ.get(
     category=["heaterstirrer"],
     description="SZLab Poly Studio S04 磁搅工位设备",
 )
-class SzlabMixerMagneticStirrerDevice:
+class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
     def __init__(
         self,
         url: str = DEFAULT_OPCUA_URL,
@@ -45,35 +45,24 @@ class SzlabMixerMagneticStirrerDevice:
         plc_device_id: str = "szlab_poly_plc",
         use_plc_gateway: bool = False,
         opcua_node_id_map: dict[str, str] | None = None,
+        plc_gateway: Any = None,
+        plc_action_timeout: float = 300.0,
+        plc_server_wait_timeout: float = 10.0,
         **kwargs,
     ):
+        del username, password, csv_path, auto_connect, use_plc_gateway
+        del opcua_node_id_map, kwargs
         self.url = url
         self.timeout = timeout
-        self.plc_device_id = plc_device_id
-        self._plc_gateway = None
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway,
+            plc_action_timeout=plc_action_timeout,
+            plc_server_wait_timeout=plc_server_wait_timeout,
+        )
         self._status = "Idle"
         self._last_position = 0
         self._last_mode = 0
-        client_kwargs: dict[str, Any] = {
-            "url": url,
-            "username": username,
-            "password": password,
-            "timeout": timeout,
-            "auto_connect": auto_connect,
-        }
-        if csv_path is not None:
-            client_kwargs["csv_path"] = csv_path
-        client_kwargs["opcua_node_id_map"] = opcua_node_id_map or s04_opcua_node_id_map()
-        if use_plc_gateway:
-            self._client = None
-        else:
-            from szlab_poly_studio.plc import SZLabPolyPLCDevice
-
-            self._client = SZLabPolyPLCDevice(**client_kwargs)
-
-    @not_action
-    def set_plc_gateway(self, plc_gateway) -> None:
-        self._plc_gateway = plc_gateway
 
     @property
     @topic_config()

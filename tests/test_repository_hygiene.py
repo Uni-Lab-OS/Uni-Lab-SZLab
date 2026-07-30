@@ -18,19 +18,25 @@ def test_local_debug_graph_uses_only_registered_project_classes(
     }
     graph_device_classes = {node["class"] for node in payload["nodes"] if node["type"] == "device"}
     assert graph_device_classes <= device_classes
+    direct_plc_classes = {"szlab_poly_plc", "AI4C_plc"}
     assert all(
         node.get("config", {}).get("auto_connect") is False
         for node in payload["nodes"]
-        if node["class"]
-        in {
-            "szlab_poly_plc",
-            "szlab_mixer_stirrer",
-            "szlab_mixer_photoshotting",
-            "szlab_mixer_pump",
-            "szlab_s08_cap_station",
-            "szlab_mixer_pipetting_station",
-            "AI4C_plc",
-        }
+        if node["class"] in direct_plc_classes
+    )
+    unified_plc_device_classes = {
+        "szlab_mixer_robot",
+        "szlab_mixer_stirrer",
+        "szlab_mixer_photoshotting",
+        "szlab_mixer_pump",
+        "szlab_s07_solid_addition",
+        "szlab_s08_cap_station",
+        "szlab_mixer_pipetting_station",
+    }
+    assert all(
+        node.get("config") == {"plc_device_id": "szlab_poly_plc"}
+        for node in payload["nodes"]
+        if node["class"] in unified_plc_device_classes
     )
 
 

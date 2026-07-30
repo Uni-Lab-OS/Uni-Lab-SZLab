@@ -20,7 +20,7 @@ from unilabos.utils.log import logger
 
 from szlab_poly_studio.stack_status import build_stack_status
 
-DEFAULT_CSV_NAME = "szlab_plc_0702.csv"
+DEFAULT_CSV_NAME = "szlab_plc_0730.csv"
 
 
 def wait_variable_equal(
@@ -495,6 +495,16 @@ class SZLabPolyPLCDevice(BaseClient):
             return node_name, self.use_node(node_name).node_id
         except Exception:
             return node_name, None
+
+    @not_action
+    def check_variable_accessible(self, node_name: str) -> tuple[bool, str | None]:
+        try:
+            node = self.use_node(node_name)
+            opc_node = node._get_node()
+            opc_node.get_data_type_as_variant_type()
+            return True, node.node_id
+        except Exception as exc:
+            return False, str(exc)
 
     @not_action
     def get_variables(self, node_names: Optional[List[str]] = None, use_cache: bool = False) -> Dict[str, Any]:

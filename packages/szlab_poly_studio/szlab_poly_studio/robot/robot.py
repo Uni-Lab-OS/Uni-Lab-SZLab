@@ -6,6 +6,7 @@ from typing import Any
 
 from unilabos.registry.decorators import action, device, not_action
 
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 from szlab_poly_studio.robot.robot_S01 import SzlabRobotS01Mixin
 from szlab_poly_studio.robot.robot_S02 import SzlabRobotS02Mixin
 from szlab_poly_studio.robot.robot_S03 import SzlabRobotS03Mixin
@@ -33,6 +34,7 @@ from szlab_poly_studio.robot.robot_tasks import (
     description="SZLab Mixer 机器人任务设备，负责向 PLC 下发 S01-S11 取放料任务号",
 )
 class SzlabMixerRobotDevice(
+    UnifiedPLCGatewayMixin,
     SzlabRobotS01Mixin,
     SzlabRobotS02Mixin,
     SzlabRobotS03Mixin,
@@ -53,21 +55,24 @@ class SzlabMixerRobotDevice(
         poll_interval: float = 1.0,
         write_done_hold_seconds: float = 0.0,
         write_readback_timeout: float = 3.0,
+        plc_gateway: Any = None,
+        plc_action_timeout: float = 300.0,
+        plc_server_wait_timeout: float = 10.0,
         *args,
         **kwargs,
     ):
-        self.plc_device_id = plc_device_id
         self.timeout = float(timeout)
         self.write_allowed_timeout = float(write_allowed_timeout)
         self.poll_interval = float(poll_interval)
         self.write_done_hold_seconds = float(write_done_hold_seconds)
         self.write_readback_timeout = float(write_readback_timeout)
-        self._plc_gateway = None
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway,
+            plc_action_timeout=plc_action_timeout,
+            plc_server_wait_timeout=plc_server_wait_timeout,
+        )
         self._last_task: dict[str, Any] = {}
-
-    @not_action
-    def set_plc_gateway(self, plc_gateway) -> None:
-        self._plc_gateway = plc_gateway
 
     @not_action
     def _write_variable(self, name: str, value: Any) -> None:

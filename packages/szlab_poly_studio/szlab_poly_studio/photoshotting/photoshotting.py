@@ -15,6 +15,7 @@ from szlab_poly_studio.photoshotting.sensors import (
     S05_RESULT,
 )
 from szlab_poly_studio.plc import wait_variable_true
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
@@ -28,7 +29,7 @@ DEFAULT_OPCUA_URL = os.environ.get(
     category=["camera"],
     description="SZLab Poly Studio S05 拍照检测工位设备",
 )
-class SzlabMixerPhotoShottingDevice:
+class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
     def __init__(
         self,
         url: str = DEFAULT_OPCUA_URL,
@@ -41,38 +42,26 @@ class SzlabMixerPhotoShottingDevice:
         plc_device_id: str = "szlab_poly_plc",
         use_plc_gateway: bool = False,
         opcua_node_id_map: dict[str, str] | None = None,
+        plc_gateway: Any = None,
+        plc_action_timeout: float = 300.0,
+        plc_server_wait_timeout: float = 10.0,
         **kwargs,
     ):
+        del username, password, csv_path, auto_connect, use_plc_gateway
+        del opcua_node_id_map, kwargs
         self.url = url
         self.timeout = timeout
         self.save_dir = save_dir
-        self.plc_device_id = plc_device_id
-        self._plc_gateway = None
-        client_kwargs: dict[str, Any] = {
-            "url": url,
-            "username": username,
-            "password": password,
-            "timeout": timeout,
-            "auto_connect": auto_connect,
-        }
-        if csv_path is not None:
-            client_kwargs["csv_path"] = csv_path
-        if opcua_node_id_map is not None:
-            client_kwargs["opcua_node_id_map"] = opcua_node_id_map
-        if use_plc_gateway:
-            self._client = None
-        else:
-            from szlab_poly_studio.plc import SZLabPolyPLCDevice
-
-            self._client = SZLabPolyPLCDevice(**client_kwargs)
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway,
+            plc_action_timeout=plc_action_timeout,
+            plc_server_wait_timeout=plc_server_wait_timeout,
+        )
         self._status = "Idle"
         self._last_photo_path = ""
         self._last_result = "UNKNOWN"
         self._last_dual_view_result: dict[str, Any] = {}
-
-    @not_action
-    def set_plc_gateway(self, plc_gateway) -> None:
-        self._plc_gateway = plc_gateway
 
     @property
     @topic_config()

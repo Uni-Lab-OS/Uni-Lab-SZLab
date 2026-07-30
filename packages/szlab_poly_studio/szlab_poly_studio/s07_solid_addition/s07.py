@@ -2,23 +2,14 @@
 
 from __future__ import annotations
 
-import json
-import threading
 import time
 from pathlib import Path
 from typing import Any
 
-try:
-    from rclpy.action import ActionClient
-    from unilabos_msgs.action import StrSingleInput
-except ModuleNotFoundError:
-    ActionClient = None
-    StrSingleInput = None
-
 from unilabos.registry.decorators import action, device, not_action
-from unilabos.resources.resource_tracker import JSON_UNILABOS_PARAM, PARAM_SAMPLE_UUIDS
 from unilabos.utils.log import logger
 
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 from szlab_poly_studio.s07_solid_addition.sensors import (
     NODE_ALLOW_PROCESS,
     NODE_COARSE_POSITION,
@@ -50,7 +41,7 @@ DEFAULT_POWDER_PARAMS_PATH = Path(__file__).resolve().parent / "s07_powder_param
     category=["workstation", "szlab"],
     description="苏州实验室 S07 固体加料工位，通过 szlab_poly_plc 转发 PLC 读写",
 )
-class SZLabS07SolidAdditionDevice:
+class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
     def __init__(
         self,
         plc_device_id: str = "szlab_poly_plc",
@@ -58,77 +49,28 @@ class SZLabS07SolidAdditionDevice:
         process_timeout: float = 300.0,
         poll_interval: float = 0.2,
         require_station_ready: bool = True,
+        plc_gateway: Any = None,
+        plc_server_wait_timeout: float = 10.0,
         *args,
         **kwargs,
     ):
-        self.plc_device_id = plc_device_id
-        self.plc_action_timeout = plc_action_timeout
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway,
+            plc_action_timeout=max(plc_action_timeout, process_timeout),
+            plc_server_wait_timeout=plc_server_wait_timeout,
+        )
         self.process_timeout = process_timeout
         self.poll_interval = poll_interval
         self.require_station_ready = require_station_ready
-        self._ros_node = None
-        self._plc_command_client: Any = None
-
-    @not_action
-    def post_init(self, ros_node) -> None:
-        if ActionClient is None or StrSingleInput is None:
-            raise RuntimeError("S07 固体加料工位需要 ROS2 rclpy 和 unilabos_msgs 才能连接 PLC action")
-        self._ros_node = ros_node
-        self._plc_command_client = ActionClient(
-            ros_node,
-            StrSingleInput,
-            f"/devices/{self.plc_device_id}/_execute_driver_command",
-            callback_group=ros_node.callback_group,
-        )
-
-    @not_action
-    def _wait_future(self, future, timeout: float, description: str):
-        done = threading.Event()
-        future.add_done_callback(lambda _future: done.set())
-        if not done.wait(timeout):
-            raise TimeoutError(f"{description} 超时 ({timeout}s)")
-        return future.result()
-
-    @not_action
-    def _call_plc_command(self, function_name: str, function_args: dict[str, Any]) -> Any:
-        if self._plc_command_client is None:
-            raise RuntimeError("szlab_poly_plc action client 尚未初始化")
-        if not self._plc_command_client.wait_for_server(timeout_sec=self.plc_action_timeout):
-            raise TimeoutError(f"等待 {self.plc_device_id} 命令服务超时")
-        goal = StrSingleInput.Goal()
-        goal.string = json.dumps(
-            {
-                "function_name": function_name,
-                "function_args": function_args,
-                JSON_UNILABOS_PARAM: {PARAM_SAMPLE_UUIDS: {}},
-            },
-            ensure_ascii=False,
-        )
-        goal_handle = self._wait_future(
-            self._plc_command_client.send_goal_async(goal),
-            self.plc_action_timeout,
-            f"发送 PLC 命令 {function_name}",
-        )
-        if not goal_handle.accepted:
-            raise RuntimeError(f"{self.plc_device_id} 拒绝执行命令: {function_name}")
-        result_wrapper = self._wait_future(
-            goal_handle.get_result_async(),
-            self.plc_action_timeout,
-            f"等待 PLC 命令 {function_name} 返回",
-        )
-        result = result_wrapper.result
-        result_info = json.loads(result.return_info or "{}")
-        if not result.success or not result_info.get("suc", False):
-            raise RuntimeError(result_info.get("error") or f"{self.plc_device_id} 命令失败: {function_name}")
-        return result_info.get("return_value")
 
     @not_action
     def _read_plc_variable(self, node_name: str) -> Any:
-        return self._call_plc_command("read_variable", {"node_name": node_name, "use_cache": False})
+        return self._plc_gateway.read_variable(node_name, use_cache=False)
 
     @not_action
     def _write_plc_variable(self, node_name: str, value: Any) -> None:
-        self._call_plc_command("write_variable", {"node_name": node_name, "value": value})
+        self._plc_gateway.write_variable(node_name, value)
 
     @not_action
     def _wait_plc_bool(self, node_name: str, expected: bool, timeout: float, description: str) -> bool:

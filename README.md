@@ -118,6 +118,9 @@ SZLab 最新前端 E2E 截图见
 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)。
 全部 13 个生产工作流的代码与 DAG 截图见
 [`docs/ALL_WORKFLOW_SCREENSHOTS.md`](docs/ALL_WORKFLOW_SCREENSHOTS.md)。
+连接远端 OPC UA 仿真服务器、启动新版前端/Bridge/Edge、运行独立握手器和排查工作流的
+完整命令见
+[`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。
 
 ## OS 测试模式
 

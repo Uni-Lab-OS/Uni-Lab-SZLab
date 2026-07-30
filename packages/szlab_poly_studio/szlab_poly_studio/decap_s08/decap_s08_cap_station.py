@@ -1,7 +1,7 @@
 """
 S08 开盖/关盖工位子设备。
 
-通过自带 OPC UA 客户端直连 PLC 变量，实现 S08 开关盖工站统一握手（新版 PLC 协议）。
+通过唯一的 ``szlab_poly_plc`` 设备读写 PLC 变量，实现 S08 开关盖工站统一握手。
 
 对外仅暴露一个工艺 Action ``process_cap``，由入参 ``operation``（open/close）与
 ``vial_type``（sample_500ml / sample_250ml / liquid_100ml）选择「S08工艺选择 / S08工艺完成」1–6。
@@ -16,7 +16,7 @@ S08 开盖/关盖工位子设备。
 
 ``S08取放料产品`` / ``S08取放料编号`` 由 workflow 写入，本驱动不读写。
 
-总原则：谁写入谁复位。初始化及启动前仅复位 UniLab 负责写入的变量；对端写入、UniLab 只读的变量
+总原则：谁写入谁复位。每次工艺启动前仅复位 UniLab 负责写入的变量；对端写入、UniLab 只读的变量
 （S08工艺完成、S08允许加工、S08原点信号、传感器等）不在启动前等待或干预其取值。
 
 握手时序（实机，一轮工艺）：
@@ -39,9 +39,7 @@ from typing import Any, Optional, Sequence
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
-from szlab_poly_studio.decap_s08.decap_s08_opcua_client import (
-    SzlabS08OpcUaClient,
-)
+from szlab_poly_studio.plc_gateway import UnifiedPLCGatewayMixin
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_S08_OPCUA_URL",
@@ -190,11 +188,6 @@ def _resolve_process_type(operation: str, vial_type: str) -> S08ProcessType:
 DEFAULT_UPLINK_COMM_PREFIX = "ns=4;s=上位机通讯"
 
 
-def _is_virtual_test_opcua_url(url: str) -> bool:
-    lowered = url.lower()
-    return "127.0.0.1" in lowered or "localhost" in lowered or ":50102" in lowered
-
-
 def _coerce_opcua_int(value: Any, *, field_name: str) -> int:
     if value is None:
         return 0
@@ -241,9 +234,9 @@ def build_opcua_node_id_map_for_uplink_comm(prefix: str = DEFAULT_UPLINK_COMM_PR
     id="szlab_s08_cap_station",
     display_name="S08 开盖工位",
     category=["workstation", "szlab"],
-    description="苏州实验室 S08 开盖/关盖工位（直连 OPC UA）",
+    description="苏州实验室 S08 开盖/关盖工位（通过 szlab_poly_plc 统一通信）",
 )
-class SZLabS08CapStationDevice:
+class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
     def __init__(
         self,
         url: str = DEFAULT_OPCUA_URL,
@@ -254,7 +247,7 @@ class SZLabS08CapStationDevice:
         require_station_ready: bool = True,
         require_station_status: bool = False,
         validate_cap_constraints: bool = False,
-        opcua_client: SzlabS08OpcUaClient | None = None,
+        opcua_client: Any | None = None,
         opcua_browse_depth: int = 8,
         opcua_browse_limit: int = 5000,
         opcua_node_id_map: dict[str, str] | None = None,
@@ -262,9 +255,15 @@ class SZLabS08CapStationDevice:
         opcua_allow_recursive_browse: bool = False,
         opcua_object_name: str = "VirtualS08",
         auto_connect: bool = True,
+        plc_device_id: str = "szlab_poly_plc",
+        plc_gateway: Any = None,
+        plc_action_timeout: float = 300.0,
+        plc_server_wait_timeout: float = 10.0,
         **kwargs,
     ):
-        del kwargs
+        del username, password, opcua_browse_depth, opcua_browse_limit
+        del opcua_node_id_map, opcua_uplink_comm_prefix
+        del opcua_allow_recursive_browse, opcua_object_name, auto_connect, kwargs
         self.url = url
         self.timeout = timeout
         self.poll_interval = poll_interval
@@ -272,28 +271,13 @@ class SZLabS08CapStationDevice:
         # 工站状态字 / 瓶盖业务约束：默认关闭；暂不从 device graph 或 workflow UI 透传。
         self.require_station_status = False
         self.validate_cap_constraints = False
-        resolved_node_id_map = opcua_node_id_map
-        if resolved_node_id_map is None:
-            uplink_prefix = opcua_uplink_comm_prefix
-            if uplink_prefix is None and not _is_virtual_test_opcua_url(url):
-                uplink_prefix = DEFAULT_UPLINK_COMM_PREFIX
-                logger.info(f"检测到非虚拟 OPC UA 地址，自动使用上位机通讯 NodeId 映射: {DEFAULT_UPLINK_COMM_PREFIX}")
-            if uplink_prefix:
-                resolved_node_id_map = build_opcua_node_id_map_for_uplink_comm(uplink_prefix)
-        self._client = opcua_client or SzlabS08OpcUaClient(
-            url=url,
-            username=username,
-            password=password,
-            browse_depth=opcua_browse_depth,
-            browse_limit=opcua_browse_limit,
-            node_id_map=resolved_node_id_map,
-            allow_recursive_browse=opcua_allow_recursive_browse,
-            object_name=opcua_object_name,
-            auto_connect=auto_connect,
+        self._configure_plc_gateway(
+            plc_device_id=plc_device_id,
+            plc_gateway=plc_gateway if plc_gateway is not None else opcua_client,
+            plc_action_timeout=plc_action_timeout,
+            plc_server_wait_timeout=plc_server_wait_timeout,
         )
         self._last_status: dict[str, Any] = {}
-        if auto_connect or opcua_client is not None:
-            self._init_unilab_written_state()
 
     @not_action
     def get_opc_variable_metadata(self, variable_name: str) -> tuple[str, str | None]:
@@ -419,13 +403,10 @@ class SZLabS08CapStationDevice:
         try:
             self._reset_unilab_written_params()
         except Exception as exc:
-            logger.warning(f"复位握手参数失败，尝试 OPC 重连后重试: {_format_driver_error(exc)}")
+            logger.warning(f"复位握手参数失败，尝试 PLC 通信重试: {_format_driver_error(exc)}")
             if hasattr(self._client, "reconnect"):
                 self._client.reconnect()
             self._reset_unilab_written_params()
-
-        if _is_virtual_test_opcua_url(self.url):
-            return True
 
         var_ref = self._format_opc_variable_ref(NODE_PROCESS_COMPLETE)
         return self._wait_process_complete(
@@ -457,15 +438,6 @@ class SZLabS08CapStationDevice:
         }
         self._last_status = status
         return status
-
-    @not_action
-    def _init_unilab_written_state(self) -> None:
-        """连接后复位本侧握手参数，不写入对端负责的变量（工艺完成、允许加工、原点信号等）。"""
-        try:
-            self._reset_unilab_written_params()
-            logger.info("S08 本侧握手参数已在连接时复位")
-        except Exception as exc:
-            logger.warning(f"S08 连接时复位本侧参数失败: {exc}")
 
     @not_action
     def _read_sample_id_from_plc(self, slot: int) -> list[int]:
