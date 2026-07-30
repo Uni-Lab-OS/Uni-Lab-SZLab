@@ -33,7 +33,7 @@ def _container(
 def beaker_500ml(name: str = "SZLabBeaker500mL") -> Container:
     return _container(
         name=name,
-        diameter_mm=90.0,
+        diameter_mm=86.0,
         height_mm=120.0,
         max_volume_ul=500_000.0,
         category="beaker",
@@ -83,7 +83,7 @@ def liquid_reagent_bottle_100ml(
 ) -> Container:
     return _container(
         name=name,
-        diameter_mm=45.0,
+        diameter_mm=56.0,
         height_mm=105.0,
         max_volume_ul=100_000.0,
         category="liquid_reagent",
@@ -92,17 +92,37 @@ def liquid_reagent_bottle_100ml(
 
 @resource(
     id="szlab_powder_container",
-    displayname="SZLab 固体粉罐",
+    displayname="SZLab 注粉瓶",
     category=["szlab_poly_studio", "container", "powder_reagent"],
-    description="S07 固体投料工位使用的二维码粉罐。",
+    description="S07 固体投料工位使用的二维码注粉瓶（锥形料斗）。",
 )
 def powder_container(name: str = "SZLabPowderContainer") -> Container:
+    """尺寸取自 CAD 注粉瓶-20260508.STL：最大 Ø70，全长 190。"""
+
     return _container(
         name=name,
-        diameter_mm=78.0,
-        height_mm=115.0,
+        diameter_mm=70.0,
+        height_mm=190.0,
         max_volume_ul=300_000.0,
         category="powder_reagent",
+    )
+
+
+@resource(
+    id="szlab_tip_box",
+    displayname="SZLab TIP 盒组件",
+    category=["szlab_poly_studio", "labware", "tip_box"],
+    description="S02 枪头仓中的 TIP 盒组件，孔板 4 列 × 6 行共 24 支枪头。",
+)
+def tip_box(name: str = "SZLabTipBox") -> Resource:
+    """尺寸取自 DXY260502-02.02-00 CAD：86 × 128 × 136，孔板顶面 113。"""
+
+    return Resource(
+        name=name,
+        size_x=86.0,
+        size_y=128.0,
+        size_z=136.0,
+        category="tip_box",
     )
 
 

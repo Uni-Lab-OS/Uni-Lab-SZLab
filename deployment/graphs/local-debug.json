@@ -7,11 +7,9 @@
         "s1_loading_buffer",
         "s2_tip_warehouse",
         "s3_unused_beaker",
-        "s3_unused_vial",
         "powder_container_warehouse",
         "s10_liquid_reagent",
-        "s11_used_beaker",
-        "s11_used_vial"
+        "s11_used_beaker"
       ],
       "parent": null,
       "type": "deck",
@@ -54,17 +52,6 @@
       "data": {}
     },
     {
-      "id": "s3_unused_vial",
-      "name": "S3 未使用样品瓶仓",
-      "children": [],
-      "parent": "szlab_poly_deck",
-      "type": "warehouse",
-      "class": "szlab_poly_s3_unused_sample_vial_warehouse",
-      "position": {"x": 500, "y": 600, "z": 0},
-      "config": {},
-      "data": {}
-    },
-    {
       "id": "powder_container_warehouse",
       "name": "固体粉桶仓占位",
       "children": [],
@@ -94,17 +81,6 @@
       "type": "warehouse",
       "class": "szlab_poly_s11_used_beaker_warehouse",
       "position": {"x": 1100, "y": 100, "z": 0},
-      "config": {},
-      "data": {}
-    },
-    {
-      "id": "s11_used_vial",
-      "name": "S11 使用样品瓶成品仓",
-      "children": [],
-      "parent": "szlab_poly_deck",
-      "type": "warehouse",
-      "class": "szlab_poly_s11_used_sample_vial_warehouse",
-      "position": {"x": 1100, "y": 600, "z": 0},
       "config": {},
       "data": {}
     },

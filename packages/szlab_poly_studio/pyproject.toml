@@ -16,6 +16,9 @@ dependencies = [
 [project.optional-dependencies]
 runtime = ["unilabos>=0.11.3"]
 
+[project.entry-points."unilabos.model_bundles"]
+szlab-poly-studio = "szlab_poly_studio.model_bundle:get_model_bundle"
+
 [tool.setuptools.packages.find]
 include = ["szlab_poly_studio*"]
 
@@ -25,6 +28,8 @@ szlab_poly_studio = [
   "*.json",
   "profile/*.yaml",
   "workflows/*.py",
+  "model_manifest.yaml",
+  "shape_manifest.yaml",
   "magnetic_stirring/*.csv",
   "photoshotting/*.csv",
   "pump/*.csv",
@@ -32,4 +37,29 @@ szlab_poly_studio = [
   "s07_solid_addition/*.csv",
   "s07_solid_addition/*.json",
   "s09_pipetting_station/*.csv",
+  "devices/**/*.md",
+  "devices/**/*.yaml",
+  "devices/**/*.yml",
+  "devices/**/*.xacro",
+  "devices/**/*.urdf",
+  "devices/**/*.stl",
+  "devices/**/*.dae",
+  "devices/**/*.obj",
+  "devices/**/*.mtl",
+  "devices/**/*.gltf",
+  "devices/**/*.glb",
+  "devices/**/*.png",
+  "devices/**/*.jpg",
+  "devices/**/*.jpeg",
+  "resources/**/*.md",
+  "resources/**/*.yaml",
+  "resources/**/*.yml",
+  "resources/**/*.xacro",
+  "resources/**/*.urdf",
+  "resources/**/*.stl",
+  "resources/**/*.gltf",
+  "resources/**/*.glb",
+  "resources/**/*.png",
+  "resources/**/*.jpg",
+  "resources/**/*.jpeg",
 ]

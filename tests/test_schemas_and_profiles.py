@@ -29,6 +29,127 @@ def test_device_specs_and_profiles_match_current_template_schemas(repo_root: Pat
         profile_validator.validate(profile)
 
 
+def test_shape_manifest_matches_schema_and_declares_every_station(
+    repo_root: Path,
+) -> None:
+    schema = json.loads(
+        (repo_root / "schemas" / "shape-manifest-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    manifest = _read_yaml(
+        repo_root
+        / "packages"
+        / "szlab_poly_studio"
+        / "szlab_poly_studio"
+        / "shape_manifest.yaml"
+    )
+    Draft202012Validator(schema).validate(manifest)
+
+    shapes_by_id = {shape["id"]: shape for shape in manifest["shapes"]}
+    # 前端不再内置这些外形，缺一个就会退回实心方盒
+    assert {
+        "carousel_feeder",
+        "gantry_pump",
+        "stirrer_rack",
+        "vision_cell",
+        "rail_robot",
+        "beaker_stack",
+        "reagent_stack",
+        "powder_stack",
+        "tip_stack",
+        "tip_box",
+        "powder_container",
+    } <= set(shapes_by_id)
+
+    # 有实测占位的设备必须带 envelope，导出脚本拿它当 size
+    for shape_id in ("carousel_feeder", "gantry_pump", "stirrer_rack", "vision_cell"):
+        assert len(shapes_by_id[shape_id]["envelope"]) == 3
+
+    # 注粉瓶的 category 同时含 powder 与 reagent，必须赢过通用试剂瓶
+    assert shapes_by_id["powder_container"]["priority"] > 0
+
+
+def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> None:
+    """图里出现的每个 category 都要能查到外形，否则前端只会画个方盒。
+
+    查表规则与前端 ``resolveShapeSpec`` 一致：精确 category 胜过子串匹配，
+    同为子串匹配时先比 priority、再比 token 长度。
+    """
+
+    from unilabos.app.local_bridge.material_shapes import (
+        CORE_SHAPE_MANIFEST,
+        _load_manifest_text,
+        normalize_category,
+    )
+
+    shapes = _load_manifest_text(
+        CORE_SHAPE_MANIFEST.read_text(encoding="utf-8"),
+        fallback_bundle_id="unilabos-core",
+    ).shapes
+    shapes += _load_manifest_text(
+        (
+            repo_root
+            / "packages"
+            / "szlab_poly_studio"
+            / "szlab_poly_studio"
+            / "shape_manifest.yaml"
+        ).read_text(encoding="utf-8"),
+        fallback_bundle_id="szlab-poly-studio",
+    ).shapes
+
+    def resolve(category: str) -> str | None:
+        normalized = normalize_category(category)
+        best: tuple[int, str] | None = None
+        for shape in shapes:
+            if normalized in shape.categories:
+                score = 1 << 40
+            else:
+                matches = [
+                    shape.priority * 1000 + len(token)
+                    for token in shape.category_tokens
+                    if token and token in normalized
+                ]
+                if not matches:
+                    continue
+                score = max(matches)
+            if best is None or score > best[0]:
+                best = (score, shape.id)
+        return best[1] if best else None
+
+    graph = json.loads(
+        (repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    unresolved = sorted(
+        {
+            category
+            for node in graph["nodes"]
+            if (category := node.get("config", {}).get("category"))
+            and resolve(category) is None
+        }
+    )
+    assert unresolved == []
+
+    # 只有主机/PLC 这类没有物理外形的节点可以不带 category
+    assert {
+        node["id"] for node in graph["nodes"] if not node.get("config", {}).get("category")
+    } == {
+        "szlab_poly_deck",
+        "szlab_poly_plc",
+        "s1_workstation",
+        "szlab_s08_cap_station",
+        "szlab_mixer_pipetting_station",
+    }
+
+    # 注粉瓶不能被通用试剂瓶抢走，烧杯/样品瓶各走各的轮廓
+    assert resolve("powder_reagent") == "powder_container"
+    assert resolve("liquid_reagent") == "capped_bottle"
+    assert resolve("beaker") == "beaker"
+    assert resolve("carousel_feeder") == "carousel_feeder"
+
+
 def test_packaged_profile_copies_are_in_sync(repo_root: Path) -> None:
     for package_name in PACKAGES:
         source_spec = _read_yaml(repo_root / "specs" / f"{package_name}.yaml")

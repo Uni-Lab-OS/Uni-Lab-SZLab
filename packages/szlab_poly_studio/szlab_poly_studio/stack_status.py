@@ -28,9 +28,11 @@ STACK_DEFINITIONS: Dict[str, Dict[str, Any]] = {
         "managed_resource": "physical_only",
         "content_type": ["beaker"],
     },
+    # 样品瓶与烧杯共用同一台堆栈：传感器组的 "层-列" 对应载架的 A 行（样品瓶）
+    # 与 B 行（烧杯），所以两个组都指向烧杯堆栈这一个仓。
     "s3_unused_sample_vial": {
         "display_name": "S3未使用样品瓶仓",
-        "warehouse_name": "S3未使用样品瓶仓",
+        "warehouse_name": "S3未使用烧杯仓",
         "managed_resource": "physical_only",
         "content_type": ["sample_vial"],
     },
@@ -42,7 +44,7 @@ STACK_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
     "s11_used_sample_vial": {
         "display_name": "S11使用样品瓶成品仓",
-        "warehouse_name": "S11使用样品瓶成品仓",
+        "warehouse_name": "S11使用烧杯成品仓",
         "managed_resource": "physical_only",
         "content_type": ["sample_vial"],
     },

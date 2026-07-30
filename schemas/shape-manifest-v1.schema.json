@@ -1,0 +1,336 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unilab.dev/schemas/shape-manifest-v1.schema.json",
+  "title": "Uni-Lab 2.5D shape manifest v1",
+  "description": "设备包声明自己在 2.5D 视图里的外形。前端只是图元解释器，不认识任何设备名：这里列出的图元按数组顺序由后向前绘制，样式只能取通用词表里的 token。坐标默认单位 mm，原点在占位左下角底面；units=ratio 时 x/y 按实例宽/深、z 按高、直径按 min(宽,深) 归一。",
+  "type": "object",
+  "required": ["schema_version", "bundle", "shapes"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "bundle": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "display_name": { "type": "string" },
+        "source_namespace": { "type": "string" }
+      }
+    },
+    "shapes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/shape" }
+    }
+  },
+  "$defs": {
+    "styleToken": {
+      "description": "通用外观词表。故意不含设备名，这样前端 CSS 不需要知道是哪台机器。",
+      "enum": [
+        "plain",
+        "frame",
+        "plate",
+        "board",
+        "body",
+        "column",
+        "module",
+        "shell",
+        "beam",
+        "shaft",
+        "probe",
+        "deck",
+        "gear",
+        "motor",
+        "foot",
+        "glass",
+        "cap",
+        "hole",
+        "bore",
+        "port",
+        "seat",
+        "pad",
+        "rim",
+        "hairline"
+      ]
+    },
+    "units": { "enum": ["mm", "ratio"] },
+    "point2": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    "point3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    },
+    "span": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "number" }
+    },
+    "ring": {
+      "type": "object",
+      "required": ["z", "r"],
+      "additionalProperties": false,
+      "properties": {
+        "z": { "type": "number", "minimum": 0, "maximum": 1 },
+        "r": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "shape": {
+      "type": "object",
+      "required": ["id", "applies_to", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "display_name": { "type": "string" },
+        "applies_to": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "category": {
+                "description": "精确匹配节点 config.category（_ 与 - 等价、大小写不敏感）。精确匹配优先于 category_contains。",
+                "type": "string",
+                "minLength": 1
+              },
+              "category_contains": {
+                "description": "子串匹配，用于覆盖一整类物料（如所有含 beaker 的 category）。",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "priority": {
+          "description": "多条 category_contains 同时命中时的取舍，大者胜；例如 powder_reagent 要走注粉瓶而不是试剂瓶。",
+          "type": "integer"
+        },
+        "envelope": {
+          "description": "设计占位 (宽 X, 深 Y, 高 Z)，mm。导出脚本用它当设备 size，前端只用来核对。",
+          "$ref": "#/$defs/point3"
+        },
+        "units": { "$ref": "#/$defs/units" },
+        "shadow": {
+          "description": "落在台面上的投影形状。round 取第一个回转体的底圈。",
+          "enum": ["box", "round", "none"]
+        },
+        "sort": {
+          "description": "同层内的排序基准。敞口层架要用 rear-edge，才能先画柜体后画柜里的东西。",
+          "enum": ["center", "rear-edge"]
+        },
+        "note": { "type": "string" },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/part" }
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": [
+            "box",
+            "slab",
+            "cylinder",
+            "lathe",
+            "disc",
+            "rect",
+            "edge",
+            "grid",
+            "sites"
+          ]
+        },
+        "style": { "$ref": "#/$defs/styleToken" },
+        "units": { "$ref": "#/$defs/units" },
+        "note": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "box" } } },
+          "then": {
+            "required": ["from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "from": { "$ref": "#/$defs/point3" },
+              "to": { "$ref": "#/$defs/point3" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "slab" } } },
+          "then": {
+            "required": ["z"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "z": { "$ref": "#/$defs/span" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "cylinder" } } },
+          "then": {
+            "required": ["center", "d", "z"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "center": { "$ref": "#/$defs/point2" },
+              "d": { "type": "number", "exclusiveMinimum": 0 },
+              "z": { "$ref": "#/$defs/span" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "lathe" } } },
+          "then": {
+            "required": ["center", "d", "z", "rings"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "center": { "$ref": "#/$defs/point2" },
+              "d": { "type": "number", "exclusiveMinimum": 0 },
+              "z": { "$ref": "#/$defs/span" },
+              "rings": {
+                "description": "回转轮廓，z/r 都是本图元 z 区间与半径内的 0..1 归一值，自下而上。",
+                "type": "array",
+                "minItems": 2,
+                "items": { "$ref": "#/$defs/ring" }
+              },
+              "cap": {
+                "description": "顶部旋盖段，需同时包含在 rings 里；有 cap 时才画盖子竖纹。",
+                "type": "array",
+                "minItems": 2,
+                "items": { "$ref": "#/$defs/ring" }
+              },
+              "ribs": { "type": "integer", "minimum": 0 },
+              "spout": { "type": "boolean" },
+              "mouth": { "type": "boolean" },
+              "rim": { "type": "boolean" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "disc" } } },
+          "then": {
+            "required": ["center", "d", "z"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "center": { "$ref": "#/$defs/point2" },
+              "d": { "type": "number", "exclusiveMinimum": 0 },
+              "z": { "type": "number" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "rect" } } },
+          "then": {
+            "required": ["from", "to", "z"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "from": { "$ref": "#/$defs/point2" },
+              "to": { "$ref": "#/$defs/point2" },
+              "z": { "type": "number" },
+              "radius": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "edge" } } },
+          "then": {
+            "required": ["from", "to"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "from": { "$ref": "#/$defs/point3" },
+              "to": { "$ref": "#/$defs/point3" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "grid" } } },
+          "then": {
+            "required": ["count", "pitch", "part"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "count": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "integer", "minimum": 1 }
+              },
+              "pitch": { "$ref": "#/$defs/point2" },
+              "part": { "$ref": "#/$defs/part" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "sites" } } },
+          "then": {
+            "required": ["generator"],
+            "additionalProperties": false,
+            "properties": {
+              "type": true,
+              "style": true,
+              "units": true,
+              "note": true,
+              "generator": {
+                "description": "由实例位点推导的复合图元：敞口层架、堆栈层板、孔板孔位、位点标记。",
+                "enum": [
+                  "open-rack",
+                  "stack-shelves",
+                  "site-holes",
+                  "site-markers"
+                ]
+              },
+              "board_thickness": { "type": "number", "exclusiveMinimum": 0 },
+              "shelf_thickness": { "type": "number", "exclusiveMinimum": 0 },
+              "plate_top_z": { "type": "number" },
+              "collar_top_z": { "type": "number" }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

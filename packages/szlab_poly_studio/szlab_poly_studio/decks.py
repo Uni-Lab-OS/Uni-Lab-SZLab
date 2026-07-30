@@ -9,10 +9,8 @@ from szlab_poly_studio.warehouses import (
     s1_loading_buffer_warehouse,
     s2_tip_placeholder_warehouse,
     s3_unused_beaker_warehouse,
-    s3_unused_sample_vial_warehouse,
     s10_liquid_reagent_placeholder_warehouse,
     s11_used_beaker_warehouse,
-    s11_used_sample_vial_warehouse,
 )
 
 
@@ -42,20 +40,16 @@ class SZLabPolyStudioDeck(Deck):
             "S1上料过渡仓": s1_loading_buffer_warehouse("S1上料过渡仓"),
             "S2枪头仓占位": s2_tip_placeholder_warehouse("S2枪头仓占位"),
             "S3未使用烧杯仓": s3_unused_beaker_warehouse("S3未使用烧杯仓"),
-            "S3未使用样品瓶仓": s3_unused_sample_vial_warehouse("S3未使用样品瓶仓"),
             "S10液体试剂瓶仓占位": s10_liquid_reagent_placeholder_warehouse("S10液体试剂瓶仓占位"),
             "S11使用烧杯成品仓": s11_used_beaker_warehouse("S11使用烧杯成品仓"),
-            "S11使用样品瓶成品仓": s11_used_sample_vial_warehouse("S11使用样品瓶成品仓"),
             "固体粉桶仓占位": powder_container_placeholder_warehouse("固体粉桶仓占位"),
         }
         self.warehouse_locations = {
             "S1上料过渡仓": Coordinate(100.0, 100.0, 0.0),
             "S2枪头仓占位": Coordinate(100.0, 450.0, 0.0),
             "S3未使用烧杯仓": Coordinate(500.0, 100.0, 0.0),
-            "S3未使用样品瓶仓": Coordinate(500.0, 600.0, 0.0),
             "S10液体试剂瓶仓占位": Coordinate(1800.0, 100.0, 0.0),
             "S11使用烧杯成品仓": Coordinate(1100.0, 100.0, 0.0),
-            "S11使用样品瓶成品仓": Coordinate(1100.0, 600.0, 0.0),
             "固体粉桶仓占位": Coordinate(1800.0, 700.0, 0.0),
         }
 

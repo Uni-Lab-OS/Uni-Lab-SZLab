@@ -14,23 +14,21 @@ from szlab_poly_studio.warehouses import (
     s1_loading_buffer_warehouse,
     s2_tip_placeholder_warehouse,
     s3_unused_beaker_warehouse,
-    s3_unused_sample_vial_warehouse,
     s10_liquid_reagent_placeholder_warehouse,
     s11_used_beaker_warehouse,
-    s11_used_sample_vial_warehouse,
 )
 
 
 def test_warehouse_site_counts_and_keys() -> None:
     warehouses = {
-        s1_loading_buffer_warehouse: 4,
+        # tip 盒上料工装：2 层 × 3 个 TIP 盒
+        s1_loading_buffer_warehouse: 6,
         s2_tip_placeholder_warehouse: 6,
-        s3_unused_beaker_warehouse: 18,
-        s3_unused_sample_vial_warehouse: 18,
+        # 烧杯堆栈：3 层 × 6 列 × (样品瓶 + 烧杯)
+        s3_unused_beaker_warehouse: 36,
         powder_container_placeholder_warehouse: 6,
         s10_liquid_reagent_placeholder_warehouse: 20,
-        s11_used_beaker_warehouse: 18,
-        s11_used_sample_vial_warehouse: 18,
+        s11_used_beaker_warehouse: 36,
     }
     for factory, expected in warehouses.items():
         warehouse = factory(factory.__name__)
@@ -39,17 +37,15 @@ def test_warehouse_site_counts_and_keys() -> None:
         assert len(warehouse._ordering) == expected
 
 
-def test_deck_contains_all_eight_warehouses() -> None:
+def test_deck_contains_all_warehouses() -> None:
     deck = SZLabPolyStudioDeck()
-    assert len(deck.children) == 8
+    assert len(deck.children) == 6
     assert set(deck.warehouses) == {
         "S1上料过渡仓",
         "S2枪头仓占位",
         "S3未使用烧杯仓",
-        "S3未使用样品瓶仓",
         "S10液体试剂瓶仓占位",
         "S11使用烧杯成品仓",
-        "S11使用样品瓶成品仓",
         "固体粉桶仓占位",
     }
 
