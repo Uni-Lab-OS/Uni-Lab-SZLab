@@ -49,11 +49,23 @@ def test_package_specific_debug_graphs_are_fully_separated(repo_root: Path) -> N
     combined_ids = {node["id"] for node in combined["nodes"]}
     szlab_ids = {node["id"] for node in szlab["nodes"]}
     ai4c_ids = {node["id"] for node in ai4c["nodes"]}
+    # 包内图额外摆上了台面上的物料实例（烧杯/样品瓶/试剂瓶/TIP 盒），
+    # 合并图只列设备与仓位
+    material_ids = szlab_ids - combined_ids
+    station_ids = szlab_ids - material_ids
+    # 样品瓶已并入烧杯堆栈的 A 行，那个独立的调试瓶从包内图删掉
+    retired_ids = combined_ids - szlab_ids - ai4c_ids
 
-    assert len(szlab_ids) == 22
+    assert len(station_ids) == 19
     assert len(ai4c_ids) == 2
+    assert retired_ids == {"debug_sample_vial_250ml"}
     assert szlab_ids.isdisjoint(ai4c_ids)
-    assert szlab_ids | ai4c_ids == combined_ids
+    assert station_ids | ai4c_ids | retired_ids == combined_ids
+    assert all(
+        node["type"] == "container"
+        for node in szlab["nodes"]
+        if node["id"] in material_ids
+    )
     assert all(not node["class"].startswith("AI4C") for node in szlab["nodes"])
     assert all(node["class"].startswith("AI4C") for node in ai4c["nodes"])
     assert szlab["links"] == ai4c["links"] == []

@@ -93,6 +93,8 @@ def test_graphs_configure_only_the_main_plc_as_an_opc_client(
             "szlab_plc_0730.csv"
         )
         for device_class in PLC_DEVICE_CLASSES:
-            assert devices[device_class]["config"] == {
-                "plc_device_id": "szlab_poly_plc"
-            }
+            config = devices[device_class]["config"]
+            assert config["plc_device_id"] == "szlab_poly_plc"
+            assert "url" not in config
+            assert "csv_path" not in config
+            assert "auto_connect" not in config

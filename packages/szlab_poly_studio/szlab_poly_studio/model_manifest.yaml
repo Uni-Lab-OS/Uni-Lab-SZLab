@@ -1,0 +1,216 @@
+schema_version: 1
+
+bundle:
+  id: szlab-poly-studio
+  display_name: SZLab 聚合物工作站模型包
+  source_namespace: szlab
+
+# Mesh/XACRO/GLB files are not checked in yet. Place runtime assets under
+# devices/<key>/ and resources/<key>/ relative to this package, then reinstall
+# the wheel. MaterialModelRegistry skips missing entries and activates them
+# once the files exist.
+
+models:
+  - key: szlab_poly_studio
+    display_name: SZLab 聚合物工作站整机
+    applies_to:
+      - kind: resource
+        class: szlab_poly_studio_deck
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_poly_studio/workcell.glb
+      kinematics:
+        format: xacro
+        entry: devices/szlab_poly_studio/macro_device.xacro
+        macro: szlab_poly_studio
+    coordinates:
+      units: meter
+      up_axis: z
+
+  - key: szlab_mixer_robot
+    display_name: SZLab 搬运机械臂
+    applies_to:
+      - kind: device
+        class: szlab_mixer_robot
+    representations:
+      web:
+        format: xacro
+        entry: devices/szlab_mixer_robot/macro_device.xacro
+        macro: szlab_mixer_robot
+      kinematics:
+        format: xacro
+        entry: devices/szlab_mixer_robot/macro_device.xacro
+        macro: szlab_mixer_robot
+    coordinates:
+      units: meter
+      up_axis: z
+
+  - key: szlab_mixer_stirrer
+    display_name: SZLab 磁力搅拌工位
+    applies_to:
+      - kind: device
+        class: szlab_mixer_stirrer
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_mixer_stirrer/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_mixer_photoshotting
+    display_name: SZLab 拍照检测工位
+    applies_to:
+      - kind: device
+        class: szlab_mixer_photoshotting
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_mixer_photoshotting/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_mixer_pump
+    display_name: SZLab 注射泵工位
+    applies_to:
+      - kind: device
+        class: szlab_mixer_pump
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_mixer_pump/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_s07_solid_addition
+    display_name: SZLab 固体加料工位
+    applies_to:
+      - kind: device
+        class: szlab_s07_solid_addition
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_s07_solid_addition/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_s08_cap_station
+    display_name: SZLab 开关盖工位
+    applies_to:
+      - kind: device
+        class: szlab_s08_cap_station
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_s08_cap_station/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_mixer_pipetting_station
+    display_name: SZLab 移液站
+    applies_to:
+      - kind: device
+        class: szlab_mixer_pipetting_station
+    representations:
+      web:
+        format: gltf
+        entry: devices/szlab_mixer_pipetting_station/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: s1_workstation
+    display_name: SZLab S1 连续流工作站
+    applies_to:
+      - kind: device
+        class: s1_workstation
+    representations:
+      web:
+        format: gltf
+        entry: devices/s1_workstation/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_beaker_500ml
+    display_name: SZLab 500 mL 烧杯
+    applies_to:
+      - kind: resource
+        class: szlab_beaker_500ml
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_beaker_500ml/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_sample_vial_250ml
+    display_name: SZLab 250 mL 样品瓶
+    applies_to:
+      - kind: resource
+        class: szlab_sample_vial_250ml
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_sample_vial_250ml/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_sample_vial_500ml
+    display_name: SZLab 500 mL 样品瓶
+    applies_to:
+      - kind: resource
+        class: szlab_sample_vial_500ml
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_sample_vial_500ml/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_liquid_reagent_bottle_100ml
+    display_name: SZLab 100 mL 液体试剂瓶
+    applies_to:
+      - kind: resource
+        class: szlab_liquid_reagent_bottle_100ml
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_liquid_reagent_bottle_100ml/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_powder_container
+    display_name: SZLab 固体粉罐
+    applies_to:
+      - kind: resource
+        class: szlab_powder_container
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_powder_container/model.glb
+    coordinates:
+      units: meter
+      up_axis: y
+
+  - key: szlab_pipette_tip
+    display_name: SZLab 移液枪头
+    applies_to:
+      - kind: resource
+        class: szlab_pipette_tip
+    representations:
+      web:
+        format: gltf
+        entry: resources/szlab_pipette_tip/model.glb
+    coordinates:
+      units: meter
+      up_axis: y

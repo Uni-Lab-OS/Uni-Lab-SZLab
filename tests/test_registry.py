@@ -23,15 +23,14 @@ SZLAB_RESOURCES = {
     "szlab_poly_powder_container_placeholder_warehouse",
     "szlab_poly_s10_liquid_reagent_placeholder_warehouse",
     "szlab_poly_s11_used_beaker_warehouse",
-    "szlab_poly_s11_used_sample_vial_warehouse",
     "szlab_poly_s1_loading_buffer_warehouse",
     "szlab_poly_s2_tip_placeholder_warehouse",
     "szlab_poly_s3_unused_beaker_warehouse",
-    "szlab_poly_s3_unused_sample_vial_warehouse",
     "szlab_poly_studio_deck",
     "szlab_powder_container",
     "szlab_sample_vial_250ml",
     "szlab_sample_vial_500ml",
+    "szlab_tip_box",
 }
 
 
