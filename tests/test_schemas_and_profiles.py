@@ -58,6 +58,9 @@ def test_shape_manifest_matches_schema_and_declares_every_station(
         "reagent_stack",
         "powder_stack",
         "tip_stack",
+        "beaker",
+        "capped_reagent_bottle",
+        "capped_sample_vial",
         "tip_box",
         "powder_container",
     } <= set(shapes_by_id)
@@ -71,50 +74,41 @@ def test_shape_manifest_matches_schema_and_declares_every_station(
 
 
 def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> None:
-    """图里出现的每个 category 都要能查到外形，否则前端只会画个方盒。
+    """SZLab 自有 category 必须由设备包声明，不依赖前端硬编码。
 
     查表规则与前端 ``resolveShapeSpec`` 一致：精确 category 胜过子串匹配，
     同为子串匹配时先比 priority、再比 token 长度。
     """
 
-    from unilabos.app.local_bridge.material_shapes import (
-        CORE_SHAPE_MANIFEST,
-        _load_manifest_text,
-        normalize_category,
-    )
+    from szlab_poly_studio.shape_library import material_shape_items
 
-    shapes = _load_manifest_text(
-        CORE_SHAPE_MANIFEST.read_text(encoding="utf-8"),
-        fallback_bundle_id="unilabos-core",
-    ).shapes
-    shapes += _load_manifest_text(
-        (
-            repo_root
-            / "packages"
-            / "szlab_poly_studio"
-            / "szlab_poly_studio"
-            / "shape_manifest.yaml"
-        ).read_text(encoding="utf-8"),
-        fallback_bundle_id="szlab-poly-studio",
-    ).shapes
+    shapes = material_shape_items()
 
     def resolve(category: str) -> str | None:
-        normalized = normalize_category(category)
+        normalized = _normalize_category(category)
         best: tuple[int, str] | None = None
         for shape in shapes:
-            if normalized in shape.categories:
+            categories = {
+                _normalize_category(value)
+                for value in shape["categories"]
+            }
+            category_tokens = {
+                _normalize_category(value)
+                for value in shape["categoryTokens"]
+            }
+            if normalized in categories:
                 score = 1 << 40
             else:
                 matches = [
-                    shape.priority * 1000 + len(token)
-                    for token in shape.category_tokens
+                    int(shape.get("priority", 0)) * 1000 + len(token)
+                    for token in category_tokens
                     if token and token in normalized
                 ]
                 if not matches:
                     continue
                 score = max(matches)
             if best is None or score > best[0]:
-                best = (score, shape.id)
+                best = (score, str(shape["id"]))
         return best[1] if best else None
 
     graph = json.loads(
@@ -122,7 +116,7 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
             encoding="utf-8"
         )
     )
-    unresolved = sorted(
+    unresolved_szlab_categories = sorted(
         {
             category
             for node in graph["nodes"]
@@ -130,7 +124,7 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
             and resolve(category) is None
         }
     )
-    assert unresolved == []
+    assert unresolved_szlab_categories == []
 
     # 只有主机/PLC 这类没有物理外形的节点可以不带 category
     assert {
@@ -143,11 +137,31 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
         "szlab_mixer_pipetting_station",
     }
 
-    # 注粉瓶不能被通用试剂瓶抢走，烧杯/样品瓶各走各的轮廓
+    # 注粉瓶不能被通用试剂瓶抢走；常见器皿也由当前设备包声明，离线运行不依赖 OS。
     assert resolve("powder_reagent") == "powder_container"
-    assert resolve("liquid_reagent") == "capped_bottle"
-    assert resolve("beaker") == "beaker"
     assert resolve("carousel_feeder") == "carousel_feeder"
+    assert resolve("beaker") == "beaker"
+    assert resolve("liquid_reagent") == "capped_reagent_bottle"
+    assert resolve("sample_vial") == "capped_sample_vial"
+
+
+def test_shape_library_matches_frontend_wire_contract() -> None:
+    from szlab_poly_studio.shape_library import material_shape_items
+
+    shapes = material_shape_items()
+    shapes_by_id = {shape["id"]: shape for shape in shapes}
+
+    assert len(shapes) == 14
+    assert shapes_by_id["stirrer_rack"]["bundle"] == "szlab-poly-studio"
+    assert shapes_by_id["stirrer_rack"]["categories"] == ["stirrer_rack"]
+    assert shapes_by_id["stirrer_rack"]["categoryTokens"] == []
+    assert shapes_by_id["stirrer_rack"]["displayName"] == "S04 磁搅（磁搅模块）"
+    assert shapes_by_id["powder_container"]["priority"] == 10
+    assert "applies_to" not in shapes_by_id["stirrer_rack"]
+
+
+def _normalize_category(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
 
 
 def test_packaged_profile_copies_are_in_sync(repo_root: Path) -> None:

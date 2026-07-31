@@ -147,8 +147,16 @@ shapes:
     parts:
       - { type: slab, style: plate, z: [0.0, 114.4825] }
       - { type: slab, style: beam, z: [114.4825, 208.15] }
-      - { type: box, style: module, from: [0.0, -130.0, 208.15], to: [420.0, 290.0, 361.15] }
-      - { type: box, style: shell, from: [113.4, -16.6, 361.15], to: [306.6, 176.6, 1058.15] }
+      - { type: box, style: module, from: [55.0, -65.0, 208.15], to: [435.0, 225.0, 294.15] }
+      - { type: cylinder, style: motor, center: [245.0, 80.0], d: 220.0, z: [294.15, 390.0] }
+      - { type: cylinder, style: gear, center: [245.0, 80.0], d: 166.0, z: [390.0, 470.0] }
+      - { type: box, style: shell, from: [185.0, 18.0, 430.0], to: [305.0, 142.0, 710.0] }
+      - { type: cylinder, style: gear, center: [245.0, 80.0], d: 176.0, z: [675.0, 795.0] }
+      - { type: box, style: shell, from: [245.0, 28.0, 710.0], to: [515.0, 132.0, 810.0] }
+      - { type: cylinder, style: motor, center: [510.0, 80.0], d: 142.0, z: [760.0, 870.0] }
+      - { type: box, style: shell, from: [500.0, 38.0, 820.0], to: [690.0, 122.0, 905.0] }
+      - { type: cylinder, style: shaft, center: [680.0, 80.0], d: 82.0, z: [875.0, 980.0] }
+      - { type: cylinder, style: probe, center: [680.0, 80.0], d: 44.0, z: [825.0, 875.0] }
 
   # -------------------------------------------------------------- 敞口层架堆栈
   # 层板高度与位点都由实例的 config.sites 决定，声明只表明「这是敞口层架」。
@@ -186,6 +194,81 @@ shapes:
       - { type: sites, generator: open-rack }
 
   # ------------------------------------------------------------------ 器皿与耗材
+  - id: beaker
+    display_name: 500 mL 烧杯
+    applies_to:
+      - category: beaker
+    envelope: [86.0, 86.0, 120.0]
+    units: ratio
+    shadow: round
+    note: 透明直壁杯身、外翻杯口和小型倒液嘴；仅保留用于识别的轮廓特征。
+    parts:
+      - type: lathe
+        style: glass
+        center: [0.5, 0.5]
+        d: 0.88
+        z: [0.0, 1.0]
+        spout: true
+        mouth: true
+        rim: true
+        rings:
+          - { z: 0.0, r: 0.88 }
+          - { z: 0.06, r: 0.92 }
+          - { z: 0.88, r: 0.98 }
+          - { z: 1.0, r: 1.0 }
+
+  - id: capped_reagent_bottle
+    display_name: 100 mL 试剂瓶
+    applies_to:
+      - category: liquid_reagent
+    envelope: [56.0, 56.0, 105.0]
+    units: ratio
+    shadow: round
+    note: 现场照片中的白色瓶身与黑色螺纹盖，省略标签文字与细小倒角。
+    parts:
+      - type: lathe
+        style: glass
+        center: [0.5, 0.5]
+        d: 0.9
+        z: [0.0, 1.0]
+        ribs: 10
+        rings:
+          - { z: 0.0, r: 0.82 }
+          - { z: 0.05, r: 0.88 }
+          - { z: 0.66, r: 0.88 }
+          - { z: 0.75, r: 0.66 }
+          - { z: 1.0, r: 0.66 }
+        cap:
+          - { z: 0.75, r: 0.7 }
+          - { z: 0.96, r: 0.7 }
+          - { z: 1.0, r: 0.64 }
+
+  - id: capped_sample_vial
+    display_name: 500 mL 样品瓶
+    applies_to:
+      - category: sample_vial
+    envelope: [86.0, 86.0, 175.0]
+    units: ratio
+    shadow: round
+    note: 高身样品瓶采用收肩瓶身与深色旋盖，区别于同架位的敞口烧杯。
+    parts:
+      - type: lathe
+        style: glass
+        center: [0.5, 0.5]
+        d: 0.88
+        z: [0.0, 1.0]
+        ribs: 11
+        rings:
+          - { z: 0.0, r: 0.82 }
+          - { z: 0.04, r: 0.88 }
+          - { z: 0.72, r: 0.88 }
+          - { z: 0.82, r: 0.58 }
+          - { z: 1.0, r: 0.58 }
+        cap:
+          - { z: 0.82, r: 0.62 }
+          - { z: 0.97, r: 0.62 }
+          - { z: 1.0, r: 0.56 }
+
   - id: tip_box
     display_name: TIP 盒组件
     applies_to:

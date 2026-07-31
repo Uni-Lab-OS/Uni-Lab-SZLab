@@ -1,76 +1,99 @@
 {
   "outcome": "passed",
-  "frontendUrl": "http://127.0.0.1:4173",
-  "osUrl": "http://127.0.0.1:8014",
+  "frontendUrl": "http://127.0.0.1:4283",
+  "osUrl": "http://127.0.0.1:8024",
   "workflow": {
     "id": "s04_robot_stirring_workflow",
     "nodeCount": 3,
     "screenshot": "szlab-workflow-python-node-canvas.png"
   },
   "materials": {
-    "aggregateCount": 22,
+    "aggregateCount": 126,
+    "apiPageCount": 2,
+    "packageShape": "stirrer_rack",
     "screenshots": [
       "szlab-materials-2d.png",
-      "szlab-materials-2_5d.png"
+      "szlab-materials-2_5d.png",
+      "szlab-materials-2_5d-narrow.png"
     ]
   },
   "apiCalls": [
     {
       "method": "GET",
       "status": 200,
-      "url": "http://127.0.0.1:8014/health"
+      "url": "http://127.0.0.1:8024/health"
     },
     {
       "method": "GET",
       "status": 200,
-      "url": "http://127.0.0.1:8014/health"
+      "url": "http://127.0.0.1:8024/api/v1/workflow-node-templates"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/authoring/generate-python"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/workflows:validate"
     },
     {
       "method": "GET",
-      "status": 404,
-      "url": "http://127.0.0.1:8014/api/v1/online-devices"
-    },
-    {
-      "method": "POST",
-      "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/authoring/generate-python"
-    },
-    {
-      "method": "POST",
-      "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
-    },
-    {
-      "method": "POST",
-      "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/authoring/compile"
-    },
-    {
-      "method": "POST",
-      "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/authoring/validate"
-    },
-    {
-      "method": "POST",
-      "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/workflows:validate"
+      "status": 503,
+      "url": "http://127.0.0.1:8024/api/v1/resource-templates"
     },
     {
       "method": "GET",
       "status": 200,
-      "url": "http://127.0.0.1:8014/api/v1/materials?page=1&page_size=100"
+      "url": "http://127.0.0.1:8024/api/v1/materials?page=1&page_size=100"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/materials?page=2&page_size=100"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8024/api/v1/material-shapes"
+    },
+    {
+      "method": "GET",
+      "status": 503,
+      "url": "http://127.0.0.1:8024/api/v1/resource-templates"
     }
   ],
   "httpFailures": [
     {
       "method": "GET",
-      "status": 404,
-      "url": "http://127.0.0.1:8014/api/v1/online-devices"
+      "status": 503,
+      "url": "http://127.0.0.1:8024/api/v1/resource-templates"
+    },
+    {
+      "method": "GET",
+      "status": 503,
+      "url": "http://127.0.0.1:8024/api/v1/resource-templates"
     }
   ],
   "browserErrors": [],
   "compatibilityWarnings": [
-    "Failed to load resource: the server responded with a status of 404 (Not Found)",
-    "WebSocket connection to 'ws://127.0.0.1:8014/ws/device_status' failed: Error during WebSocket handshake: Unexpected response code: 403"
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
   ]
 }

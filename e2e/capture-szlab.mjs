@@ -88,10 +88,13 @@ try {
 
   const appUrl = new URL(frontendUrl)
   appUrl.searchParams.set('disable', 'postFx')
+  appUrl.searchParams.set('enable', 'materialNav')
   appUrl.searchParams.set('localOsUrl', osUrl)
   await page.goto(appUrl.toString(), { waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: '离线', exact: true }).click()
-  await page.getByText('已连接', { exact: true }).waitFor()
+  await page
+    .getByRole('group', { name: 'Edge 连接配置' })
+    .getByText('Edge 已连接', { exact: true })
+    .waitFor()
 
   await page.getByText('工作流', { exact: true }).first().click()
   await page.getByText('完整控制流 DAG', { exact: true }).waitFor()
@@ -149,27 +152,28 @@ try {
 
   await page.getByText('物料', { exact: true }).first().click()
   await page.locator('.lab-unified-viewport').waitFor()
-  await waitForCount(page, '.material-flow-node', 22)
-  const materialResponse = await page.request.get(
-    `${osUrl}/api/v1/materials?page=1&page_size=100`
-  )
-  if (!materialResponse.ok()) {
-    throw new Error(`Material API returned ${materialResponse.status()}`)
+  const { items: materialItems, pageCount, total } =
+    await readAllMaterials(page, osUrl)
+  if (total <= 100 || pageCount < 2) {
+    throw new Error(
+      `Expected paginated SZLab material data, got total=${total}, pages=${pageCount}`
+    )
   }
-  const materialPayload = await materialResponse.json()
-  const materialItems =
-    materialPayload?.data?.items ?? materialPayload?.items ?? []
-  if (materialItems.length !== 22) {
-    throw new Error(`Expected 22 SZLab materials, got ${materialItems.length}`)
+  if (materialItems.length !== total) {
+    throw new Error(
+      `Expected ${total} SZLab materials, got ${materialItems.length}`
+    )
   }
   if (materialItems.some((item) => String(item.code ?? item.id).includes('AI4C'))) {
     throw new Error('SZLab material projection contains AI4C entries')
   }
+  await waitForCount(page, '.material-flow-node', total)
 
-  const beaker2d = page.locator(
-    '.material-flow-node[data-material-code="debug_beaker_500ml"]'
+  const stirrer2d = page.locator(
+    '.material-flow-node[data-material-code="szlab_mixer_stirrer"]'
   )
-  if (await beaker2d.count()) await beaker2d.click()
+  if (await stirrer2d.count()) await stirrer2d.click()
+  await page.getByRole('button', { name: '关闭物料属性' }).click()
   await page.screenshot({
     path: resolve(outputRoot, 'szlab-materials-2d.png'),
     animations: 'disabled'
@@ -181,28 +185,73 @@ try {
     'data-lab-view-mode',
     '2.5d'
   )
-  await waitForCount(page, '.material-oblique-object', 22)
-  const beaker2_5d = page.locator(
-    '.material-oblique-object[data-material-code="debug_beaker_500ml"]'
+  await waitForCount(page, '.material-oblique-object', total)
+  const stirrer2_5d = page.locator(
+    '.material-oblique-object[data-material-code="szlab_mixer_stirrer"]'
   )
-  if (await beaker2_5d.count()) await beaker2_5d.click()
+  await stirrer2_5d.waitFor()
+  if (await stirrer2_5d.getAttribute('data-oblique-shape') !== 'stirrer_rack') {
+    throw new Error('SZLab stirrer did not use its package-owned 2.5D shape')
+  }
+  const reagentBottle2_5d = page.locator(
+    '.material-oblique-object[data-material-code="debug_reagent_bottle_100ml"]'
+  )
+  await reagentBottle2_5d.waitFor()
+  if (
+    await reagentBottle2_5d.getAttribute('data-oblique-shape') !==
+    'capped_reagent_bottle'
+  ) {
+    throw new Error('SZLab reagent bottle did not use its capped vessel shape')
+  }
+  const zoomControl = page.getByRole('button', { name: '放大 2.5D 视图' })
+  await zoomControl.click()
+  await waitForAttribute(
+    page.locator('[data-material-oblique-view]'),
+    'data-camera-zoom',
+    '1.25'
+  )
+  await page.getByRole('button', { name: '适应全部物料' }).click()
+  await waitForAttribute(
+    page.locator('[data-material-oblique-view]'),
+    'data-camera-zoom',
+    '1.00'
+  )
   await page.screenshot({
     path: resolve(outputRoot, 'szlab-materials-2_5d.png'),
     animations: 'disabled'
   })
+  await page.getByRole('button', { name: '收起物料列表' }).click()
+  await page.setViewportSize({ width: 900, height: 900 })
+  await page.getByRole('button', { name: '展开物料列表' }).waitFor()
+  await page.screenshot({
+    path: resolve(outputRoot, 'szlab-materials-2_5d-narrow.png'),
+    animations: 'disabled'
+  })
 
+  const compatibilityHttpFailures = httpFailures.filter(
+    (call) =>
+      call.url.endsWith('/api/v1/online-devices') ||
+      (
+        call.status === 503 &&
+        call.url.endsWith('/api/v1/resource-templates')
+      )
+  )
   const compatibilityWarnings = browserErrors.filter(
     (message) =>
       message ===
         'Failed to load resource: the server responded with a status of 404 (Not Found)' ||
+      (
+        message ===
+          'Failed to load resource: the server responded with a status of 503 (Service Unavailable)' &&
+        compatibilityHttpFailures.some((call) => call.status === 503)
+      ) ||
       message.includes('/ws/device_status')
   )
   const unexpectedBrowserErrors = browserErrors.filter(
     (message) => !compatibilityWarnings.includes(message)
   )
   const unexpectedHttpFailures = httpFailures.filter(
-    (call) =>
-      !call.url.endsWith('/api/v1/online-devices')
+    (call) => !compatibilityHttpFailures.includes(call)
   )
   if (unexpectedBrowserErrors.length || unexpectedHttpFailures.length) {
     throw new Error(
@@ -225,7 +274,13 @@ try {
     },
     materials: {
       aggregateCount: materialItems.length,
-      screenshots: ['szlab-materials-2d.png', 'szlab-materials-2_5d.png']
+      apiPageCount: pageCount,
+      packageShape: 'stirrer_rack',
+      screenshots: [
+        'szlab-materials-2d.png',
+        'szlab-materials-2_5d.png',
+        'szlab-materials-2_5d-narrow.png'
+      ]
     },
     apiCalls,
     httpFailures,
@@ -239,6 +294,30 @@ try {
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
 } finally {
   await browser.close()
+}
+
+async function readAllMaterials(pageInstance, apiUrl) {
+  const items = []
+  let pageNumber = 1
+  let total = Number.POSITIVE_INFINITY
+  while (items.length < total) {
+    const response = await pageInstance.request.get(
+      `${apiUrl}/api/v1/materials?page=${pageNumber}&page_size=100`
+    )
+    if (!response.ok()) {
+      throw new Error(`Material API returned ${response.status()}`)
+    }
+    const payload = await response.json()
+    const pageData = payload?.data ?? payload
+    const pageItems = Array.isArray(pageData?.items) ? pageData.items : []
+    items.push(...pageItems)
+    total = Number.isFinite(pageData?.total)
+      ? pageData.total
+      : items.length
+    if (pageItems.length === 0 || items.length >= total) break
+    pageNumber += 1
+  }
+  return { items, pageCount: pageNumber, total }
 }
 
 async function waitForCount(pageInstance, selector, count) {

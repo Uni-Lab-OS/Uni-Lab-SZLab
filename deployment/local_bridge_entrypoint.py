@@ -13,7 +13,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from unilabos.app.local_bridge import server
+from szlab_poly_studio.shape_library import material_shape_items
+from unilabos.app.local_bridge import local_api, server
 from unilabos.devices.generic_plc_macro import DeclarativePLCMacroDriver
 from unilabos.runtime.profile_loader import LoadedProfile, load_profiles
 
@@ -27,8 +28,36 @@ def load_repository_profiles(
     return load_profiles(paths, driver_catalog=driver_catalog)
 
 
+def install_material_shape_route() -> None:
+    """Backfill the package-owned shape route until Edge provides it natively."""
+
+    original_create_app = local_api.create_app
+    items = material_shape_items()
+
+    def create_app_with_material_shapes(*args: Any, **kwargs: Any) -> Any:
+        app = original_create_app(*args, **kwargs)
+        if any(
+            getattr(route, "path", None) == "/api/v1/material-shapes"
+            for route in app.routes
+        ):
+            return app
+
+        @app.get("/api/v1/material-shapes")
+        async def api_v1_material_shapes() -> dict[str, Any]:
+            return {
+                "code": 0,
+                "data": {"items": items},
+                "message": "ok",
+            }
+
+        return app
+
+    local_api.create_app = create_app_with_material_shapes
+
+
 def main() -> None:
     server.load_profiles = load_repository_profiles
+    install_material_shape_route()
     server.main()
 
 

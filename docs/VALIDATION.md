@@ -1,6 +1,6 @@
 # 本地验证记录
 
-验证日期：2026-07-26（Asia/Shanghai）。
+验证日期：2026-07-31（Asia/Shanghai）。
 
 ## 基线
 
@@ -15,8 +15,8 @@
 
 以下检查均通过：
 
-- Ruff：`ruff check packages tests`
-- Pytest：14 项测试
+- Ruff：`ruff check packages tests deployment/local_bridge_entrypoint.py`
+- Pytest：20 项测试
 - `unilab --check_mode --external_devices_only`：两套包全部通过
 - Profile 加载：SZLab 78 个动作，AI4C 19 个动作，共 97 个本地动作
 - Registry：9 个 SZLab 项目设备、2 个 AI4C 项目设备、15 个 SZLab 资源
@@ -53,8 +53,10 @@ authoring bridge 以 OfflineOS 模式加载两套 Profile 和 `deployment/graphs
 - 浏览器从前端 origin 访问 bridge，工作流/物料 UI 可见，并读取 24 个物料实例、97 个动作；
   浏览器端编译 S04 工作流无诊断、无控制台错误。
 
-拆包后的 SZLab 定向 E2E 进一步使用只含 SZLab 的 graph/Profile，验证 22 个物料聚合、S04
-三节点 Python 工作流、2D 与 2.5D 视图。截图见 `docs/E2E_SCREENSHOTS.md`。
+拆包后的 SZLab 定向 E2E 进一步使用只含 SZLab 的 graph/Profile，验证两页共 126 个物料聚合、
+14 条设备包外形声明、S04 三节点 Python 工作流、2D 与 2.5D 视图；并断言 S04 磁搅节点使用
+`stirrer_rack`、试剂瓶使用 `capped_reagent_bottle` 外形而不是默认包围盒，同时覆盖 2.5D
+缩放/适应全部控制。截图见 `docs/E2E_SCREENSHOTS.md`。
 
 全工作流 E2E 自动发现并逐一验证两个包中的 13 个 Python 源码（SZLab 12、AI4C 1），每个均
 经直接 API 编译、前端按钮编译和 Canonical 校验后截图；总览见
