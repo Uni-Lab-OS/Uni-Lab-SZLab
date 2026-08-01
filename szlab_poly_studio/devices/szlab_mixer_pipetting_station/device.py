@@ -4,6 +4,7 @@ import os
 import time
 from typing import Any
 
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -709,7 +710,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
     @action(description="执行 S09 多步加液工作流")
     def run_liquid_workflow(
         self,
-        liquid_steps: list[dict[str, Any]] | None = None,
+        liquid_steps: list[dict[str, JSONValue]] | None = None,
         sample_id: str = "",
         release_after: bool = True,
     ) -> dict[str, Any]:
