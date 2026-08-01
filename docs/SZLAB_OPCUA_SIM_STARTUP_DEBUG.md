@@ -110,9 +110,18 @@ jq '.nodes[] | select(.id == "szlab_poly_plc") | .config' \
   "url": "opc.tcp://opcua.ideawit.com:4855/xuse_sim",
   "csv_path": "szlab_plc_0730.csv",
   "auto_connect": true,
-  "opcua_node_id_prefix": "ns=4;s=上位机通讯|"
+  "opcua_node_id_prefix": "ns=4;s=上位机通讯|",
+  "connection_check_interval": 5.0,
+  "reconnect_attempts": 3,
+  "reconnect_delay": 1.0
 }
 ```
+
+后三项可省略，驱动默认使用上面的值。`auto_connect=true` 成功建立会话后，
+`szlab_poly_plc` 会定时读取 OPC UA 标准节点 `ServerStatus.State` 检测通信；探测失败，
+或业务变量读写遇到超时、socket 断开、无效 Session/SecureChannel 状态时，驱动会在同一
+I/O 锁内关闭旧会话、有限重连并重新执行探测或原读写。将
+`connection_check_interval` 设为 `0` 可以关闭后台探测，但业务 I/O 的断线恢复仍然生效。
 
 `szlab_plc_0730.csv` 使用 UTF-16 制表符格式。不要用会自动改编码或分隔符的编辑器直接另存。
 该 CSV 必须先导入仿真服务器，由仿真服务器创建变量。
@@ -545,6 +554,19 @@ client connected!
 - `szlab_plc_0730.csv` 是否已经导入；
 - NodeId 前缀是否仍为 `ns=4;s=上位机通讯|`；
 - 服务器变量类型和写权限是否与 CSV 一致。
+
+Edge 已经启动后若连接偶发中断，重点查找以下日志：
+
+```text
+OPC UA 通信检测失败，准备重连
+OPC UA 重连成功
+OPC UA 通信恢复失败
+```
+
+出现“重连成功”后驱动会立即复探标准 ServerStatus 节点；连续出现“通信恢复失败”时，
+再检查服务器、网络和 `opcua_timeout`，不要同时为各业务设备创建额外 OPC UA 会话。
+需要手动确认时，可调用 `szlab_poly_plc.check_opcua_connection`；返回值包含当前连接状态、
+最近检测时间、最近错误和累计重连次数。
 
 不要通过修改驱动或工作流 JSON 来绕过缺失节点。应修正仿真服务器的 CSV 导入。
 

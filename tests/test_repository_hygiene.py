@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -60,6 +61,41 @@ def test_repository_is_one_distribution_with_one_import_package(repo_root: Path)
     assert 'name = "szlab-poly-studio"' in pyproject
     assert 'include = ["szlab_poly_studio*"]' in pyproject
     assert "unilabos.model_bundles" not in pyproject
+
+
+def test_stack_status_topic_uses_a_ten_second_period(repo_root: Path) -> None:
+    device_path = (
+        repo_root
+        / "szlab_poly_studio"
+        / "devices"
+        / "szlab_poly_plc"
+        / "device.py"
+    )
+    module = ast.parse(device_path.read_text(encoding="utf-8"))
+    device_class = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.ClassDef) and node.name == "SZLabPolyPLCDevice"
+    )
+    stack_status = next(
+        node
+        for node in device_class.body
+        if isinstance(node, ast.FunctionDef) and node.name == "stack_status"
+    )
+    topic_config = next(
+        decorator
+        for decorator in stack_status.decorator_list
+        if isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Name)
+        and decorator.func.id == "topic_config"
+    )
+    period = next(
+        keyword.value
+        for keyword in topic_config.keywords
+        if keyword.arg == "period"
+    )
+
+    assert ast.literal_eval(period) == 10.0
 
 
 def test_szlab_source_does_not_cross_import_ai4c(repo_root: Path) -> None:
