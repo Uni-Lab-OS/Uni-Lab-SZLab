@@ -1,0 +1,17 @@
+
+===== connection attempt 1/3 =====
+连接 OPC UA: opc.tcp://opcua.ideawit.com:4855/xuse_sim
+OPC UA 已连接
+写入握手场景 'szlab_mixer_pump_production' 的仿真先决条件...
+  PASS S06准备信号: expected=True, actual=True
+  PASS S06允许加工: expected=True, actual=True
+  PASS S06加工完成: expected=False, actual=False
+  PASS 传感器状态_上位机[3].NO[1]: expected=True, actual=True
+  PASS 传感器状态_上位机[4].NO[12]: expected=True, actual=True
+握手仿真器已启动；按 Ctrl+C 停止。
+S05 为只读完成信号，已保持 S05加工完成=True、S05拍照结果=1。
+{"action": "szlab_mixer_pump.run_solvent_addition", "detail": {"process": 1}, "phase": "accepted", "time": "2026-07-30 23:15:40"}
+{"action": "szlab_mixer_pump.run_solvent_addition", "detail": {"process": 1}, "phase": "completed", "time": "2026-07-30 23:15:40"}
+{"action": "szlab_mixer_pump.run_solvent_addition", "detail": {"observed_process": 1, "process": 1}, "phase": "reset", "time": "2026-07-30 23:15:48"}
+恢复仿真器负责的 PLC→PC 信号...
+OPC UA 已断开

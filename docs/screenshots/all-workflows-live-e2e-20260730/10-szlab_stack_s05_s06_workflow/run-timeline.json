@@ -1,0 +1,31 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "b669a92a04a0511125ab7d83fcedcd2e71adcb811e5dc7ceae8d22f8fce3fe2b",
+    "items": [
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

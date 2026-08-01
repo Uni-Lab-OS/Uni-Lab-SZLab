@@ -1,0 +1,1269 @@
+{
+  "run": {
+    "id": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "sourceNodeId": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pipetting_station",
+        "action": "prepare_liquid_station",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "sourceNodeId": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pipetting_station",
+        "action": "bind_sample_to_station",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "sourceNodeId": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pipetting_station",
+        "action": "add_liquid",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "sourceNodeId": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pipetting_station",
+        "action": "release_station",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 267,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422611.7742517,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "2199499aa7fc798d32231e8c6982729695b151b9d1f187707f245589652b2765"
+        }
+      },
+      {
+        "seq": 268,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.feedback",
+        "nodeId": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "timestamp": 1785422612.9942188,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S09 唯一加液工位空闲\", \"data\": {\"station_status\": 2, \"station\": 1}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 269,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.result",
+        "nodeId": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "timestamp": 1785422612.995417,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "station": 1,
+              "station_status": 2
+            },
+            "message": "S09 唯一加液工位空闲",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 270,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.feedback",
+        "nodeId": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "timestamp": 1785422612.9964533,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S09 样品绑定逻辑暂未启用\", \"data\": {\"sample_id\": \"debug-sample\", \"enabled\": false}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 271,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.result",
+        "nodeId": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "timestamp": 1785422612.9967859,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "enabled": false,
+              "sample_id": "debug-sample"
+            },
+            "message": "S09 样品绑定逻辑暂未启用",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 272,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.feedback",
+        "nodeId": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "timestamp": 1785422658.4158888,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S09 单次加液完成\", \"data\": {\"tip_box_index\": 1, \"tip_index\": 1, \"liquid_bottle_index\": 1, \"station\": 1, \"aspirate_volume\": 1000, \"dispense_volume\": 1000, \"volume_unit\": \"raw\", \"aspirate_volume_ul\": 100.0, \"dispense_volume_ul\": 100.0, \"split_count\": 1, \"transfer_chunks\": [{\"aspirate_volume\": 1000, \"dispense_volume\": 1000, \"aspirate_volume_ul\": 100.0, \"dispense_volume_ul\": 100.0}]}, \"steps\": [{\"step\": \"取 TIP\", \"success\": true, \"message\": \"S09 工艺 5 完成：取 TIP\", \"data\": {\"process\": 5, \"process_label\": \"取 TIP\", \"tip_box_index\": 1, \"tip_index\": 1, \"liquid_bottle_index\": 1, \"station\": 1, \"aspirate_volume\": 0, \"dispense_volume\": 0, \"volume_unit\": \"raw\", \"aspirate_volume_ul\": 0.0, \"dispense_volume_ul\": 0.0, \"logs\": [{\"message\": \"S09 工艺 5 参数写入开始：取 TIP\", \"detail\": {\"process\": 5, \"process_label\": \"取 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 工艺 5 参数写入完成\", \"detail\": {\"process\": 5, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 5 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺 5 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}], \"clear_process_params\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, \"logs\": [{\"message\": \"S09 工艺 5 参数写入开始：取 TIP\", \"detail\": {\"process\": 5, \"process_label\": \"取 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 工艺 5 参数写入完成\", \"detail\": {\"process\": 5, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 5 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺 5 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}]}, {\"step\": \"液体瓶取液\", \"success\": true, \"message\": \"S09 工艺 7 完成：液体瓶取液（润洗一次后取液）\", \"data\": {\"process\": 7, \"process_label\": \"液体瓶取液（润洗一次后取液）\", \"tip_box_index\": 1, \"tip_index\": 1, \"liquid_bottle_index\": 1, \"station\": 1, \"aspirate_volume\": 1000, \"dispense_volume\": 0, \"volume_unit\": \"raw\", \"aspirate_volume_ul\": 100.0, \"dispense_volume_ul\": 0.0, \"logs\": [{\"message\": \"S09 液体瓶 1 剩余液量校验通过\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"remaining_volume\": 100.0, \"required_volume_ml\": 0.1}}, {\"message\": \"S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）\", \"detail\": {\"process\": 7, \"process_label\": \"液体瓶取液（润洗一次后取液）\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 工艺 7 参数写入完成\", \"detail\": {\"process\": 7, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 7 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 工艺 7 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"previous_remaining_volume\": 100.0, \"deducted_volume_ml\": 0.1, \"remaining_volume\": 99.9}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}], \"remaining_volume_update\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"previous_remaining_volume\": 100.0, \"deducted_volume_ml\": 0.1, \"remaining_volume\": 99.9}, \"clear_process_params\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, \"logs\": [{\"message\": \"S09 液体瓶 1 剩余液量校验通过\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"remaining_volume\": 100.0, \"required_volume_ml\": 0.1}}, {\"message\": \"S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）\", \"detail\": {\"process\": 7, \"process_label\": \"液体瓶取液（润洗一次后取液）\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 工艺 7 参数写入完成\", \"detail\": {\"process\": 7, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 7 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 工艺 7 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"previous_remaining_volume\": 100.0, \"deducted_volume_ml\": 0.1, \"remaining_volume\": 99.9}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}]}, {\"step\": \"烧杯放液\", \"success\": true, \"message\": \"S09 工艺 8 完成：烧杯放液\", \"data\": {\"process\": 8, \"process_label\": \"烧杯放液\", \"tip_box_index\": 1, \"tip_index\": 1, \"liquid_bottle_index\": 1, \"station\": 1, \"aspirate_volume\": 0, \"dispense_volume\": 1000, \"volume_unit\": \"raw\", \"aspirate_volume_ul\": 0.0, \"dispense_volume_ul\": 100.0, \"logs\": [{\"message\": \"S09 工艺 8 参数写入开始：烧杯放液\", \"detail\": {\"process\": 8, \"process_label\": \"烧杯放液\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 工艺 8 参数写入完成\", \"detail\": {\"process\": 8, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 8 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺 8 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}], \"clear_process_params\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, \"logs\": [{\"message\": \"S09 工艺 8 参数写入开始：烧杯放液\", \"detail\": {\"process\": 8, \"process_label\": \"烧杯放液\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 工艺 8 参数写入完成\", \"detail\": {\"process\": 8, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 8 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺 8 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}]}, {\"step\": \"放 TIP\", \"success\": true, \"message\": \"S09 工艺 6 完成：放 TIP\", \"data\": {\"process\": 6, \"process_label\": \"放 TIP\", \"tip_box_index\": 1, \"tip_index\": 1, \"liquid_bottle_index\": 1, \"station\": 1, \"aspirate_volume\": 0, \"dispense_volume\": 0, \"volume_unit\": \"raw\", \"aspirate_volume_ul\": 0.0, \"dispense_volume_ul\": 0.0, \"logs\": [{\"message\": \"S09 工艺 6 参数写入开始：放 TIP\", \"detail\": {\"process\": 6, \"process_label\": \"放 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 工艺 6 参数写入完成\", \"detail\": {\"process\": 6, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 6 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺 6 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}], \"clear_process_params\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, \"logs\": [{\"message\": \"S09 工艺 6 参数写入开始：放 TIP\", \"detail\": {\"process\": 6, \"process_label\": \"放 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 工艺 6 参数写入完成\", \"detail\": {\"process\": 6, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 6 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺 6 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}]}], \"logs\": [{\"message\": \"S09 工艺 5 参数写入开始：取 TIP\", \"detail\": {\"process\": 5, \"process_label\": \"取 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 工艺 5 参数写入完成\", \"detail\": {\"process\": 5, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 5}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 5 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺 5 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 5}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, {\"message\": \"S09 液体瓶 1 剩余液量校验通过\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"remaining_volume\": 100.0, \"required_volume_ml\": 0.1}}, {\"message\": \"S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）\", \"detail\": {\"process\": 7, \"process_label\": \"液体瓶取液（润洗一次后取液）\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 工艺 7 参数写入完成\", \"detail\": {\"process\": 7, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 1000, \"S09放液量\": 0, \"S09工艺选择\": 7}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 7 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 工艺 7 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 7}}, {\"message\": \"S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL\", \"detail\": {\"bottle\": 1, \"variable\": \"S09液体瓶1剩余液量\", \"previous_remaining_volume\": 100.0, \"deducted_volume_ml\": 0.1, \"remaining_volume\": 99.9}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, {\"message\": \"S09 工艺 8 参数写入开始：烧杯放液\", \"detail\": {\"process\": 8, \"process_label\": \"烧杯放液\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 工艺 8 参数写入完成\", \"detail\": {\"process\": 8, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 1000, \"S09工艺选择\": 8}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 8 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺 8 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 8}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}, {\"message\": \"S09 工艺 6 参数写入开始：放 TIP\", \"detail\": {\"process\": 6, \"process_label\": \"放 TIP\", \"params\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 工艺 6 参数写入完成\", \"detail\": {\"process\": 6, \"written_variables\": {\"S09TIP盒工位编号\": 1, \"S09TIP编号\": 1, \"S09液体瓶编号\": 1, \"S09抽液量\": 0, \"S09放液量\": 0, \"S09工艺选择\": 6}}}, {\"message\": \"S09 参数写入完成信号已触发\", \"detail\": {\"variable\": \"S09参数写入完成\", \"value\": true, \"reset_value\": false}}, {\"message\": \"等待 S09 工艺 6 完成\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺 6 完成信号已确认\", \"detail\": {\"variable\": \"S09工艺完成\", \"expected\": 6}}, {\"message\": \"S09 工艺参数清零开始\", \"detail\": {}}, {\"message\": \"S09 工艺参数清零完成\", \"detail\": {\"success\": true, \"written_variables\": {\"S09参数写入完成\": false, \"S09工艺选择\": 0, \"S09TIP盒工位编号\": 0, \"S09TIP编号\": 0, \"S09液体瓶编号\": 0, \"S09抽液量\": 0, \"S09放液量\": 0}, \"errors\": {}}}]}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 273,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.result",
+        "nodeId": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "timestamp": 1785422658.4169874,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "aspirate_volume": 1000,
+              "aspirate_volume_ul": 100,
+              "dispense_volume": 1000,
+              "dispense_volume_ul": 100,
+              "liquid_bottle_index": 1,
+              "split_count": 1,
+              "station": 1,
+              "tip_box_index": 1,
+              "tip_index": 1,
+              "transfer_chunks": [
+                {
+                  "aspirate_volume": 1000,
+                  "aspirate_volume_ul": 100,
+                  "dispense_volume": 1000,
+                  "dispense_volume_ul": 100
+                }
+              ],
+              "volume_unit": "raw"
+            },
+            "logs": [
+              {
+                "detail": {
+                  "params": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 5,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  },
+                  "process": 5,
+                  "process_label": "取 TIP"
+                },
+                "message": "S09 工艺 5 参数写入开始：取 TIP"
+              },
+              {
+                "detail": {
+                  "process": 5,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 5,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  }
+                },
+                "message": "S09 工艺 5 参数写入完成"
+              },
+              {
+                "detail": {
+                  "reset_value": false,
+                  "value": true,
+                  "variable": "S09参数写入完成"
+                },
+                "message": "S09 参数写入完成信号已触发"
+              },
+              {
+                "detail": {
+                  "expected": 5,
+                  "variable": "S09工艺完成"
+                },
+                "message": "等待 S09 工艺 5 完成"
+              },
+              {
+                "detail": {
+                  "expected": 5,
+                  "variable": "S09工艺完成"
+                },
+                "message": "S09 工艺 5 完成信号已确认"
+              },
+              {
+                "detail": {},
+                "message": "S09 工艺参数清零开始"
+              },
+              {
+                "detail": {
+                  "errors": {},
+                  "success": true,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 0,
+                    "S09TIP编号": 0,
+                    "S09参数写入完成": false,
+                    "S09工艺选择": 0,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 0
+                  }
+                },
+                "message": "S09 工艺参数清零完成"
+              },
+              {
+                "detail": {
+                  "bottle": 1,
+                  "remaining_volume": 100,
+                  "required_volume_ml": 0.1,
+                  "variable": "S09液体瓶1剩余液量"
+                },
+                "message": "S09 液体瓶 1 剩余液量校验通过"
+              },
+              {
+                "detail": {
+                  "params": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 7,
+                    "S09抽液量": 1000,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  },
+                  "process": 7,
+                  "process_label": "液体瓶取液（润洗一次后取液）"
+                },
+                "message": "S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）"
+              },
+              {
+                "detail": {
+                  "process": 7,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 7,
+                    "S09抽液量": 1000,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  }
+                },
+                "message": "S09 工艺 7 参数写入完成"
+              },
+              {
+                "detail": {
+                  "reset_value": false,
+                  "value": true,
+                  "variable": "S09参数写入完成"
+                },
+                "message": "S09 参数写入完成信号已触发"
+              },
+              {
+                "detail": {
+                  "expected": 7,
+                  "variable": "S09工艺完成"
+                },
+                "message": "等待 S09 工艺 7 完成"
+              },
+              {
+                "detail": {
+                  "expected": 7,
+                  "variable": "S09工艺完成"
+                },
+                "message": "S09 工艺 7 完成信号已确认"
+              },
+              {
+                "detail": {
+                  "bottle": 1,
+                  "deducted_volume_ml": 0.1,
+                  "previous_remaining_volume": 100,
+                  "remaining_volume": 99.9,
+                  "variable": "S09液体瓶1剩余液量"
+                },
+                "message": "S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL"
+              },
+              {
+                "detail": {},
+                "message": "S09 工艺参数清零开始"
+              },
+              {
+                "detail": {
+                  "errors": {},
+                  "success": true,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 0,
+                    "S09TIP编号": 0,
+                    "S09参数写入完成": false,
+                    "S09工艺选择": 0,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 0
+                  }
+                },
+                "message": "S09 工艺参数清零完成"
+              },
+              {
+                "detail": {
+                  "params": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 8,
+                    "S09抽液量": 0,
+                    "S09放液量": 1000,
+                    "S09液体瓶编号": 1
+                  },
+                  "process": 8,
+                  "process_label": "烧杯放液"
+                },
+                "message": "S09 工艺 8 参数写入开始：烧杯放液"
+              },
+              {
+                "detail": {
+                  "process": 8,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 8,
+                    "S09抽液量": 0,
+                    "S09放液量": 1000,
+                    "S09液体瓶编号": 1
+                  }
+                },
+                "message": "S09 工艺 8 参数写入完成"
+              },
+              {
+                "detail": {
+                  "reset_value": false,
+                  "value": true,
+                  "variable": "S09参数写入完成"
+                },
+                "message": "S09 参数写入完成信号已触发"
+              },
+              {
+                "detail": {
+                  "expected": 8,
+                  "variable": "S09工艺完成"
+                },
+                "message": "等待 S09 工艺 8 完成"
+              },
+              {
+                "detail": {
+                  "expected": 8,
+                  "variable": "S09工艺完成"
+                },
+                "message": "S09 工艺 8 完成信号已确认"
+              },
+              {
+                "detail": {},
+                "message": "S09 工艺参数清零开始"
+              },
+              {
+                "detail": {
+                  "errors": {},
+                  "success": true,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 0,
+                    "S09TIP编号": 0,
+                    "S09参数写入完成": false,
+                    "S09工艺选择": 0,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 0
+                  }
+                },
+                "message": "S09 工艺参数清零完成"
+              },
+              {
+                "detail": {
+                  "params": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 6,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  },
+                  "process": 6,
+                  "process_label": "放 TIP"
+                },
+                "message": "S09 工艺 6 参数写入开始：放 TIP"
+              },
+              {
+                "detail": {
+                  "process": 6,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 1,
+                    "S09TIP编号": 1,
+                    "S09工艺选择": 6,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 1
+                  }
+                },
+                "message": "S09 工艺 6 参数写入完成"
+              },
+              {
+                "detail": {
+                  "reset_value": false,
+                  "value": true,
+                  "variable": "S09参数写入完成"
+                },
+                "message": "S09 参数写入完成信号已触发"
+              },
+              {
+                "detail": {
+                  "expected": 6,
+                  "variable": "S09工艺完成"
+                },
+                "message": "等待 S09 工艺 6 完成"
+              },
+              {
+                "detail": {
+                  "expected": 6,
+                  "variable": "S09工艺完成"
+                },
+                "message": "S09 工艺 6 完成信号已确认"
+              },
+              {
+                "detail": {},
+                "message": "S09 工艺参数清零开始"
+              },
+              {
+                "detail": {
+                  "errors": {},
+                  "success": true,
+                  "written_variables": {
+                    "S09TIP盒工位编号": 0,
+                    "S09TIP编号": 0,
+                    "S09参数写入完成": false,
+                    "S09工艺选择": 0,
+                    "S09抽液量": 0,
+                    "S09放液量": 0,
+                    "S09液体瓶编号": 0
+                  }
+                },
+                "message": "S09 工艺参数清零完成"
+              }
+            ],
+            "message": "S09 单次加液完成",
+            "steps": [
+              {
+                "data": {
+                  "aspirate_volume": 0,
+                  "aspirate_volume_ul": 0,
+                  "clear_process_params": {
+                    "errors": {},
+                    "success": true,
+                    "written_variables": {
+                      "S09TIP盒工位编号": 0,
+                      "S09TIP编号": 0,
+                      "S09参数写入完成": false,
+                      "S09工艺选择": 0,
+                      "S09抽液量": 0,
+                      "S09放液量": 0,
+                      "S09液体瓶编号": 0
+                    }
+                  },
+                  "dispense_volume": 0,
+                  "dispense_volume_ul": 0,
+                  "liquid_bottle_index": 1,
+                  "logs": [
+                    {
+                      "detail": {
+                        "params": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 5,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        },
+                        "process": 5,
+                        "process_label": "取 TIP"
+                      },
+                      "message": "S09 工艺 5 参数写入开始：取 TIP"
+                    },
+                    {
+                      "detail": {
+                        "process": 5,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 5,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        }
+                      },
+                      "message": "S09 工艺 5 参数写入完成"
+                    },
+                    {
+                      "detail": {
+                        "reset_value": false,
+                        "value": true,
+                        "variable": "S09参数写入完成"
+                      },
+                      "message": "S09 参数写入完成信号已触发"
+                    },
+                    {
+                      "detail": {
+                        "expected": 5,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "等待 S09 工艺 5 完成"
+                    },
+                    {
+                      "detail": {
+                        "expected": 5,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "S09 工艺 5 完成信号已确认"
+                    },
+                    {
+                      "detail": {},
+                      "message": "S09 工艺参数清零开始"
+                    },
+                    {
+                      "detail": {
+                        "errors": {},
+                        "success": true,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 0,
+                          "S09TIP编号": 0,
+                          "S09参数写入完成": false,
+                          "S09工艺选择": 0,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 0
+                        }
+                      },
+                      "message": "S09 工艺参数清零完成"
+                    }
+                  ],
+                  "process": 5,
+                  "process_label": "取 TIP",
+                  "station": 1,
+                  "tip_box_index": 1,
+                  "tip_index": 1,
+                  "volume_unit": "raw"
+                },
+                "logs": [
+                  {
+                    "detail": {
+                      "params": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 5,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      },
+                      "process": 5,
+                      "process_label": "取 TIP"
+                    },
+                    "message": "S09 工艺 5 参数写入开始：取 TIP"
+                  },
+                  {
+                    "detail": {
+                      "process": 5,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 5,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      }
+                    },
+                    "message": "S09 工艺 5 参数写入完成"
+                  },
+                  {
+                    "detail": {
+                      "reset_value": false,
+                      "value": true,
+                      "variable": "S09参数写入完成"
+                    },
+                    "message": "S09 参数写入完成信号已触发"
+                  },
+                  {
+                    "detail": {
+                      "expected": 5,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "等待 S09 工艺 5 完成"
+                  },
+                  {
+                    "detail": {
+                      "expected": 5,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "S09 工艺 5 完成信号已确认"
+                  },
+                  {
+                    "detail": {},
+                    "message": "S09 工艺参数清零开始"
+                  },
+                  {
+                    "detail": {
+                      "errors": {},
+                      "success": true,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 0,
+                        "S09TIP编号": 0,
+                        "S09参数写入完成": false,
+                        "S09工艺选择": 0,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 0
+                      }
+                    },
+                    "message": "S09 工艺参数清零完成"
+                  }
+                ],
+                "message": "S09 工艺 5 完成：取 TIP",
+                "step": "取 TIP",
+                "success": true
+              },
+              {
+                "data": {
+                  "aspirate_volume": 1000,
+                  "aspirate_volume_ul": 100,
+                  "clear_process_params": {
+                    "errors": {},
+                    "success": true,
+                    "written_variables": {
+                      "S09TIP盒工位编号": 0,
+                      "S09TIP编号": 0,
+                      "S09参数写入完成": false,
+                      "S09工艺选择": 0,
+                      "S09抽液量": 0,
+                      "S09放液量": 0,
+                      "S09液体瓶编号": 0
+                    }
+                  },
+                  "dispense_volume": 0,
+                  "dispense_volume_ul": 0,
+                  "liquid_bottle_index": 1,
+                  "logs": [
+                    {
+                      "detail": {
+                        "bottle": 1,
+                        "remaining_volume": 100,
+                        "required_volume_ml": 0.1,
+                        "variable": "S09液体瓶1剩余液量"
+                      },
+                      "message": "S09 液体瓶 1 剩余液量校验通过"
+                    },
+                    {
+                      "detail": {
+                        "params": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 7,
+                          "S09抽液量": 1000,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        },
+                        "process": 7,
+                        "process_label": "液体瓶取液（润洗一次后取液）"
+                      },
+                      "message": "S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）"
+                    },
+                    {
+                      "detail": {
+                        "process": 7,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 7,
+                          "S09抽液量": 1000,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        }
+                      },
+                      "message": "S09 工艺 7 参数写入完成"
+                    },
+                    {
+                      "detail": {
+                        "reset_value": false,
+                        "value": true,
+                        "variable": "S09参数写入完成"
+                      },
+                      "message": "S09 参数写入完成信号已触发"
+                    },
+                    {
+                      "detail": {
+                        "expected": 7,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "等待 S09 工艺 7 完成"
+                    },
+                    {
+                      "detail": {
+                        "expected": 7,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "S09 工艺 7 完成信号已确认"
+                    },
+                    {
+                      "detail": {
+                        "bottle": 1,
+                        "deducted_volume_ml": 0.1,
+                        "previous_remaining_volume": 100,
+                        "remaining_volume": 99.9,
+                        "variable": "S09液体瓶1剩余液量"
+                      },
+                      "message": "S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL"
+                    },
+                    {
+                      "detail": {},
+                      "message": "S09 工艺参数清零开始"
+                    },
+                    {
+                      "detail": {
+                        "errors": {},
+                        "success": true,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 0,
+                          "S09TIP编号": 0,
+                          "S09参数写入完成": false,
+                          "S09工艺选择": 0,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 0
+                        }
+                      },
+                      "message": "S09 工艺参数清零完成"
+                    }
+                  ],
+                  "process": 7,
+                  "process_label": "液体瓶取液（润洗一次后取液）",
+                  "remaining_volume_update": {
+                    "bottle": 1,
+                    "deducted_volume_ml": 0.1,
+                    "previous_remaining_volume": 100,
+                    "remaining_volume": 99.9,
+                    "variable": "S09液体瓶1剩余液量"
+                  },
+                  "station": 1,
+                  "tip_box_index": 1,
+                  "tip_index": 1,
+                  "volume_unit": "raw"
+                },
+                "logs": [
+                  {
+                    "detail": {
+                      "bottle": 1,
+                      "remaining_volume": 100,
+                      "required_volume_ml": 0.1,
+                      "variable": "S09液体瓶1剩余液量"
+                    },
+                    "message": "S09 液体瓶 1 剩余液量校验通过"
+                  },
+                  {
+                    "detail": {
+                      "params": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 7,
+                        "S09抽液量": 1000,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      },
+                      "process": 7,
+                      "process_label": "液体瓶取液（润洗一次后取液）"
+                    },
+                    "message": "S09 工艺 7 参数写入开始：液体瓶取液（润洗一次后取液）"
+                  },
+                  {
+                    "detail": {
+                      "process": 7,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 7,
+                        "S09抽液量": 1000,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      }
+                    },
+                    "message": "S09 工艺 7 参数写入完成"
+                  },
+                  {
+                    "detail": {
+                      "reset_value": false,
+                      "value": true,
+                      "variable": "S09参数写入完成"
+                    },
+                    "message": "S09 参数写入完成信号已触发"
+                  },
+                  {
+                    "detail": {
+                      "expected": 7,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "等待 S09 工艺 7 完成"
+                  },
+                  {
+                    "detail": {
+                      "expected": 7,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "S09 工艺 7 完成信号已确认"
+                  },
+                  {
+                    "detail": {
+                      "bottle": 1,
+                      "deducted_volume_ml": 0.1,
+                      "previous_remaining_volume": 100,
+                      "remaining_volume": 99.9,
+                      "variable": "S09液体瓶1剩余液量"
+                    },
+                    "message": "S09 液体瓶 1 剩余液量已更新：100 -> 99.9 mL"
+                  },
+                  {
+                    "detail": {},
+                    "message": "S09 工艺参数清零开始"
+                  },
+                  {
+                    "detail": {
+                      "errors": {},
+                      "success": true,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 0,
+                        "S09TIP编号": 0,
+                        "S09参数写入完成": false,
+                        "S09工艺选择": 0,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 0
+                      }
+                    },
+                    "message": "S09 工艺参数清零完成"
+                  }
+                ],
+                "message": "S09 工艺 7 完成：液体瓶取液（润洗一次后取液）",
+                "step": "液体瓶取液",
+                "success": true
+              },
+              {
+                "data": {
+                  "aspirate_volume": 0,
+                  "aspirate_volume_ul": 0,
+                  "clear_process_params": {
+                    "errors": {},
+                    "success": true,
+                    "written_variables": {
+                      "S09TIP盒工位编号": 0,
+                      "S09TIP编号": 0,
+                      "S09参数写入完成": false,
+                      "S09工艺选择": 0,
+                      "S09抽液量": 0,
+                      "S09放液量": 0,
+                      "S09液体瓶编号": 0
+                    }
+                  },
+                  "dispense_volume": 1000,
+                  "dispense_volume_ul": 100,
+                  "liquid_bottle_index": 1,
+                  "logs": [
+                    {
+                      "detail": {
+                        "params": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 8,
+                          "S09抽液量": 0,
+                          "S09放液量": 1000,
+                          "S09液体瓶编号": 1
+                        },
+                        "process": 8,
+                        "process_label": "烧杯放液"
+                      },
+                      "message": "S09 工艺 8 参数写入开始：烧杯放液"
+                    },
+                    {
+                      "detail": {
+                        "process": 8,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 8,
+                          "S09抽液量": 0,
+                          "S09放液量": 1000,
+                          "S09液体瓶编号": 1
+                        }
+                      },
+                      "message": "S09 工艺 8 参数写入完成"
+                    },
+                    {
+                      "detail": {
+                        "reset_value": false,
+                        "value": true,
+                        "variable": "S09参数写入完成"
+                      },
+                      "message": "S09 参数写入完成信号已触发"
+                    },
+                    {
+                      "detail": {
+                        "expected": 8,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "等待 S09 工艺 8 完成"
+                    },
+                    {
+                      "detail": {
+                        "expected": 8,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "S09 工艺 8 完成信号已确认"
+                    },
+                    {
+                      "detail": {},
+                      "message": "S09 工艺参数清零开始"
+                    },
+                    {
+                      "detail": {
+                        "errors": {},
+                        "success": true,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 0,
+                          "S09TIP编号": 0,
+                          "S09参数写入完成": false,
+                          "S09工艺选择": 0,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 0
+                        }
+                      },
+                      "message": "S09 工艺参数清零完成"
+                    }
+                  ],
+                  "process": 8,
+                  "process_label": "烧杯放液",
+                  "station": 1,
+                  "tip_box_index": 1,
+                  "tip_index": 1,
+                  "volume_unit": "raw"
+                },
+                "logs": [
+                  {
+                    "detail": {
+                      "params": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 8,
+                        "S09抽液量": 0,
+                        "S09放液量": 1000,
+                        "S09液体瓶编号": 1
+                      },
+                      "process": 8,
+                      "process_label": "烧杯放液"
+                    },
+                    "message": "S09 工艺 8 参数写入开始：烧杯放液"
+                  },
+                  {
+                    "detail": {
+                      "process": 8,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 8,
+                        "S09抽液量": 0,
+                        "S09放液量": 1000,
+                        "S09液体瓶编号": 1
+                      }
+                    },
+                    "message": "S09 工艺 8 参数写入完成"
+                  },
+                  {
+                    "detail": {
+                      "reset_value": false,
+                      "value": true,
+                      "variable": "S09参数写入完成"
+                    },
+                    "message": "S09 参数写入完成信号已触发"
+                  },
+                  {
+                    "detail": {
+                      "expected": 8,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "等待 S09 工艺 8 完成"
+                  },
+                  {
+                    "detail": {
+                      "expected": 8,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "S09 工艺 8 完成信号已确认"
+                  },
+                  {
+                    "detail": {},
+                    "message": "S09 工艺参数清零开始"
+                  },
+                  {
+                    "detail": {
+                      "errors": {},
+                      "success": true,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 0,
+                        "S09TIP编号": 0,
+                        "S09参数写入完成": false,
+                        "S09工艺选择": 0,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 0
+                      }
+                    },
+                    "message": "S09 工艺参数清零完成"
+                  }
+                ],
+                "message": "S09 工艺 8 完成：烧杯放液",
+                "step": "烧杯放液",
+                "success": true
+              },
+              {
+                "data": {
+                  "aspirate_volume": 0,
+                  "aspirate_volume_ul": 0,
+                  "clear_process_params": {
+                    "errors": {},
+                    "success": true,
+                    "written_variables": {
+                      "S09TIP盒工位编号": 0,
+                      "S09TIP编号": 0,
+                      "S09参数写入完成": false,
+                      "S09工艺选择": 0,
+                      "S09抽液量": 0,
+                      "S09放液量": 0,
+                      "S09液体瓶编号": 0
+                    }
+                  },
+                  "dispense_volume": 0,
+                  "dispense_volume_ul": 0,
+                  "liquid_bottle_index": 1,
+                  "logs": [
+                    {
+                      "detail": {
+                        "params": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 6,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        },
+                        "process": 6,
+                        "process_label": "放 TIP"
+                      },
+                      "message": "S09 工艺 6 参数写入开始：放 TIP"
+                    },
+                    {
+                      "detail": {
+                        "process": 6,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 1,
+                          "S09TIP编号": 1,
+                          "S09工艺选择": 6,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 1
+                        }
+                      },
+                      "message": "S09 工艺 6 参数写入完成"
+                    },
+                    {
+                      "detail": {
+                        "reset_value": false,
+                        "value": true,
+                        "variable": "S09参数写入完成"
+                      },
+                      "message": "S09 参数写入完成信号已触发"
+                    },
+                    {
+                      "detail": {
+                        "expected": 6,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "等待 S09 工艺 6 完成"
+                    },
+                    {
+                      "detail": {
+                        "expected": 6,
+                        "variable": "S09工艺完成"
+                      },
+                      "message": "S09 工艺 6 完成信号已确认"
+                    },
+                    {
+                      "detail": {},
+                      "message": "S09 工艺参数清零开始"
+                    },
+                    {
+                      "detail": {
+                        "errors": {},
+                        "success": true,
+                        "written_variables": {
+                          "S09TIP盒工位编号": 0,
+                          "S09TIP编号": 0,
+                          "S09参数写入完成": false,
+                          "S09工艺选择": 0,
+                          "S09抽液量": 0,
+                          "S09放液量": 0,
+                          "S09液体瓶编号": 0
+                        }
+                      },
+                      "message": "S09 工艺参数清零完成"
+                    }
+                  ],
+                  "process": 6,
+                  "process_label": "放 TIP",
+                  "station": 1,
+                  "tip_box_index": 1,
+                  "tip_index": 1,
+                  "volume_unit": "raw"
+                },
+                "logs": [
+                  {
+                    "detail": {
+                      "params": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 6,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      },
+                      "process": 6,
+                      "process_label": "放 TIP"
+                    },
+                    "message": "S09 工艺 6 参数写入开始：放 TIP"
+                  },
+                  {
+                    "detail": {
+                      "process": 6,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 1,
+                        "S09TIP编号": 1,
+                        "S09工艺选择": 6,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 1
+                      }
+                    },
+                    "message": "S09 工艺 6 参数写入完成"
+                  },
+                  {
+                    "detail": {
+                      "reset_value": false,
+                      "value": true,
+                      "variable": "S09参数写入完成"
+                    },
+                    "message": "S09 参数写入完成信号已触发"
+                  },
+                  {
+                    "detail": {
+                      "expected": 6,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "等待 S09 工艺 6 完成"
+                  },
+                  {
+                    "detail": {
+                      "expected": 6,
+                      "variable": "S09工艺完成"
+                    },
+                    "message": "S09 工艺 6 完成信号已确认"
+                  },
+                  {
+                    "detail": {},
+                    "message": "S09 工艺参数清零开始"
+                  },
+                  {
+                    "detail": {
+                      "errors": {},
+                      "success": true,
+                      "written_variables": {
+                        "S09TIP盒工位编号": 0,
+                        "S09TIP编号": 0,
+                        "S09参数写入完成": false,
+                        "S09工艺选择": 0,
+                        "S09抽液量": 0,
+                        "S09放液量": 0,
+                        "S09液体瓶编号": 0
+                      }
+                    },
+                    "message": "S09 工艺参数清零完成"
+                  }
+                ],
+                "message": "S09 工艺 6 完成：放 TIP",
+                "step": "放 TIP",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 274,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.feedback",
+        "nodeId": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "timestamp": 1785422658.4202316,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S09 样品解绑逻辑暂未启用\", \"data\": {\"enabled\": false}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 275,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "node.result",
+        "nodeId": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "timestamp": 1785422658.4211736,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "enabled": false
+            },
+            "message": "S09 样品解绑逻辑暂未启用",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 276,
+        "runId": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422658.4219737,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 276
+  }
+}

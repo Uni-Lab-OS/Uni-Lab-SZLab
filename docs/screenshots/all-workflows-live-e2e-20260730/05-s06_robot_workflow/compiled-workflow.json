@@ -1,0 +1,145 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "s06_robot_workflow",
+  "parameters": [
+    {
+      "name": "pump",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "pump",
+      "description": ""
+    },
+    {
+      "name": "volume",
+      "type": "number",
+      "required": false,
+      "default": 8,
+      "title": "volume",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+      "action_ref": "szlab_mixer_robot.submit_place_to_s06",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {},
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+      "action_ref": "szlab_mixer_pump.run_solvent_addition",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "pump": {
+          "kind": "runtime_parameter",
+          "parameter": "pump"
+        },
+        "volume": {
+          "kind": "runtime_parameter",
+          "parameter": "volume"
+        },
+        "skip_level_check": {
+          "kind": "literal",
+          "value": false
+        },
+        "skip_robot": {
+          "kind": "literal",
+          "value": true
+        },
+        "beaker_true_means_present": {
+          "kind": "literal",
+          "value": true
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+      "action_ref": "szlab_mixer_robot.submit_pick_from_s06",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {},
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+      "target": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+      "edge_id": ""
+    },
+    {
+      "source": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+      "target": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "line": 14,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06"
+        ]
+      },
+      {
+        "node_id": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+        "line": 15,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition"
+        ]
+      },
+      {
+        "node_id": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+        "line": 22,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"legacy s06_robot_workflow.json 的等价 Python 表达。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_robot = device(\"szlab_mixer_robot\")\nszlab_mixer_pump = device(\"szlab_mixer_pump\")\n\n\n@workflow_definition(\n    workflow_id=\"s06_robot_workflow\",\n    revision=\"python-v1\",\n)\ndef s06_robot_workflow(pump: int = 1, volume: float = 8.0) -> None:\n    szlab_mixer_robot.submit_place_to_s06()\n    szlab_mixer_pump.run_solvent_addition(\n        pump=pump,\n        volume=volume,\n        skip_level_check=False,\n        skip_robot=True,\n        beaker_true_means_present=True,\n    )\n    szlab_mixer_robot.submit_pick_from_s06()\n",
+    "uri": "workflows/s06_robot.py",
+    "content_hash": "sha256:7c3aeabf0446770d6debe756914022923cb684d42357b34339b04491472c6a4c"
+  }
+}

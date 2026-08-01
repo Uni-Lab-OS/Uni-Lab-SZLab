@@ -1,0 +1,31 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "d3c7e7b10970d97c63fa06572a81566269f647df94f33f0ba2f3a0e3a05c1572",
+    "items": [
+      {
+        "nodeId": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

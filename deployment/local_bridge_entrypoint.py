@@ -1,7 +1,7 @@
-"""Run the local bridge with only the driver catalog required by this repo.
+"""Run the local bridge with only the driver catalog required by SZLab.
 
 Uni-Lab environments may contain unrelated editable driver plugins. Importing
-every global ``unilabos.drivers`` entry point makes an isolated SZLab/AI4C
+every global ``unilabos.drivers`` entry point makes an isolated SZLab
 debug session depend on those plugins' import health. Both profiles in this
 repository use only ``generic_plc_macro``, so the local bridge pins that exact
 catalog while leaving the normal Uni-Lab-OS launcher unchanged.

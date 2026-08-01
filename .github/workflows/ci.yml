@@ -25,14 +25,14 @@ jobs:
         shell: bash -el {0}
         run: |
           mamba install -n unilab uni-lab::unilabos -c uni-lab -c robostack-staging -c conda-forge -y
-          python -m pip install --no-deps -e packages/szlab_poly_studio -e packages/ai4c_robot
+          python -m pip install --no-deps -e .
           python -m pip install pytest jsonschema PyYAML ruff
-      - name: Check external packages
+      - name: Check external package
         shell: bash -el {0}
-        run: ./scripts/check-packages.sh
+        run: ./scripts/check-package.sh
       - name: Run integration tests
         shell: bash -el {0}
         run: python -m pytest
       - name: Lint maintained Python
         shell: bash -el {0}
-        run: python -m ruff check packages tests
+        run: python -m ruff check szlab_poly_studio tests tools

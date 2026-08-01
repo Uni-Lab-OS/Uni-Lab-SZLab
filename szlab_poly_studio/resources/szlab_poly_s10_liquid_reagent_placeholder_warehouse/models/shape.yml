@@ -1,0 +1,10 @@
+schema_version: 1
+shape:
+  id: reagent_stack
+  display_name: 试剂瓶堆栈
+  applies_to:
+  - category: reagent_stack
+  sort: rear-edge
+  parts:
+  - type: sites
+    generator: open-rack

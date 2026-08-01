@@ -1,0 +1,171 @@
+{
+  "run": {
+    "id": "291dfadd521c4c62aaa2ddcfc0b820ec",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "sourceNodeId": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s04",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+        "sourceNodeId": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_pick_from_s04",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 225,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422127.7381415,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "38a0746c48d67b674666f1452d645d4419e3bc468811c3961cc481d7fa840947"
+        }
+      },
+      {
+        "seq": 226,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "node.feedback",
+        "nodeId": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "timestamp": 1785422141.83071,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S04 place\", \"task\": \"place\", \"station\": \"S04\", \"task_number\": 7, \"status\": \"completed\", \"written_variables\": {\"S04取放料编号\": 1, \"任务号\": 7, \"Robot_任务写入完成\": true}, \"write_readback\": {\"S04取放料编号\": 1, \"任务号\": 7}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 7, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S04\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"S04取放料编号\": 0, \"任务号\": 0}, \"errors\": {}}, \"position\": 1, \"sample_id\": \"debug-beaker\", \"sensor_variable\": \"传感器状态_上位机[2].NO[10]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 227,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "node.result",
+        "nodeId": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "timestamp": 1785422141.832273,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 7,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S04"
+            },
+            "message": "机器人任务已完成: S04 place",
+            "position": 1,
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "S04取放料编号": 0,
+                "任务号": 0
+              }
+            },
+            "sample_id": "debug-beaker",
+            "sensor_variable": "传感器状态_上位机[2].NO[10]",
+            "station": "S04",
+            "status": "completed",
+            "success": true,
+            "task": "place",
+            "task_number": 7,
+            "write_readback": {
+              "S04取放料编号": 1,
+              "任务号": 7
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "S04取放料编号": 1,
+              "任务号": 7
+            }
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 228,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "node.feedback",
+        "nodeId": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+        "timestamp": 1785422152.9551911,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S04 pick\", \"task\": \"pick\", \"station\": \"S04\", \"task_number\": 8, \"status\": \"completed\", \"written_variables\": {\"S04取放料编号\": 1, \"任务号\": 8, \"Robot_任务写入完成\": true}, \"write_readback\": {\"S04取放料编号\": 1, \"任务号\": 8}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 8, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S04\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"S04取放料编号\": 0, \"任务号\": 0}, \"errors\": {}}, \"position\": 1, \"sensor_variable\": \"传感器状态_上位机[2].NO[10]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 229,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "node.result",
+        "nodeId": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+        "timestamp": 1785422152.9563115,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 8,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S04"
+            },
+            "message": "机器人任务已完成: S04 pick",
+            "position": 1,
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "S04取放料编号": 0,
+                "任务号": 0
+              }
+            },
+            "sensor_variable": "传感器状态_上位机[2].NO[10]",
+            "station": "S04",
+            "status": "completed",
+            "success": true,
+            "task": "pick",
+            "task_number": 8,
+            "write_readback": {
+              "S04取放料编号": 1,
+              "任务号": 8
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "S04取放料编号": 1,
+              "任务号": 8
+            }
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 230,
+        "runId": "291dfadd521c4c62aaa2ddcfc0b820ec",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422152.9574625,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 230
+  }
+}

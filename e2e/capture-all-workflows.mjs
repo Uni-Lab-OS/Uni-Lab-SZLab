@@ -26,23 +26,7 @@ const { chromium } = await import(pathToFileURL(playwrightEntry).href)
 const workflowRoots = [
   {
     packageName: 'SZLab',
-    path: resolve(
-      repoRoot,
-      'packages',
-      'szlab_poly_studio',
-      'szlab_poly_studio',
-      'workflows'
-    )
-  },
-  {
-    packageName: 'AI4C',
-    path: resolve(
-      repoRoot,
-      'packages',
-      'ai4c_robot',
-      'ai4c_robot',
-      'workflows'
-    )
+    path: resolve(repoRoot, 'szlab_poly_studio', 'workflows')
   }
 ]
 const workflows = []
@@ -60,8 +44,8 @@ for (const root of workflowRoots) {
     })
   }
 }
-if (workflows.length !== 13) {
-  throw new Error(`Expected 13 production workflows, found ${workflows.length}`)
+if (workflows.length !== 12) {
+  throw new Error(`Expected 12 production workflows, found ${workflows.length}`)
 }
 
 await mkdir(outputRoot, { recursive: true })
@@ -232,8 +216,7 @@ try {
     osUrl,
     total: records.length,
     packages: {
-      SZLab: records.filter((item) => item.package === 'SZLab').length,
-      AI4C: records.filter((item) => item.package === 'AI4C').length
+      SZLab: records.filter((item) => item.package === 'SZLab').length
     },
     workflows: records,
     apiCalls,

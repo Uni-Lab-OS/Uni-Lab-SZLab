@@ -1,0 +1,22 @@
+{
+  "order": 1,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/magnetic_stirring.py",
+  "source_file": "magnetic_stirring.py",
+  "workflow_id": "szlab_magnetic_stirring_workflow",
+  "node_count": 1,
+  "edge_count": 0,
+  "run_id": "572f7d649302435990842cf955c838cc",
+  "run_status": "completed",
+  "node_states": [
+    "success"
+  ],
+  "started_at": "2026-07-30T14:34:31.232Z",
+  "finished_at": "2026-07-30T14:35:01.018Z",
+  "directory": "01-szlab_magnetic_stirring_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

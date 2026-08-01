@@ -1,0 +1,13 @@
+[10/12] szlab_stack_s05_s06_workflow: starting
+[10/12] szlab_stack_s05_s06_workflow: passed (30e881e5a69e4bc29f445f9fbef2e71e)
+[11/12] szlab_mixer_workflow: starting
+[11/12] szlab_mixer_workflow: passed (215272bc84b04633a04585621fa112a9)
+[12/12] szlab_mixer_pump_production: starting
+[12/12] szlab_mixer_pump_production: passed (9d279a874e0e4c9581c37fca9fcf587a)
+{
+  "outcome": "passed",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "outputRoot": "/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/docs/screenshots/all-workflows-live-e2e-20260730"
+}

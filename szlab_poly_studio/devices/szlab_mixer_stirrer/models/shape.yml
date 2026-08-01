@@ -1,0 +1,238 @@
+schema_version: 1
+shape:
+  id: stirrer_rack
+  display_name: S04 磁搅（磁搅模块）
+  applies_to:
+  - category: stirrer_rack
+  envelope:
+  - 710.0
+  - 359.0
+  - 780.0
+  note: 敞口柜前面朝 -Y。两层 × 3 台加热搅拌台对应 PLC 的 S041..S046：地板顶面 z=10/395 承搅拌器，层板 z=140..150 / 525..535 与搅拌器顶盖齐平，Ø86 的 500 mL 烧杯落在顶盖上。
+  parts:
+  - type: box
+    style: frame
+    from:
+    - 0.0
+    - 35.9
+    - 0.0
+    to:
+    - 10.0
+    - 347.4
+    - 780.0
+  - type: box
+    style: frame
+    from:
+    - 700.0
+    - 35.9
+    - 0.0
+    to:
+    - 710.0
+    - 347.4
+    - 780.0
+  - type: box
+    style: board
+    from:
+    - 10.0
+    - 17.4
+    - 0.0
+    to:
+    - 700.0
+    - 347.4
+    - 10.0
+  - type: box
+    style: body
+    from:
+    - 23.3
+    - 0.0
+    - 10.0
+    to:
+    - 238.9
+    - 359.0
+    - 140.0
+  - type: box
+    style: body
+    from:
+    - 248.3
+    - 0.0
+    - 10.0
+    to:
+    - 463.9
+    - 359.0
+    - 140.0
+  - type: box
+    style: body
+    from:
+    - 473.3
+    - 0.0
+    - 10.0
+    to:
+    - 688.9
+    - 359.0
+    - 140.0
+  - type: box
+    style: board
+    from:
+    - 10.0
+    - 17.4
+    - 140.0
+    to:
+    - 700.0
+    - 347.4
+    - 150.0
+  - type: rect
+    style: pad
+    from:
+    - 72.1
+    - 69.4
+    to:
+    - 198.1
+    - 195.4
+    z: 150.0
+  - type: rect
+    style: pad
+    from:
+    - 297.1
+    - 69.4
+    to:
+    - 423.1
+    - 195.4
+    z: 150.0
+  - type: rect
+    style: pad
+    from:
+    - 522.1
+    - 69.4
+    to:
+    - 648.1
+    - 195.4
+    z: 150.0
+  - type: disc
+    style: seat
+    center:
+    - 135.1
+    - 132.4
+    d: 86.0
+    z: 150.0
+  - type: disc
+    style: seat
+    center:
+    - 360.1
+    - 132.4
+    d: 86.0
+    z: 150.0
+  - type: disc
+    style: seat
+    center:
+    - 585.1
+    - 132.4
+    d: 86.0
+    z: 150.0
+  - type: box
+    style: board
+    from:
+    - 10.0
+    - 17.4
+    - 385.0
+    to:
+    - 700.0
+    - 347.4
+    - 395.0
+  - type: box
+    style: body
+    from:
+    - 23.3
+    - 0.0
+    - 395.0
+    to:
+    - 238.9
+    - 359.0
+    - 525.0
+  - type: box
+    style: body
+    from:
+    - 248.3
+    - 0.0
+    - 395.0
+    to:
+    - 463.9
+    - 359.0
+    - 525.0
+  - type: box
+    style: body
+    from:
+    - 473.3
+    - 0.0
+    - 395.0
+    to:
+    - 688.9
+    - 359.0
+    - 525.0
+  - type: box
+    style: board
+    from:
+    - 10.0
+    - 17.4
+    - 525.0
+    to:
+    - 700.0
+    - 347.4
+    - 535.0
+  - type: rect
+    style: pad
+    from:
+    - 72.1
+    - 69.4
+    to:
+    - 198.1
+    - 195.4
+    z: 535.0
+  - type: rect
+    style: pad
+    from:
+    - 297.1
+    - 69.4
+    to:
+    - 423.1
+    - 195.4
+    z: 535.0
+  - type: rect
+    style: pad
+    from:
+    - 522.1
+    - 69.4
+    to:
+    - 648.1
+    - 195.4
+    z: 535.0
+  - type: disc
+    style: seat
+    center:
+    - 135.1
+    - 132.4
+    d: 86.0
+    z: 535.0
+  - type: disc
+    style: seat
+    center:
+    - 360.1
+    - 132.4
+    d: 86.0
+    z: 535.0
+  - type: disc
+    style: seat
+    center:
+    - 585.1
+    - 132.4
+    d: 86.0
+    z: 535.0
+  - type: box
+    style: board
+    from:
+    - 10.0
+    - 17.4
+    - 770.0
+    to:
+    - 700.0
+    - 347.4
+    - 780.0

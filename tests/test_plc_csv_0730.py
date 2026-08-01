@@ -4,8 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-from szlab_poly_studio.plc import DEFAULT_CSV_NAME
-
+from szlab_poly_studio.devices.szlab_poly_plc.device import DEFAULT_CSV_NAME
 
 PLC_DEVICE_CLASSES = {
     "szlab_mixer_robot",
@@ -31,21 +30,20 @@ def _read_station_csv(path: Path) -> list[dict[str, str]]:
 def test_0730_csv_is_a_strict_superset_of_0702_and_station_csvs(
     repo_root: Path,
 ) -> None:
-    package_root = (
-        repo_root / "packages" / "szlab_poly_studio" / "szlab_poly_studio"
-    )
-    old_path = package_root / "szlab_plc_0702.csv"
-    new_path = package_root / "szlab_plc_0730.csv"
+    devices_root = repo_root / "szlab_poly_studio" / "devices"
+    plc_root = devices_root / "szlab_poly_plc"
+    old_path = plc_root / "szlab_plc_0702.csv"
+    new_path = plc_root / "szlab_plc_0730.csv"
     old_rows = _read_plc_csv(old_path)
     new_rows = _read_plc_csv(new_path)
     station_paths = [
-        package_root / "magnetic_stirring" / "magnetic_stirring_nodes.csv",
-        package_root / "photoshotting" / "photoshotting_nodes.csv",
-        package_root / "pump" / "pump_nodes.csv",
-        package_root / "s07_solid_addition" / "s07_nodes.csv",
-        package_root / "decap_s08" / "decap_s08_nodes.csv",
-        package_root
-        / "s09_pipetting_station"
+        devices_root / "szlab_mixer_stirrer" / "magnetic_stirring_nodes.csv",
+        devices_root / "szlab_mixer_photoshotting" / "photoshotting_nodes.csv",
+        devices_root / "szlab_mixer_pump" / "pump_nodes.csv",
+        devices_root / "szlab_s07_solid_addition" / "s07_nodes.csv",
+        devices_root / "szlab_s08_cap_station" / "decap_s08_nodes.csv",
+        devices_root
+        / "szlab_mixer_pipetting_station"
         / "pipetting_station_nodes.csv",
     ]
 
@@ -78,11 +76,7 @@ def test_graphs_configure_only_the_main_plc_as_an_opc_client(
     repo_root: Path,
 ) -> None:
     graph_root = repo_root / "deployment" / "graphs"
-    for filename in (
-        "local-debug.json",
-        "szlab-local-debug.json",
-        "szlab-ideawit-sim.json",
-    ):
+    for filename in ("szlab-local-debug.json", "szlab-ideawit-sim.json"):
         graph = json.loads((graph_root / filename).read_text(encoding="utf-8"))
         devices = {
             node["class"]: node

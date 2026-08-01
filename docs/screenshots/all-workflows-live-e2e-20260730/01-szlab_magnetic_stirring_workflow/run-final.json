@@ -1,0 +1,87 @@
+{
+  "run": {
+    "id": "572f7d649302435990842cf955c838cc",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "sourceNodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_stirrer",
+        "action": "run_stirring",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 217,
+        "runId": "572f7d649302435990842cf955c838cc",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422082.4397936,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "f72979d2822e98a22a6649fee3eb13ea2cef31bad4b4ccc8b382279b295b2d02"
+        }
+      },
+      {
+        "seq": 218,
+        "runId": "572f7d649302435990842cf955c838cc",
+        "type": "node.feedback",
+        "nodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "timestamp": 1785422098.2293005,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S041 磁搅加工完成，工艺 搅拌+加热\", \"data\": {\"station\": \"S041\", \"position\": 1, \"mode\": 3, \"mode_label\": \"搅拌+加热\", \"speed\": 300, \"temperature\": 25, \"duration\": 30.0, \"duration_ms\": 30000, \"safe_temperature\": 80, \"done_variable\": \"S041加工完成\", \"reset\": {\"station\": \"S041\", \"position\": 1, \"reset\": true}}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 219,
+        "runId": "572f7d649302435990842cf955c838cc",
+        "type": "node.result",
+        "nodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "timestamp": 1785422098.2304857,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "done_variable": "S041加工完成",
+              "duration": 30,
+              "duration_ms": 30000,
+              "mode": 3,
+              "mode_label": "搅拌+加热",
+              "position": 1,
+              "reset": {
+                "position": 1,
+                "reset": true,
+                "station": "S041"
+              },
+              "safe_temperature": 80,
+              "speed": 300,
+              "station": "S041",
+              "temperature": 25
+            },
+            "message": "S041 磁搅加工完成，工艺 搅拌+加热",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 220,
+        "runId": "572f7d649302435990842cf955c838cc",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422098.2316494,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 220
+  }
+}

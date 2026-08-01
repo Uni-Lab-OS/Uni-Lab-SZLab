@@ -4,26 +4,26 @@ from typing import Any
 
 import pytest
 
-from szlab_poly_studio.decap_s08.decap_s08_cap_station import (
-    SZLabS08CapStationDevice,
-)
-from szlab_poly_studio.magnetic_stirring.magnetic_stirring import (
-    SzlabMixerMagneticStirrerDevice,
-)
-from szlab_poly_studio.photoshotting.photoshotting import (
-    SzlabMixerPhotoShottingDevice,
-)
-from szlab_poly_studio.plc_gateway import (
+from szlab_poly_studio.common.plc_gateway import (
     PLCActionGateway,
     UnifiedPLCGatewayMixin,
 )
-from szlab_poly_studio.pump.pump import SzlabMixerPumpDevice
-from szlab_poly_studio.robot.robot import SzlabMixerRobotDevice
-from szlab_poly_studio.s07_solid_addition.s07 import (
+from szlab_poly_studio.devices.szlab_mixer_photoshotting.device import (
+    SzlabMixerPhotoShottingDevice,
+)
+from szlab_poly_studio.devices.szlab_mixer_pipetting_station.device import (
+    SzlabMixerPipettingStationDevice,
+)
+from szlab_poly_studio.devices.szlab_mixer_pump.device import SzlabMixerPumpDevice
+from szlab_poly_studio.devices.szlab_mixer_robot.device import SzlabMixerRobotDevice
+from szlab_poly_studio.devices.szlab_mixer_stirrer.device import (
+    SzlabMixerMagneticStirrerDevice,
+)
+from szlab_poly_studio.devices.szlab_s07_solid_addition.device import (
     SZLabS07SolidAdditionDevice,
 )
-from szlab_poly_studio.s09_pipetting_station.pipetting_station import (
-    SzlabMixerPipettingStationDevice,
+from szlab_poly_studio.devices.szlab_s08_cap_station.device import (
+    SZLabS08CapStationDevice,
 )
 
 

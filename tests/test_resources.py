@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from szlab_poly_studio.decks import SZLabPolyStudioDeck
-from szlab_poly_studio.materials import (
+from szlab_poly_studio.resources.decks import SZLabPolyStudioDeck
+from szlab_poly_studio.resources.materials import (
     beaker_500ml,
     liquid_reagent_bottle_100ml,
     pipette_tip,
@@ -9,7 +9,7 @@ from szlab_poly_studio.materials import (
     sample_vial_250ml,
     sample_vial_500ml,
 )
-from szlab_poly_studio.warehouses import (
+from szlab_poly_studio.resources.warehouses import (
     powder_container_placeholder_warehouse,
     s1_loading_buffer_warehouse,
     s2_tip_placeholder_warehouse,

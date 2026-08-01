@@ -1,0 +1,24 @@
+{
+  "order": 10,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/stack_s05_s06.py",
+  "source_file": "stack_s05_s06.py",
+  "workflow_id": "szlab_stack_s05_s06_workflow",
+  "node_count": 3,
+  "edge_count": 2,
+  "run_id": "a4135ccdad5b42e5a935aeff0aac6b1b",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T15:18:14.361Z",
+  "finished_at": "2026-07-30T15:19:43.975Z",
+  "directory": "10-szlab_stack_s05_s06_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

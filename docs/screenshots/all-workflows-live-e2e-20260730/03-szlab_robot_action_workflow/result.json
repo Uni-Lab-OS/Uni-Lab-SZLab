@@ -1,0 +1,23 @@
+{
+  "order": 3,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/robot_action.py",
+  "source_file": "robot_action.py",
+  "workflow_id": "szlab_robot_action_workflow",
+  "node_count": 2,
+  "edge_count": 1,
+  "run_id": "291dfadd521c4c62aaa2ddcfc0b820ec",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T14:35:19.944Z",
+  "finished_at": "2026-07-30T14:35:55.880Z",
+  "directory": "03-szlab_robot_action_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

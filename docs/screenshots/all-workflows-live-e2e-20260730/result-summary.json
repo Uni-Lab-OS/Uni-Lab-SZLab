@@ -1,0 +1,293 @@
+{
+  "outcome": "passed",
+  "started_at": "2026-07-30T14:34:31.200Z",
+  "finished_at": "2026-07-30T15:19:43.987Z",
+  "frontend_url": "http://127.0.0.1:5173",
+  "os_url": "http://127.0.0.1:8015",
+  "opcua_url": "opc.tcp://opcua.ideawit.com:4855/xuse_sim",
+  "opcua_node_prefix": "ns=4;s=上位机通讯|",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "workflows": [
+    {
+      "order": 1,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/magnetic_stirring.py",
+      "source_file": "magnetic_stirring.py",
+      "workflow_id": "szlab_magnetic_stirring_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "run_id": "572f7d649302435990842cf955c838cc",
+      "run_status": "completed",
+      "node_states": [
+        "success"
+      ],
+      "started_at": "2026-07-30T14:34:31.232Z",
+      "finished_at": "2026-07-30T14:35:01.018Z",
+      "directory": "01-szlab_magnetic_stirring_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 2,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/photoshotting.py",
+      "source_file": "photoshotting.py",
+      "workflow_id": "szlab_photoshotting_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "run_id": "c346d965854643d8be37a9816e71d3ec",
+      "run_status": "completed",
+      "node_states": [
+        "success"
+      ],
+      "started_at": "2026-07-30T14:35:01.091Z",
+      "finished_at": "2026-07-30T14:35:19.915Z",
+      "directory": "02-szlab_photoshotting_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 3,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/robot_action.py",
+      "source_file": "robot_action.py",
+      "workflow_id": "szlab_robot_action_workflow",
+      "node_count": 2,
+      "edge_count": 1,
+      "run_id": "291dfadd521c4c62aaa2ddcfc0b820ec",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:35:19.944Z",
+      "finished_at": "2026-07-30T14:35:55.880Z",
+      "directory": "03-szlab_robot_action_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 4,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s04_robot_stirring.py",
+      "source_file": "s04_robot_stirring.py",
+      "workflow_id": "s04_robot_stirring_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "run_id": "6bf8156a03c54c589124c2f47b254dd2",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:35:55.904Z",
+      "finished_at": "2026-07-30T14:37:08.553Z",
+      "directory": "04-s04_robot_stirring_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 5,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s06_robot.py",
+      "source_file": "s06_robot.py",
+      "workflow_id": "s06_robot_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "run_id": "908ef5f67baf481abae1fc0d0478e8b4",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:37:08.575Z",
+      "finished_at": "2026-07-30T14:37:58.398Z",
+      "directory": "05-s06_robot_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 6,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s07_robot.py",
+      "source_file": "s07_robot.py",
+      "workflow_id": "s07_robot_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "run_id": "d519c5597a59486d838a28dab41e554e",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:37:58.422Z",
+      "finished_at": "2026-07-30T14:38:51.513Z",
+      "directory": "06-s07_robot_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 7,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s07_solid_addition.py",
+      "source_file": "s07_solid_addition.py",
+      "workflow_id": "szlab_s07_solid_addition_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "run_id": "3543dd3cee0747ada4e76e99c4e52297",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:53:06.241Z",
+      "finished_at": "2026-07-30T14:56:05.826Z",
+      "directory": "07-szlab_s07_solid_addition_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 8,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s08_cap.py",
+      "source_file": "s08_cap.py",
+      "workflow_id": "s08_cap_workflow",
+      "node_count": 2,
+      "edge_count": 1,
+      "run_id": "bdf91a4752734197a144ca8fd5cb6853",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:39:45.696Z",
+      "finished_at": "2026-07-30T14:43:20.975Z",
+      "directory": "08-s08_cap_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 9,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/s09_pipetting.py",
+      "source_file": "s09_pipetting.py",
+      "workflow_id": "szlab_s09_pipetting_workflow",
+      "node_count": 4,
+      "edge_count": 3,
+      "run_id": "70b0f5ef4a2f4df6babbb1722cfc8c2b",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T14:43:20.998Z",
+      "finished_at": "2026-07-30T14:44:21.609Z",
+      "directory": "09-szlab_s09_pipetting_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 10,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/stack_s05_s06.py",
+      "source_file": "stack_s05_s06.py",
+      "workflow_id": "szlab_stack_s05_s06_workflow",
+      "node_count": 3,
+      "edge_count": 2,
+      "run_id": "a4135ccdad5b42e5a935aeff0aac6b1b",
+      "run_status": "completed",
+      "node_states": [
+        "success",
+        "success",
+        "success"
+      ],
+      "started_at": "2026-07-30T15:18:14.361Z",
+      "finished_at": "2026-07-30T15:19:43.975Z",
+      "directory": "10-szlab_stack_s05_s06_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 11,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/szlab_mixer.py",
+      "source_file": "szlab_mixer.py",
+      "workflow_id": "szlab_mixer_workflow",
+      "node_count": 1,
+      "edge_count": 0,
+      "run_id": "215272bc84b04633a04585621fa112a9",
+      "run_status": "completed",
+      "node_states": [
+        "success"
+      ],
+      "started_at": "2026-07-30T15:14:41.112Z",
+      "finished_at": "2026-07-30T15:15:17.286Z",
+      "directory": "11-szlab_mixer_workflow",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    },
+    {
+      "order": 12,
+      "outcome": "passed",
+      "source": "szlab_poly_studio/workflows/szlab_mixer_pump_production.py",
+      "source_file": "szlab_mixer_pump_production.py",
+      "workflow_id": "szlab_mixer_pump_production",
+      "node_count": 1,
+      "edge_count": 0,
+      "run_id": "9d279a874e0e4c9581c37fca9fcf587a",
+      "run_status": "completed",
+      "node_states": [
+        "success"
+      ],
+      "started_at": "2026-07-30T15:15:17.307Z",
+      "finished_at": "2026-07-30T15:15:52.018Z",
+      "directory": "12-szlab_mixer_pump_production",
+      "screenshots": [
+        "01-running.png",
+        "02-completed.png",
+        "03-events.png"
+      ]
+    }
+  ]
+}

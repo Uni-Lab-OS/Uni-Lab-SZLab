@@ -1,0 +1,77 @@
+{
+  "run": {
+    "id": "c346d965854643d8be37a9816e71d3ec",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "sourceNodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_photoshotting",
+        "action": "take_photo",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 221,
+        "runId": "c346d965854643d8be37a9816e71d3ec",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422117.6723413,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "2b1e6bfa0674dd18a45c853e6f9d64206df7af37edf66e6577259fec9e76e15c"
+        }
+      },
+      {
+        "seq": 222,
+        "runId": "c346d965854643d8be37a9816e71d3ec",
+        "type": "node.feedback",
+        "nodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "timestamp": 1785422118.5763755,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S05 拍照检测完成，结果 OK\", \"data\": {\"sample_id\": \"debug-sample\", \"photo_path\": \"\", \"photo_url\": \"\", \"result_code\": 1, \"result\": \"OK\"}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 223,
+        "runId": "c346d965854643d8be37a9816e71d3ec",
+        "type": "node.result",
+        "nodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "timestamp": 1785422118.577499,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "photo_path": "",
+              "photo_url": "",
+              "result": "OK",
+              "result_code": 1,
+              "sample_id": "debug-sample"
+            },
+            "message": "S05 拍照检测完成，结果 OK",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 224,
+        "runId": "c346d965854643d8be37a9816e71d3ec",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422118.5785472,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 224
+  }
+}

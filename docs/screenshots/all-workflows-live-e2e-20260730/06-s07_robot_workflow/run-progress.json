@@ -1,0 +1,56 @@
+{
+  "run": {
+    "id": "d519c5597a59486d838a28dab41e554e",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "sourceNodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s071",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "sourceNodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s072",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "sourceNodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_pick_from_s072",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 247,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422291.2349825,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "7ed70f5a1e1bade34a1ba6eb5ff4999e1bd977b545a13b93dd409bbb6d2435d6"
+        }
+      }
+    ],
+    "nextSeq": 247
+  }
+}

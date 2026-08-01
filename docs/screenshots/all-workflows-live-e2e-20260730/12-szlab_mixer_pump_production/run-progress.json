@@ -1,0 +1,36 @@
+{
+  "run": {
+    "id": "9d279a874e0e4c9581c37fca9fcf587a",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "sourceNodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pump",
+        "action": "run_solvent_addition",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 306,
+        "runId": "9d279a874e0e4c9581c37fca9fcf587a",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785424526.1921794,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "7de26433c08acd53f6979eb65a6ec9acad0b6f338bdd9a12993bb2e6262c7dda"
+        }
+      }
+    ],
+    "nextSeq": 306
+  }
+}

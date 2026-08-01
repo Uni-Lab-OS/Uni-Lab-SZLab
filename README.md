@@ -1,149 +1,88 @@
-# Uni-Lab SZLab Integration
+# Uni-Lab SZLab Poly Studio
 
-这是从 `styxhuang/Uni-Lab-OS` 的 `dev` 分支中拆出的独立维护仓库，集中维护：
+SZLab 聚合物工作站领域设备包。仓库根同时是 Python distribution root 和目标
+Uni-Lab-OS workspace root；根目录只构建一个 distribution `szlab-poly-studio`，唯一常规
+顶层 import package 是 `szlab_poly_studio`。
 
-- SZLab 聚合物工作站与 AI4C 的标准外部设备包；
-- 8 个 warehouse、1 个 deck 和 6 类新增物料；
-- Profile v1 与 device-template v2 设备契约；
-- 从本地调试 UI preset/legacy JSON 迁移得到的 13 个 Python 工作流；
-- 对接当前 Uni-Lab-OS local bridge 和最新 `uni-lab-fe` 的本地调试配置。
+AI4C 已从本仓库迁出到同级的 `../Uni-Lab-AI4C/`，两边可以独立安装、测试、构建和发布。
 
-代码基线为 `styx/dev@d58a8c0d6de26b9de77161359bb627d75fa8e4e8`，结构与 schema 基线为
-`Uni-Lab-Templates@5e44020e1020577b0c00ba196f82a7e434983b29`。完整来源见
-[`NOTICE`](NOTICE)，迁移映射见 [`migration/manifest.yaml`](migration/manifest.yaml)。
-本地联调证据与复现命令见 [`docs/VALIDATION.md`](docs/VALIDATION.md)。
-
-## 两个独立设备包
-
-本仓库采用 monorepo 管理，但 SZLab 和 AI4C 是两个互不交叉导入、可分别安装和发布的 Python
-distribution：
-
-| 包 | Distribution | Profile | 独立调试图 |
-| --- | --- | --- | --- |
-| SZLab | `unilabos-szlab-poly-studio` | `packages/szlab_poly_studio/package.yaml` | `deployment/graphs/szlab-local-debug.json` |
-| AI4C | `unilabos-ai4c-robot` | `packages/ai4c_robot/package.yaml` | `deployment/graphs/ai4c-local-debug.json` |
-
-分别检查和构建：
-
-```bash
-./scripts/check-szlab-package.sh
-./scripts/check-ai4c-package.sh
-./scripts/build-szlab-package.sh
-./scripts/build-ai4c-package.sh
-```
-
-wheel 分别输出到 `dist/szlab/` 和 `dist/ai4c/`。
-
-## 仓库结构
+## 目录合同
 
 ```text
-packages/
-  szlab_poly_studio/   # S1、S04-S09、机械臂、PLC、物料与 warehouse
-  ai4c_robot/          # AI4C PLC 与机械臂
-specs/                 # device-template v2 合同
-schemas/               # 当前模板 schema 的固定副本
-deployment/            # 默认不连接硬件的本地图和配置
-migration/             # 原始 preset/JSON/CSV 与可审计映射
-tests/                 # schema、注册表、物料、工作流和仓库卫生测试
+Uni-Lab-SZLab/
+├── pyproject.toml
+├── szlab_poly_studio/
+│   ├── devices/<device_id>/
+│   │   ├── device.py
+│   │   └── models/
+│   ├── resources/
+│   ├── workflows/
+│   ├── profiles/default/
+│   └── common/
+├── deployment/
+├── tests/
+├── docs/
+├── scripts/
+└── migration/
 ```
 
-## 环境与安装
+没有 `packages/` 中间层，也没有独立的模型 entry-point 协议。设备、资源和工作流由各自装饰器
+定义；模型元数据写在同一个 `@device` 或 `@resource` 上。设备专属资产放在
+`devices/<device_id>/models/`，资源专属资产放在 `resources/<resource_id>/models/`，声明中
+的 `entry` 相对装饰器所在 Python 文件解析。
 
-必须使用可运行 Uni-Lab-OS 的 Python 3.11 环境。当前联调环境的示例：
+当前仓库中的 2.5D 外形已按归属拆成各目录的 `models/shape.yml`。增加 3D 模型时，优先在
+同一 `models/` 目录放置一个 Xacro 入口及其 `meshes/` 依赖，并在原装饰器的 `model` 中增加
+`format: xacro`、`entry` 和 `macro`。同一 Xacro 默认同时作为 Web、kinematics 和 collision
+来源；只有实际存在不同优化产物时才增加用途覆盖。
+
+## 安装、检查和构建
+
+在可运行 Uni-Lab-OS 的 Python 3.11 环境中：
 
 ```bash
-export UNILAB_PYTHON=/home/changjunhan/.micromamba/envs/unilab/bin/python
-"$UNILAB_PYTHON" -m pip install -e packages/szlab_poly_studio --no-deps
-"$UNILAB_PYTHON" -m pip install -e packages/ai4c_robot --no-deps
+python -m pip install -e . --no-deps
+./scripts/check-package.sh
+./scripts/build-package.sh
+python -m pytest
 ```
 
-`--no-deps` 适用于已经安装 Uni-Lab-OS 的环境；新环境应先按 Uni-Lab-OS 文档安装
-`unilabos`、ROS 依赖和设备通信依赖。
+wheel 输出到 `dist/`。`check-package.sh` 暂时通过现有 OS 的兼容入口
+`--devices ./szlab_poly_studio` 做 AST 检查；包内 2.5D 清单采用 `shape.yml`，避免现有 OS 把
+`devices/**/shape.yaml` 误判成旧式 YAML 注册表。模型入口由装饰器显式指定，扩展名不参与发现。
+Issue #147 里的 OS package manager 和
+`--workspace .` 尚未落地前，不能把“目录已经是 workspace”误写成“当前 OS 已支持 workspace
+启动”。
 
-## 设备包检查与测试
+## 本地联调
+
+启动离线 authoring bridge：
 
 ```bash
-UNILAB_COMMAND=/home/changjunhan/.micromamba/envs/unilab/bin/unilab \
-  ./scripts/check-packages.sh
-
-PYTHONPATH="../Uni-Lab-OS:packages/szlab_poly_studio:packages/ai4c_robot" \
-  /home/changjunhan/.micromamba/envs/unilab/bin/python -m pytest
+./scripts/start-authoring-bridge.sh
 ```
 
-`check-packages.sh` 使用模板仓库同样的 `--check_mode --external_devices_only` 入口。
-
-## 最新前端本地联调
-
-先启动只监听 loopback 的 authoring/runtime bridge。该模式加载两个 Profile、迁移后的动作目录和
-本地物料图，执行由 OfflineOS 模拟，不连接 PLC：
+启动 runtime bridge 与测试 Edge：
 
 ```bash
-UNILAB_PYTHON=/home/changjunhan/.micromamba/envs/unilab/bin/python \
-  ./scripts/start-authoring-bridge.sh
+./scripts/start-runtime-bridge.sh
+./scripts/start-test-os.sh
 ```
 
-然后在相邻的最新前端仓库启动 Web：
+默认图中的直连 PLC 驱动均为 `auto_connect: false`。真机接入前必须单独核验 IP、NodeId、
+账号、联锁、急停、物料占用和恢复语义。
 
-```bash
-cd ../uni-lab-fe
-pnpm dev
-```
+SZLab 前端 E2E 截图见 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)，12 个生产工作流
+的代码与 DAG 截图见
+[`docs/ALL_WORKFLOW_SCREENSHOTS.md`](docs/ALL_WORKFLOW_SCREENSHOTS.md)。远端 OPC UA 仿真、
+Bridge/Edge 启动和排障命令见
+[`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。全部工作流的
+真机仿真结果见
+[`docs/ALL_WORKFLOWS_LIVE_E2E_20260730.md`](docs/ALL_WORKFLOWS_LIVE_E2E_20260730.md)，动作与 PLC
+日志规范见 [`docs/SZLAB_ACTION_LOGGING.md`](docs/SZLAB_ACTION_LOGGING.md)。
 
-前端默认使用 `http://127.0.0.1:8014`。也可以访问
-`?localOsUrl=http%3A%2F%2F127.0.0.1%3A8014` 显式指定。本地 bridge 提供的统一 v1
-契约包括：
+## 来源与许可
 
-- `GET|PUT /api/v1/workflows/{id}/graph`
-- `POST /api/v1/workflows:validate`
-- `POST /api/v1/authoring/compile`
-- `POST /api/v1/authoring/generate-python`
-- `POST /api/v1/authoring/validate`
-- `/api/v1/runtime/runs`、节点、事件、命令、取消与 WebSocket 投影
-- `GET /api/v1/materials` 与 `GET /api/v1/material-models`
-
-生产工作流源码位于两个包的 `workflows/` 下。工作流只经过 Uni-Lab-OS Python AST
-编译器生成 Canonical v2，不使用 `eval` 或 `exec`。
-
-只启动 SZLab 或 AI4C 时分别使用：
-
-```bash
-./scripts/start-szlab-authoring-bridge.sh
-./scripts/start-ai4c-authoring-bridge.sh
-```
-
-这些启动脚本通过 `deployment/local_bridge_entrypoint.py` 仅加载仓库所需的内置
-`generic_plc_macro` 配置，避免当前 Python 环境中其他已安装设备插件影响本仓库的独立调试。
-
-SZLab 最新前端 E2E 截图见
-[`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)。
-全部 13 个生产工作流的代码与 DAG 截图见
-[`docs/ALL_WORKFLOW_SCREENSHOTS.md`](docs/ALL_WORKFLOW_SCREENSHOTS.md)。
-连接远端 OPC UA 仿真服务器、启动新版前端/Bridge/Edge、运行独立握手器和排查工作流的
-完整命令见
-[`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。
-
-## OS 测试模式
-
-需要验证真实 OS 注册、ResourceTreeSet 和 schedule 通道时，先运行
-[`scripts/start-runtime-bridge.sh`](scripts/start-runtime-bridge.sh)，再运行
-[`scripts/start-test-os.sh`](scripts/start-test-os.sh)。仓库提供的
-[`local-debug.json`](deployment/graphs/local-debug.json) 对所有直连 OPC UA 驱动设置
-`auto_connect: false`，S1 也禁止硬件动作。
-
-真机接入前必须单独完成 IP、NodeId、账号、联锁、急停、物料占用和恢复语义核验；不得直接把
-本地图中的 `auto_connect` 改为 `true` 后投入生产。
-
-## 迁移说明
-
-已提交的 12 个 local UI preset 全部映射到 Python 工作流。6 个 legacy JSON 工作流保留用于
-动作序列回归，其中 S08 的 `sample_id: [a,b,c]` 通过标量适配动作表达，以满足当前 Python
-AST 编译器的受限语法。历史 `auto-<method>` 动作统一迁移为 `<method>`，从而能写成合法的
-`device("id").method(...)`。
-
-当前工作区和定向浏览器/e2e 持久化位置没有发现可安全归属到本项目的活动
-`unilabos.workflowDraft`，因此已提交的 preset 与 JSON 是本次迁移的权威输入。
-
-## 许可
-
-上游设备驱动标记为 DP Technology Proprietary License。本仓库应保持私有，除非权利人明确
-授权再分发。详见 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
+来源映射见 [`migration/manifest.yaml`](migration/manifest.yaml)，完整来源见 [`NOTICE`](NOTICE)。
+上游设备驱动标记为 DP Technology Proprietary License；除非权利人明确授权，本仓库应保持
+私有。详见 [`LICENSE`](LICENSE)。

@@ -171,7 +171,7 @@ def main() -> None:
     print(f"{args.stl.name}: {len(tris)} triangles")
     print(f"  bbox min={np.round(lo, 2)} max={np.round(hi, 2)}")
     print(f"  size   ={np.round(hi - lo, 2)}")
-    print(f"  flat planes (z with most horizontal area):")
+    print("  flat planes (z with most horizontal area):")
     for z, area in flat_planes(tris, args.slice_axis)[:12]:
         print(f"    {z:8.2f} : area={area:10.1f}")
     if args.cluster_z is not None:

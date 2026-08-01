@@ -4,25 +4,33 @@ import json
 from pathlib import Path
 
 
-def test_local_debug_graph_uses_only_registered_project_classes(
+def test_szlab_debug_graph_uses_only_registered_project_classes(
     repo_root: Path,
     action_catalog: dict,
 ) -> None:
-    payload = json.loads((repo_root / "deployment" / "graphs" / "local-debug.json").read_text(encoding="utf-8"))
+    payload = json.loads(
+        (repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(
+            encoding="utf-8"
+        )
+    )
     ids = [node["id"] for node in payload["nodes"]]
     assert len(ids) == len(set(ids))
     assert payload["links"] == []
 
     device_classes = {
-        ref.split(".", 1)[0] for ref in action_catalog if not ref.startswith(("szlab_poly_studio.", "ai4c_station."))
+        ref.split(".", 1)[0]
+        for ref in action_catalog
+        if not ref.startswith("szlab_poly_studio.")
     }
-    graph_device_classes = {node["class"] for node in payload["nodes"] if node["type"] == "device"}
+    graph_device_classes = {
+        node["class"] for node in payload["nodes"] if node["type"] == "device"
+    }
     assert graph_device_classes <= device_classes
-    direct_plc_classes = {"szlab_poly_plc", "AI4C_plc"}
+    assert all(not node["class"].casefold().startswith("ai4c") for node in payload["nodes"])
     assert all(
         node.get("config", {}).get("auto_connect") is False
         for node in payload["nodes"]
-        if node["class"] in direct_plc_classes
+        if node["class"] == "szlab_poly_plc"
     )
     unified_plc_device_classes = {
         "szlab_mixer_robot",
@@ -33,68 +41,49 @@ def test_local_debug_graph_uses_only_registered_project_classes(
         "szlab_s08_cap_station",
         "szlab_mixer_pipetting_station",
     }
-    assert all(
-        node.get("config") == {"plc_device_id": "szlab_poly_plc"}
-        for node in payload["nodes"]
-        if node["class"] in unified_plc_device_classes
-    )
+    for node in payload["nodes"]:
+        if node["class"] not in unified_plc_device_classes:
+            continue
+        config = node.get("config", {})
+        assert config.get("plc_device_id") == "szlab_poly_plc"
+        assert "url" not in config
+        assert "csv_path" not in config
+        assert "auto_connect" not in config
 
 
-def test_package_specific_debug_graphs_are_fully_separated(repo_root: Path) -> None:
-    graph_root = repo_root / "deployment" / "graphs"
-    combined = json.loads((graph_root / "local-debug.json").read_text(encoding="utf-8"))
-    szlab = json.loads((graph_root / "szlab-local-debug.json").read_text(encoding="utf-8"))
-    ai4c = json.loads((graph_root / "ai4c-local-debug.json").read_text(encoding="utf-8"))
+def test_repository_is_one_distribution_with_one_import_package(repo_root: Path) -> None:
+    assert not (repo_root / "packages").exists()
+    assert (repo_root / "pyproject.toml").is_file()
+    assert (repo_root / "szlab_poly_studio" / "__init__.py").is_file()
 
-    combined_ids = {node["id"] for node in combined["nodes"]}
-    szlab_ids = {node["id"] for node in szlab["nodes"]}
-    ai4c_ids = {node["id"] for node in ai4c["nodes"]}
-    # 包内图额外摆上了台面上的物料实例（烧杯/样品瓶/试剂瓶/TIP 盒），
-    # 合并图只列设备与仓位
-    material_ids = szlab_ids - combined_ids
-    station_ids = szlab_ids - material_ids
-    # 样品瓶已并入烧杯堆栈的 A 行，那个独立的调试瓶从包内图删掉
-    retired_ids = combined_ids - szlab_ids - ai4c_ids
-
-    assert len(station_ids) == 19
-    assert len(ai4c_ids) == 2
-    assert retired_ids == {"debug_sample_vial_250ml"}
-    assert szlab_ids.isdisjoint(ai4c_ids)
-    assert station_ids | ai4c_ids | retired_ids == combined_ids
-    assert all(
-        node["type"] == "container"
-        for node in szlab["nodes"]
-        if node["id"] in material_ids
-    )
-    assert all(not node["class"].startswith("AI4C") for node in szlab["nodes"])
-    assert all(node["class"].startswith("AI4C") for node in ai4c["nodes"])
-    assert szlab["links"] == ai4c["links"] == []
+    pyproject = (repo_root / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'name = "szlab-poly-studio"' in pyproject
+    assert 'include = ["szlab_poly_studio*"]' in pyproject
+    assert "unilabos.model_bundles" not in pyproject
 
 
-def test_python_distributions_do_not_cross_import(repo_root: Path) -> None:
-    package_sources = {
-        "szlab_poly_studio": repo_root / "packages" / "szlab_poly_studio" / "szlab_poly_studio",
-        "ai4c_robot": repo_root / "packages" / "ai4c_robot" / "ai4c_robot",
-    }
-    for package_name, source_root in package_sources.items():
-        other_package = next(name for name in package_sources if name != package_name)
-        violations = [
-            str(path.relative_to(repo_root))
-            for path in source_root.rglob("*.py")
-            if other_package in path.read_text(encoding="utf-8")
-        ]
-        assert violations == []
+def test_szlab_source_does_not_cross_import_ai4c(repo_root: Path) -> None:
+    violations = [
+        str(path.relative_to(repo_root))
+        for path in (repo_root / "szlab_poly_studio").rglob("*.py")
+        if "ai4c_robot" in path.read_text(encoding="utf-8").casefold()
+    ]
+    assert violations == []
 
 
-def test_production_sources_do_not_contain_legacy_paths_or_auto_action_prefix(repo_root: Path) -> None:
+def test_production_sources_do_not_contain_legacy_paths_or_model_bundle_protocol(
+    repo_root: Path,
+) -> None:
     forbidden = (
         "unilabos.devices.workstation.szlab_poly_studio",
+        "unilabos.model_bundles",
+        "model_bundle",
         "/Users/",
         "auto_prefix=True",
         "auto_prefix = True",
     )
     violations: list[str] = []
-    for path in (repo_root / "packages").rglob("*"):
+    for path in (repo_root / "szlab_poly_studio").rglob("*"):
         if path.suffix not in {".py", ".yaml", ".toml"}:
             continue
         text = path.read_text(encoding="utf-8")

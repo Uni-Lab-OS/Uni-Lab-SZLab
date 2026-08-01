@@ -1,0 +1,60 @@
+schema_version: 1
+shape:
+  id: powder_container
+  display_name: 注粉瓶
+  applies_to:
+  - category: powder_reagent
+  priority: 10
+  envelope:
+  - 70.0
+  - 70.0
+  - 190.0
+  units: ratio
+  shadow: round
+  note: 回转剖面取自 CAD 注粉瓶-20260508（Ø70 × 190）：下端出料嘴 → 锥体 → 带凹槽的法兰段 → 顶部阀杆。
+  parts:
+  - type: lathe
+    style: glass
+    center:
+    - 0.5
+    - 0.5
+    d: 1.0
+    z:
+    - 0.0
+    - 1.0
+    mouth: true
+    rings:
+    - z: 0.0
+      r: 0.32
+    - z: 0.026
+      r: 0.26
+    - z: 0.053
+      r: 0.49
+    - z: 0.132
+      r: 0.49
+    - z: 0.221
+      r: 0.73
+    - z: 0.316
+      r: 0.81
+    - z: 0.395
+      r: 0.96
+    - z: 0.526
+      r: 1.0
+    - z: 0.537
+      r: 0.76
+    - z: 0.579
+      r: 0.76
+    - z: 0.589
+      r: 1.0
+    - z: 0.711
+      r: 0.99
+    - z: 0.726
+      r: 0.64
+    - z: 0.832
+      r: 0.49
+    - z: 0.895
+      r: 0.49
+    - z: 0.905
+      r: 0.29
+    - z: 1.0
+      r: 0.29

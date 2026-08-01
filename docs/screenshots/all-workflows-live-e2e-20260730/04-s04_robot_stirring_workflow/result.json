@@ -1,0 +1,24 @@
+{
+  "order": 4,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/s04_robot_stirring.py",
+  "source_file": "s04_robot_stirring.py",
+  "workflow_id": "s04_robot_stirring_workflow",
+  "node_count": 3,
+  "edge_count": 2,
+  "run_id": "6bf8156a03c54c589124c2f47b254dd2",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T14:35:55.904Z",
+  "finished_at": "2026-07-30T14:37:08.553Z",
+  "directory": "04-s04_robot_stirring_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

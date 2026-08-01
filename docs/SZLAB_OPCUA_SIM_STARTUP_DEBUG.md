@@ -63,7 +63,7 @@ szlab_workflow_handshake.py
 | Python | `/home/changjunhan/.micromamba/envs/unilab/bin/python` |
 | unilab CLI | `/home/changjunhan/.micromamba/envs/unilab/bin/unilab` |
 | 仿真图 | `deployment/graphs/szlab-ideawit-sim.json` |
-| PLC CSV | `packages/szlab_poly_studio/szlab_poly_studio/szlab_plc_0730.csv` |
+| PLC CSV | `szlab_poly_studio/devices/szlab_poly_plc/szlab_plc_0730.csv` |
 | 前端端口 | `5173` |
 | Bridge API | `8015` |
 | Bridge schedule WS | `8892` |
@@ -97,7 +97,7 @@ PY
 ```bash
 cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
 
-test -f packages/szlab_poly_studio/szlab_poly_studio/szlab_plc_0730.csv
+test -f szlab_poly_studio/devices/szlab_poly_plc/szlab_plc_0730.csv
 
 jq '.nodes[] | select(.id == "szlab_poly_plc") | .config' \
   deployment/graphs/szlab-ideawit-sim.json
@@ -144,7 +144,7 @@ ss -ltnp | rg ':(5173|8015|8892|18003)\b' || true
 ```bash
 cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
 
-export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/packages/szlab_poly_studio${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab${PYTHONPATH:+:${PYTHONPATH}}"
 
 /home/changjunhan/.micromamba/envs/unilab/bin/python \
   deployment/local_bridge_entrypoint.py \
@@ -153,7 +153,7 @@ export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/U
   --api-port 8015 \
   --execution-http-url http://127.0.0.1:18003 \
   --journal-path runtime/ideawit-e2e/quick-debug.sqlite3 \
-  --profile packages/szlab_poly_studio/package.yaml
+  --profile szlab_poly_studio/profiles/default/package.yaml
 ```
 
 ### 4.2 终端二：启动 Edge
@@ -164,13 +164,13 @@ Edge 必须使用 `szlab-ideawit-sim.json`，并且不要在 Edge 命令中重�
 ```bash
 cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
 
-export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/packages/szlab_poly_studio${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab${PYTHONPATH:+:${PYTHONPATH}}"
 
 /home/changjunhan/.micromamba/envs/unilab/bin/unilab \
   --graph /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/deployment/graphs/szlab-ideawit-sim.json \
   --config /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/deployment/local_config.py \
   --working_dir /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/runtime/ideawit-e2e \
-  --devices /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/packages/szlab_poly_studio/szlab_poly_studio \
+  --devices /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/szlab_poly_studio \
   --external_devices_only \
   --backend ros \
   --app_bridges websocket fastapi \
@@ -240,11 +240,11 @@ cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
   --node-prefix 'ns=4;s=上位机通讯|' \
   --position 1 \
   --pump 1 \
-  --process-delay 0.5 \
+  --process-delay 5.0 \
   --poll-interval 0.1
 ```
 
-完整运行 `packages/szlab_poly_studio/szlab_poly_studio/workflows/s06_robot.py`
+完整运行 `szlab_poly_studio/workflows/s06_robot.py`
 时使用 S06 专用场景：
 
 ```bash
@@ -254,7 +254,7 @@ cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
   --url 'opc.tcp://opcua.ideawit.com:4855/xuse_sim' \
   --node-prefix 'ns=4;s=上位机通讯|' \
   --pump 1 \
-  --process-delay 0.5 \
+  --process-delay 5.0 \
   --poll-interval 0.1 \
   --max-actions 3
 ```
@@ -280,7 +280,7 @@ cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
 
 mkdir -p runtime/ideawit-e2e/logs
 
-export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/packages/szlab_poly_studio${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="/home/changjunhan/Uni-Lab-Core/Uni-Lab-OS:/home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab${PYTHONPATH:+:${PYTHONPATH}}"
 
 nohup /home/changjunhan/.micromamba/envs/unilab/bin/python \
   deployment/local_bridge_entrypoint.py \
@@ -289,18 +289,20 @@ nohup /home/changjunhan/.micromamba/envs/unilab/bin/python \
   --api-port 8015 \
   --execution-http-url http://127.0.0.1:18003 \
   --journal-path runtime/ideawit-e2e/quick-debug.sqlite3 \
-  --profile packages/szlab_poly_studio/package.yaml \
+  --profile szlab_poly_studio/profiles/default/package.yaml \
   > runtime/ideawit-e2e/logs/bridge.log 2>&1 &
 SZLAB_BRIDGE_PID=$!
 printf '%s\n' "${SZLAB_BRIDGE_PID}" > runtime/ideawit-e2e/bridge.pid
 
 sleep 2
 
+export UNILABOS_RUNTIME_DB="$(pwd)/runtime/ideawit-e2e/edge-runtime-$(date +%Y%m%d-%H%M%S).sqlite3"
+
 nohup /home/changjunhan/.micromamba/envs/unilab/bin/unilab \
   --graph /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/deployment/graphs/szlab-ideawit-sim.json \
   --config /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/deployment/local_config.py \
   --working_dir /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/runtime/ideawit-e2e \
-  --devices /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/packages/szlab_poly_studio/szlab_poly_studio \
+  --devices /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab/szlab_poly_studio \
   --external_devices_only \
   --backend ros \
   --app_bridges websocket fastapi \
@@ -442,7 +444,7 @@ jq -Rs \
     python_source: .,
     source_uri: "workflows/stack_s05_s06.py"
   }' \
-  packages/szlab_poly_studio/szlab_poly_studio/workflows/stack_s05_s06.py |
+  szlab_poly_studio/workflows/stack_s05_s06.py |
 curl --fail-with-body -sS \
   -H 'Content-Type: application/json' \
   --data-binary @- \
@@ -664,6 +666,16 @@ Edge 默认运行 journal 位于运行用户的：
 ```text
 ~/.unilabos/runtime.sqlite
 ```
+
+本地反复联调时推荐为每次 Edge 启动显式设置新的 journal，避免上次异常退出遗留的动作锁
+让新工作流一直显示“等待中”：
+
+```bash
+export UNILABOS_RUNTIME_DB="$(pwd)/runtime/ideawit-e2e/edge-runtime-$(date +%Y%m%d-%H%M%S).sqlite3"
+```
+
+这也是第 5 节一键启动命令采用的方式。journal 仍会保存在仓库的 `runtime/` 目录中，便于
+复盘。
 
 ## 13. 停止和清理
 

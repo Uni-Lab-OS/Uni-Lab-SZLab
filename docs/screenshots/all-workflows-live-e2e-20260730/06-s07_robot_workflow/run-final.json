@@ -1,0 +1,240 @@
+{
+  "run": {
+    "id": "d519c5597a59486d838a28dab41e554e",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "sourceNodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s071",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "sourceNodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s072",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "sourceNodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_pick_from_s072",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 247,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422291.2349825,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "7ed70f5a1e1bade34a1ba6eb5ff4999e1bd977b545a13b93dd409bbb6d2435d6"
+        }
+      },
+      {
+        "seq": 248,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.feedback",
+        "nodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "timestamp": 1785422301.4761176,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S071 place\", \"task\": \"place\", \"station\": \"S071\", \"task_number\": 13, \"status\": \"completed\", \"written_variables\": {\"S071取放料编号\": 1, \"任务号\": 13, \"Robot_任务写入完成\": true}, \"write_readback\": {\"S071取放料编号\": 1, \"任务号\": 13}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 13, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S071\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"S071取放料编号\": 0, \"任务号\": 0}, \"errors\": {}}, \"position\": \"1-1\", \"target_sensor_variable\": \"传感器状态_上位机[3].NO[8]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 249,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.result",
+        "nodeId": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "timestamp": 1785422301.4774415,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 13,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S071"
+            },
+            "message": "机器人任务已完成: S071 place",
+            "position": "1-1",
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "S071取放料编号": 0,
+                "任务号": 0
+              }
+            },
+            "station": "S071",
+            "status": "completed",
+            "success": true,
+            "target_sensor_variable": "传感器状态_上位机[3].NO[8]",
+            "task": "place",
+            "task_number": 13,
+            "write_readback": {
+              "S071取放料编号": 1,
+              "任务号": 13
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "S071取放料编号": 1,
+              "任务号": 13
+            }
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 250,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.feedback",
+        "nodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "timestamp": 1785422312.6488457,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S072 place\", \"task\": \"place\", \"station\": \"S072\", \"task_number\": 15, \"status\": \"completed\", \"written_variables\": {\"S072取放料产品\": 1, \"任务号\": 15, \"Robot_任务写入完成\": true}, \"write_readback\": {\"S072取放料产品\": 1, \"任务号\": 15}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 15, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S072\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"S072取放料产品\": 0, \"任务号\": 0}, \"errors\": {}}, \"product_type\": 1, \"position\": 1, \"target_sensor_variable\": \"传感器状态_上位机[3].NO[14]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 251,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.result",
+        "nodeId": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "timestamp": 1785422312.6731138,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 15,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S072"
+            },
+            "message": "机器人任务已完成: S072 place",
+            "position": 1,
+            "product_type": 1,
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "S072取放料产品": 0,
+                "任务号": 0
+              }
+            },
+            "station": "S072",
+            "status": "completed",
+            "success": true,
+            "target_sensor_variable": "传感器状态_上位机[3].NO[14]",
+            "task": "place",
+            "task_number": 15,
+            "write_readback": {
+              "S072取放料产品": 1,
+              "任务号": 15
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "S072取放料产品": 1,
+              "任务号": 15
+            }
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 252,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.feedback",
+        "nodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "timestamp": 1785422325.5526054,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S072 pick\", \"task\": \"pick\", \"station\": \"S072\", \"task_number\": 16, \"status\": \"completed\", \"written_variables\": {\"S072取放料产品\": 1, \"任务号\": 16, \"Robot_任务写入完成\": true}, \"write_readback\": {\"S072取放料产品\": 1, \"任务号\": 16}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 16, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S072\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"S072取放料产品\": 0, \"任务号\": 0}, \"errors\": {}}, \"product_type\": 1, \"position\": 1, \"source_sensor_variable\": \"传感器状态_上位机[3].NO[14]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 253,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "node.result",
+        "nodeId": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "timestamp": 1785422325.553352,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 16,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S072"
+            },
+            "message": "机器人任务已完成: S072 pick",
+            "position": 1,
+            "product_type": 1,
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "S072取放料产品": 0,
+                "任务号": 0
+              }
+            },
+            "source_sensor_variable": "传感器状态_上位机[3].NO[14]",
+            "station": "S072",
+            "status": "completed",
+            "success": true,
+            "task": "pick",
+            "task_number": 16,
+            "write_readback": {
+              "S072取放料产品": 1,
+              "任务号": 16
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "S072取放料产品": 1,
+              "任务号": 16
+            }
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 254,
+        "runId": "d519c5597a59486d838a28dab41e554e",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422325.5538747,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 254
+  }
+}

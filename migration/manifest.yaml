@@ -12,7 +12,7 @@ integration_guide:
   access: enterprise_login_required
   fallback: styx/dev .cursor/skills/add-device/SKILL.md self-contained rules plus current template schemas
 capture:
-  committed_presets: 12
+  committed_presets: 11
   committed_legacy_workflows: 6
   live_browser_draft_found: false
   note: 定向检查当前调试目录和浏览器/e2e 持久化位置，未发现可归属到该项目的活动 localStorage 草稿。
@@ -22,32 +22,25 @@ action_reference_migration:
   reason: Python AST 工作流通过 device("<device_id>").<method>(...) 表达，动作名必须是合法 Python 属性。
 
 presets:
-  - id: ai4c
-    legacy_preset: legacy/ui-presets/ai4c.json
-    legacy_runtime: legacy/runtime-configs/ai4c_runtime.json
-    workflow_id: szlab_canvas_workflow
-    python_source: ../packages/ai4c_robot/ai4c_robot/workflows/ai4c_canvas_workflow.py
-    devices: [AI4C_robot_arm]
-    equivalence: committed_preset
   - id: magnetic_stirring
     legacy_preset: legacy/ui-presets/magnetic_stirring.json
     legacy_runtime: legacy/runtime-configs/magnetic_stirring_runtime.json
     workflow_id: szlab_magnetic_stirring_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/magnetic_stirring.py
+    python_source: ../szlab_poly_studio/workflows/magnetic_stirring.py
     devices: [szlab_mixer_stirrer]
     equivalence: committed_preset
   - id: photoshotting
     legacy_preset: legacy/ui-presets/photoshotting.json
     legacy_runtime: legacy/runtime-configs/photoshotting_runtime.json
     workflow_id: szlab_photoshotting_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/photoshotting.py
+    python_source: ../szlab_poly_studio/workflows/photoshotting.py
     devices: [szlab_mixer_photoshotting]
     equivalence: committed_preset
   - id: robot_action
     legacy_preset: legacy/ui-presets/robot_action.json
     legacy_runtime: legacy/runtime-configs/szlab_mixer_runtime.json
     workflow_id: szlab_robot_action_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/robot_action.py
+    python_source: ../szlab_poly_studio/workflows/robot_action.py
     devices: [szlab_mixer_robot]
     equivalence: committed_preset
   - id: s04_robot_stirring
@@ -55,7 +48,7 @@ presets:
     legacy_runtime: legacy/runtime-configs/s04_robot_stirring_runtime.json
     legacy_workflow: legacy/workflows/s04_robot_stirring_workflow.json
     workflow_id: s04_robot_stirring_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s04_robot_stirring.py
+    python_source: ../szlab_poly_studio/workflows/s04_robot_stirring.py
     devices: [szlab_mixer_robot, szlab_mixer_stirrer]
     equivalence: exact_action_sequence
   - id: s06_robot
@@ -63,7 +56,7 @@ presets:
     legacy_runtime: legacy/runtime-configs/s06_robot_runtime.json
     legacy_workflow: legacy/workflows/s06_robot_workflow.json
     workflow_id: s06_robot_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s06_robot.py
+    python_source: ../szlab_poly_studio/workflows/s06_robot.py
     devices: [szlab_mixer_robot, szlab_mixer_pump]
     equivalence: exact_action_sequence
   - id: s07_robot
@@ -71,7 +64,7 @@ presets:
     legacy_runtime: legacy/runtime-configs/s07_robot_runtime.json
     legacy_workflow: legacy/workflows/s07_robot_workflow.json
     workflow_id: s07_robot_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s07_robot.py
+    python_source: ../szlab_poly_studio/workflows/s07_robot.py
     devices: [szlab_mixer_robot]
     equivalence: exact_action_sequence
   - id: s08_cap_station
@@ -79,28 +72,28 @@ presets:
     legacy_runtime: legacy/runtime-configs/s08_cap_station_runtime.json
     legacy_workflow: legacy/workflows/s08_open_close_workflow.json
     workflow_id: s08_cap_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s08_cap.py
+    python_source: ../szlab_poly_studio/workflows/s08_cap.py
     devices: [szlab_s08_cap_station]
     equivalence: scalar_adapter_for_legacy_sample_id_list
   - id: s09_pipetting_station
     legacy_preset: legacy/ui-presets/s09_pipetting_station.json
     legacy_runtime: legacy/runtime-configs/s09_pipetting_station_runtime.json
     workflow_id: szlab_s09_pipetting_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s09_pipetting.py
+    python_source: ../szlab_poly_studio/workflows/s09_pipetting.py
     devices: [szlab_mixer_pipetting_station]
     equivalence: committed_preset
   - id: solid_addition_s07
     legacy_preset: legacy/ui-presets/solid_addition_s07.json
     legacy_runtime: legacy/runtime-configs/solid_addition_s07_runtime.json
     workflow_id: szlab_s07_solid_addition_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/s07_solid_addition.py
+    python_source: ../szlab_poly_studio/workflows/s07_solid_addition.py
     devices: [szlab_s07_solid_addition]
     equivalence: committed_preset
   - id: stack_s05_s06
     legacy_preset: legacy/ui-presets/stack_s05_s06.json
     legacy_runtime: legacy/runtime-configs/stack_s05_s06_runtime.json
     workflow_id: szlab_stack_s05_s06_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/stack_s05_s06.py
+    python_source: ../szlab_poly_studio/workflows/stack_s05_s06.py
     devices: [szlab_poly_plc, szlab_mixer_photoshotting, szlab_mixer_pump]
     equivalence: committed_preset
   - id: szlab_mixer
@@ -108,12 +101,12 @@ presets:
     legacy_runtime: legacy/runtime-configs/szlab_mixer_runtime.json
     legacy_workflow: legacy/workflows/szlab_mixer_workflow.json
     workflow_id: szlab_mixer_workflow
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/szlab_mixer.py
+    python_source: ../szlab_poly_studio/workflows/szlab_mixer.py
     devices: [szlab_mixer_pump]
     equivalence: exact_action_sequence
 
 additional_workflows:
   - legacy_workflow: legacy/workflows/szlab_mixer_pump_production_workflow.json
     workflow_id: szlab_mixer_pump_production
-    python_source: ../packages/szlab_poly_studio/szlab_poly_studio/workflows/szlab_mixer_pump_production.py
+    python_source: ../szlab_poly_studio/workflows/szlab_mixer_pump_production.py
     equivalence: exact_action_sequence

@@ -1,0 +1,110 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_magnetic_stirring_workflow",
+  "parameters": [
+    {
+      "name": "position",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "position",
+      "description": ""
+    },
+    {
+      "name": "speed",
+      "type": "number",
+      "required": false,
+      "default": 300,
+      "title": "speed",
+      "description": ""
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "required": false,
+      "default": 25,
+      "title": "temperature",
+      "description": ""
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "required": false,
+      "default": 30,
+      "title": "duration",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+      "action_ref": "szlab_mixer_stirrer.run_stirring",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        },
+        "mode": {
+          "kind": "literal",
+          "value": 3
+        },
+        "speed": {
+          "kind": "runtime_parameter",
+          "parameter": "speed"
+        },
+        "temperature": {
+          "kind": "runtime_parameter",
+          "parameter": "temperature"
+        },
+        "duration": {
+          "kind": "runtime_parameter",
+          "parameter": "duration"
+        },
+        "safe_temperature": {
+          "kind": "literal",
+          "value": 80
+        },
+        "reset": {
+          "kind": "literal",
+          "value": false
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "line": 18,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"S04 磁搅单工位调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_stirrer = device(\"szlab_mixer_stirrer\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_magnetic_stirring_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_magnetic_stirring_workflow(\n    position: int = 1,\n    speed: float = 300.0,\n    temperature: float = 25.0,\n    duration: float = 30.0,\n) -> None:\n    szlab_mixer_stirrer.run_stirring(\n        position=position,\n        mode=3,\n        speed=speed,\n        temperature=temperature,\n        duration=duration,\n        safe_temperature=80.0,\n        reset=False,\n    )\n",
+    "uri": "workflows/magnetic_stirring.py",
+    "content_hash": "sha256:8e6021ef6e9b81355f815e15a23e32b7409369d95921a563ea212f18150602df"
+  }
+}

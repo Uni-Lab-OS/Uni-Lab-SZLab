@@ -1,0 +1,21 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "f72979d2822e98a22a6649fee3eb13ea2cef31bad4b4ccc8b382279b295b2d02",
+    "items": [
+      {
+        "nodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

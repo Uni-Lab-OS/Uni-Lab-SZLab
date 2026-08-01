@@ -1,0 +1,21 @@
+
+===== connection attempt 1/3 =====
+连接 OPC UA: opc.tcp://opcua.ideawit.com:4855/xuse_sim
+OPC UA 已连接
+写入握手场景 'szlab_s07_solid_addition_workflow' 的仿真先决条件...
+  PASS S07原点信号: expected=True, actual=True
+  PASS S07允许加工: expected=True, actual=True
+  PASS S07工艺完成: expected=0, actual=0
+握手仿真器已启动；按 Ctrl+C 停止。
+S05 为只读完成信号，已保持 S05加工完成=True、S05拍照结果=1。
+{"action": "szlab_s07_solid_addition.scan_powder_cartridges", "detail": {"process": 1, "process_label": "粉罐扫码盘点"}, "phase": "accepted", "time": "2026-07-30 22:53:19"}
+{"action": "szlab_s07_solid_addition.scan_powder_cartridges", "detail": {"process": 1, "process_label": "粉罐扫码盘点"}, "phase": "completed", "time": "2026-07-30 22:53:20"}
+{"action": "szlab_s07_solid_addition.scan_powder_cartridges", "detail": {"process": 1, "process_label": "粉罐扫码盘点"}, "phase": "reset", "time": "2026-07-30 22:53:24"}
+{"action": "szlab_s07_solid_addition.rotate_powder_cartridge_to_feed", "detail": {"process": 2, "process_label": "替换粉罐旋转到进料位"}, "phase": "accepted", "time": "2026-07-30 22:54:59"}
+{"action": "szlab_s07_solid_addition.rotate_powder_cartridge_to_feed", "detail": {"process": 2, "process_label": "替换粉罐旋转到进料位"}, "phase": "completed", "time": "2026-07-30 22:55:00"}
+{"action": "szlab_s07_solid_addition.rotate_powder_cartridge_to_feed", "detail": {"process": 2, "process_label": "替换粉罐旋转到进料位"}, "phase": "reset", "time": "2026-07-30 22:55:03"}
+{"action": "szlab_s07_solid_addition.dose_powder", "detail": {"process": 3, "process_label": "注粉"}, "phase": "accepted", "time": "2026-07-30 22:55:32"}
+{"action": "szlab_s07_solid_addition.dose_powder", "detail": {"process": 3, "process_label": "注粉"}, "phase": "completed", "time": "2026-07-30 22:55:32"}
+{"action": "szlab_s07_solid_addition.dose_powder", "detail": {"process": 3, "process_label": "注粉"}, "phase": "reset", "time": "2026-07-30 22:55:36"}
+恢复仿真器负责的 PLC→PC 信号...
+OPC UA 已断开

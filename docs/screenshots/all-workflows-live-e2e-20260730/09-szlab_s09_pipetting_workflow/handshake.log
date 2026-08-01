@@ -1,0 +1,29 @@
+
+===== connection attempt 1/3 =====
+连接 OPC UA: opc.tcp://opcua.ideawit.com:4855/xuse_sim
+OPC UA 已连接
+写入握手场景 'szlab_s09_pipetting_workflow' 的仿真先决条件...
+  PASS 工站状态[8]: expected=2, actual=2
+  PASS S09允许加工: expected=True, actual=True
+  PASS S09工艺完成: expected=0, actual=0
+  PASS S09液体瓶1剩余液量: expected=100.0, actual=100.0
+  PASS S09液体瓶2剩余液量: expected=100.0, actual=100.0
+  PASS S09液体瓶3剩余液量: expected=100.0, actual=100.0
+  PASS S09液体瓶4剩余液量: expected=100.0, actual=100.0
+  PASS S09液体瓶5剩余液量: expected=100.0, actual=100.0
+握手仿真器已启动；按 Ctrl+C 停止。
+S05 为只读完成信号，已保持 S05加工完成=True、S05拍照结果=1。
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"params_written": false, "process": 5, "process_label": "取 TIP"}, "phase": "accepted", "time": "2026-07-30 22:43:37"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"process": 5, "process_label": "取 TIP"}, "phase": "completed", "time": "2026-07-30 22:43:38"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"observed_process": 0, "process": 5}, "phase": "reset", "time": "2026-07-30 22:43:41"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"params_written": true, "process": 7, "process_label": "液体瓶取液"}, "phase": "accepted", "time": "2026-07-30 22:43:47"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"process": 7, "process_label": "液体瓶取液"}, "phase": "completed", "time": "2026-07-30 22:43:48"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"observed_process": 0, "process": 7}, "phase": "reset", "time": "2026-07-30 22:43:51"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"params_written": false, "process": 8, "process_label": "烧杯放液"}, "phase": "accepted", "time": "2026-07-30 22:44:01"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"process": 8, "process_label": "烧杯放液"}, "phase": "completed", "time": "2026-07-30 22:44:02"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"observed_process": 0, "process": 8}, "phase": "reset", "time": "2026-07-30 22:44:05"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"params_written": false, "process": 6, "process_label": "放 TIP"}, "phase": "accepted", "time": "2026-07-30 22:44:12"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"process": 6, "process_label": "放 TIP"}, "phase": "completed", "time": "2026-07-30 22:44:13"}
+{"action": "szlab_mixer_pipetting_station.add_liquid", "detail": {"observed_process": 0, "process": 6}, "phase": "reset", "time": "2026-07-30 22:44:17"}
+恢复仿真器负责的 PLC→PC 信号...
+OPC UA 已断开

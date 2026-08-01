@@ -16,7 +16,7 @@ def test_migration_manifest_covers_all_committed_inputs(repo_root: Path) -> None
     manifest = yaml.safe_load((migration_root / "manifest.yaml").read_text(encoding="utf-8"))
     presets = manifest["presets"]
 
-    assert len(presets) == 12
+    assert len(presets) == 11
     assert {item["id"] for item in presets} == {
         path.stem for path in (migration_root / "legacy" / "ui-presets").glob("*.json")
     }
@@ -52,7 +52,7 @@ def test_all_migrated_python_workflows_compile_to_canonical_v2(
         assert all(invocation.action_ref in action_catalog for invocation in revision.invocations)
         compiled_ids.add(revision.workflow_id)
 
-    assert len(compiled_ids) == 13
+    assert len(compiled_ids) == 12
 
 
 def test_legacy_json_action_sequences_are_preserved(
@@ -87,10 +87,10 @@ def test_e2e_screenshots_cover_every_production_workflow(
     result = json.loads(result_path.read_text(encoding="utf-8"))
 
     assert result["outcome"] == "passed"
-    assert result["total"] == 13
-    assert result["packages"] == {"SZLab": 12, "AI4C": 1}
+    assert result["total"] == 12
+    assert result["packages"] == {"SZLab": 12}
     assert result["browserErrors"] == []
-    assert [item["order"] for item in result["workflows"]] == list(range(1, 14))
+    assert [item["order"] for item in result["workflows"]] == list(range(1, 13))
 
     compiled_ids: set[str] = set()
     for item in result["workflows"]:
@@ -108,4 +108,4 @@ def test_e2e_screenshots_cover_every_production_workflow(
         assert screenshot_path.stat().st_size > 100_000
         compiled_ids.add(revision.workflow_id)
 
-    assert len(compiled_ids) == 13
+    assert len(compiled_ids) == 12

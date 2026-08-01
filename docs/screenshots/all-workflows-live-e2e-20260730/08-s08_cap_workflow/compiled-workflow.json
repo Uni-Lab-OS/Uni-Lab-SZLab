@@ -1,0 +1,128 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "s08_cap_workflow",
+  "parameters": [],
+  "invocations": [
+    {
+      "node_id": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+      "action_ref": "szlab_s08_cap_station.process_cap_with_sample_parts",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "operation": {
+          "kind": "literal",
+          "value": "open"
+        },
+        "vial_type": {
+          "kind": "literal",
+          "value": "liquid_100ml"
+        },
+        "sample_id_1": {
+          "kind": "literal",
+          "value": 101
+        },
+        "sample_id_2": {
+          "kind": "literal",
+          "value": 102
+        },
+        "sample_id_3": {
+          "kind": "literal",
+          "value": 103
+        },
+        "timeout": {
+          "kind": "literal",
+          "value": 300
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+      "action_ref": "szlab_s08_cap_station.process_cap_with_sample_parts",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "operation": {
+          "kind": "literal",
+          "value": "close"
+        },
+        "vial_type": {
+          "kind": "literal",
+          "value": "liquid_100ml"
+        },
+        "sample_id_1": {
+          "kind": "literal",
+          "value": 101
+        },
+        "sample_id_2": {
+          "kind": "literal",
+          "value": 102
+        },
+        "sample_id_3": {
+          "kind": "literal",
+          "value": 103
+        },
+        "timeout": {
+          "kind": "literal",
+          "value": 300
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+      "target": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "line": 13,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts"
+        ]
+      },
+      {
+        "node_id": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "line": 21,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"legacy s08_open_close_workflow.json 的等价 Python 表达。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_s08_cap_station = device(\"szlab_s08_cap_station\")\n\n\n@workflow_definition(\n    workflow_id=\"s08_cap_workflow\",\n    revision=\"python-v1\",\n)\ndef s08_cap_workflow() -> None:\n    szlab_s08_cap_station.process_cap_with_sample_parts(\n        operation=\"open\",\n        vial_type=\"liquid_100ml\",\n        sample_id_1=101,\n        sample_id_2=102,\n        sample_id_3=103,\n        timeout=300.0,\n    )\n    szlab_s08_cap_station.process_cap_with_sample_parts(\n        operation=\"close\",\n        vial_type=\"liquid_100ml\",\n        sample_id_1=101,\n        sample_id_2=102,\n        sample_id_3=103,\n        timeout=300.0,\n    )\n",
+    "uri": "workflows/s08_cap.py",
+    "content_hash": "sha256:bdbdc99e0f54ddaa1258b0ebb7ce46d1704e842fac2511db1b40b9ad44adb293"
+  }
+}

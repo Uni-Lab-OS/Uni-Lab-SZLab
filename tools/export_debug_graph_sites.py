@@ -20,8 +20,11 @@ from typing import Any, Callable
 
 import yaml
 
-from szlab_poly_studio.beaker_carriers import SZLab_BeakerStackCarrier
-from szlab_poly_studio.materials import (
+from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
+from szlab_poly_studio.resources.carriers.powder import SZLab_PowderContainerStackCarrier
+from szlab_poly_studio.resources.carriers.reagent import SZLab_ReagentBottleStackCarrier
+from szlab_poly_studio.resources.carriers.tip_box_loader import SZLab_TipBoxLoaderCarrier
+from szlab_poly_studio.resources.materials import (
     beaker_500ml,
     liquid_reagent_bottle_100ml,
     pipette_tip,
@@ -30,9 +33,6 @@ from szlab_poly_studio.materials import (
     sample_vial_500ml,
     tip_box,
 )
-from szlab_poly_studio.powder_carriers import SZLab_PowderContainerStackCarrier
-from szlab_poly_studio.reagent_carriers import SZLab_ReagentBottleStackCarrier
-from szlab_poly_studio.tip_box_loaders import SZLab_TipBoxLoaderCarrier
 
 # 工站：宽 3634 (X) × 长 1674 (Y)
 DECK_SIZE = {"size_x": 3634.0, "size_y": 1674.0, "size_z": 2200.0}
@@ -104,8 +104,8 @@ POWDER_STACK = {
 }
 
 # 工站设备：位置来自《理论交点测距结果》，表里记录的交点即零件占位的左下角
-# (x/y) 与底面高度 (z)。带 category 的设备占位尺寸从包内 shape_manifest.yaml 的
-# envelope 读，几何细节（转盘、龙门、层板……）也只写在那份清单里；没有外形声明
+# (x/y) 与底面高度 (z)。带 category 的设备占位尺寸从设备/资源自己的
+# models/shape.yml 读取，几何细节（转盘、龙门、层板……）也只写在对应模型资产里；没有外形声明
 # 的设备仍在这里写死 STL 包围盒。
 STATION_PARTS = [
     {
@@ -175,7 +175,7 @@ RAIL_ROBOT = {
     ),
 }
 
-# 这些前缀下的数值键是 CAD 特征，现在归设备包的 shape_manifest 管。老图里还留着
+# 这些前缀下的数值键是 CAD 特征，现在归设备/资源自己的模型资产管。老图里还留着
 # 它们（含 wall_* 这类早就改名的），导出时按前缀清掉，只清数值——设备自己的
 # plc_device_id / url / auto_connect 不受影响。
 LEGACY_SHAPE_KEY_PREFIXES = (
@@ -253,20 +253,14 @@ DEVICE_SIZES: dict[str, dict[str, float]] = {
 def _shape_envelopes() -> dict[str, dict[str, float]]:
     """按 category 取包内外形声明的 envelope，当设备占位尺寸。
 
-    尺寸只写在 ``shape_manifest.yaml`` 一处：那里画的图元本来就按这个包络排布，
-    两边各写一遍迟早会对不上。
+    每个尺寸只写在归属设备或资源的 ``models/shape.yml``：模型图元与包络天然一起迁移。
     """
 
-    manifest = (
-        yaml.safe_load(
-            resources.files("szlab_poly_studio")
-            .joinpath("shape_manifest.yaml")
-            .read_text(encoding="utf-8")
-        )
-        or {}
-    )
+    package_root = Path(str(resources.files("szlab_poly_studio")))
     envelopes: dict[str, dict[str, float]] = {}
-    for shape in manifest.get("shapes") or []:
+    for shape_path in package_root.glob("**/models/shape.yml"):
+        payload = yaml.safe_load(shape_path.read_text(encoding="utf-8")) or {}
+        shape = payload.get("shape") or {}
         envelope = shape.get("envelope")
         if not envelope:
             continue

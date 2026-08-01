@@ -1,0 +1,31 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "82ddda9629953e820821d265e60e7b3beb5719d70a58b345411af00625388653",
+    "items": [
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

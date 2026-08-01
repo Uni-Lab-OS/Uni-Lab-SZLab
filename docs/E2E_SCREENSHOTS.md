@@ -33,7 +33,7 @@ S04 机械臂—磁搅流程通过真实 `/api/v1/authoring/compile` 和
 
 ```bash
 UNILAB_PYTHON=/home/changjunhan/.micromamba/envs/unilab/bin/python \
-  ./scripts/start-szlab-authoring-bridge.sh
+  ./scripts/start-authoring-bridge.sh
 
 cd ../uni-lab-fe
 pnpm --filter @unilab/kernel-web preview --host 127.0.0.1 --port 4173

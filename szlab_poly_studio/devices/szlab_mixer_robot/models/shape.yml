@@ -1,0 +1,42 @@
+schema_version: 1
+shape:
+  id: rail_robot
+  display_name: SZLab 机械臂（含行走轴）
+  applies_to:
+  - category: rail_robot
+  envelope:
+  - 2700.0
+  - 160.0
+  - 208.15
+  note: 占位就是 B17H_L50_S2700 行走轴本体（导轨顶面 z=208.15）。臂体沿导轨可移动， 这里画在左端 x=210 处仅作示意，臂体包络 420 × 420 × 850。
+  parts:
+  - type: slab
+    style: plate
+    z:
+    - 0.0
+    - 114.4825
+  - type: slab
+    style: beam
+    z:
+    - 114.4825
+    - 208.15
+  - type: box
+    style: module
+    from:
+    - 0.0
+    - -130.0
+    - 208.15
+    to:
+    - 420.0
+    - 290.0
+    - 361.15
+  - type: box
+    style: shell
+    from:
+    - 113.4
+    - -16.6
+    - 361.15
+    to:
+    - 306.6
+    - 176.6
+    - 1058.15
