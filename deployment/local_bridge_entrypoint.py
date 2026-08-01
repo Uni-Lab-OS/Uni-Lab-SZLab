@@ -1,7 +1,7 @@
-"""Run the local bridge with only the driver catalog required by this repo.
+"""Run the local bridge with only the driver catalog required by SZLab.
 
 Uni-Lab environments may contain unrelated editable driver plugins. Importing
-every global ``unilabos.drivers`` entry point makes an isolated SZLab/AI4C
+every global ``unilabos.drivers`` entry point makes an isolated SZLab
 debug session depend on those plugins' import health. Both profiles in this
 repository use only ``generic_plc_macro``, so the local bridge pins that exact
 catalog while leaving the normal Uni-Lab-OS launcher unchanged.
@@ -13,10 +13,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from szlab_poly_studio.shape_library import material_shape_items
 from unilabos.app.local_bridge import local_api, server
 from unilabos.devices.generic_plc_macro import DeclarativePLCMacroDriver
 from unilabos.runtime.profile_loader import LoadedProfile, load_profiles
+
+from szlab_poly_studio.common.shape_library import material_shape_items
 
 
 def load_repository_profiles(

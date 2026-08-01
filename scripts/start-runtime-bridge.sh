@@ -8,12 +8,11 @@ unilab_python="${UNILAB_PYTHON:-python}"
 runtime_dir="${UNILAB_SZLAB_RUNTIME_DIR:-${repo_root}/runtime}"
 
 mkdir -p "${runtime_dir}"
-export PYTHONPATH="${unilab_os_root}:${repo_root}/packages/szlab_poly_studio:${repo_root}/packages/ai4c_robot${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${unilab_os_root}:${repo_root}${PYTHONPATH:+:${PYTHONPATH}}"
 
 exec "${unilab_python}" "${repo_root}/deployment/local_bridge_entrypoint.py" \
   --host 127.0.0.1 \
   --schedule-port "${UNILAB_SCHEDULE_PORT:-8890}" \
   --api-port "${UNILAB_API_PORT:-8014}" \
   --journal-path "${runtime_dir}/quick-debug.sqlite3" \
-  --profile "${repo_root}/packages/szlab_poly_studio/package.yaml" \
-  --profile "${repo_root}/packages/ai4c_robot/package.yaml"
+  --profile "${repo_root}/szlab_poly_studio/profiles/default/package.yaml"

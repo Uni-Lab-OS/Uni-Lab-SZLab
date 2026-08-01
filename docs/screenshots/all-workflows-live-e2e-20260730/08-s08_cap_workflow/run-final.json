@@ -1,0 +1,190 @@
+{
+  "run": {
+    "id": "bdf91a4752734197a144ca8fd5cb6853",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "sourceNodeId": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "nodeType": "action",
+        "deviceId": "szlab_s08_cap_station",
+        "action": "process_cap_with_sample_parts",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "sourceNodeId": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "nodeType": "action",
+        "deviceId": "szlab_s08_cap_station",
+        "action": "process_cap_with_sample_parts",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 261,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422428.1104481,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "0ecce59182f3abd41c659a9e8acfb4bfc4ee0737c8af10cb9a8937effc9a2922"
+        }
+      },
+      {
+        "seq": 262,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "node.feedback",
+        "nodeId": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "timestamp": 1785422535.3446126,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S08 开瓶盖 完成\", \"process_type\": 5, \"cap_storage_slot\": 1, \"sample_id\": [101, 102, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"status\": {\"station_ready\": true, \"allow_process\": true, \"process_select\": 0, \"params_written\": false, \"process_complete\": 0, \"cap_storage_slot\": 0}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 263,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "node.result",
+        "nodeId": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "timestamp": 1785422535.3458838,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "cap_storage_slot": 1,
+            "message": "S08 开瓶盖 完成",
+            "process_type": 5,
+            "sample_id": [
+              101,
+              102,
+              103,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "status": {
+              "allow_process": true,
+              "cap_storage_slot": 0,
+              "params_written": false,
+              "process_complete": 0,
+              "process_select": 0,
+              "station_ready": true
+            },
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 264,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "node.feedback",
+        "nodeId": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "timestamp": 1785422585.5525897,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S08 关瓶盖 完成\", \"process_type\": 6, \"cap_storage_slot\": 1, \"sample_id\": [101, 102, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"status\": {\"station_ready\": true, \"allow_process\": true, \"process_select\": 0, \"params_written\": false, \"process_complete\": 0, \"cap_storage_slot\": 0}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 265,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "node.result",
+        "nodeId": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "timestamp": 1785422585.553599,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "cap_storage_slot": 1,
+            "message": "S08 关瓶盖 完成",
+            "process_type": 6,
+            "sample_id": [
+              101,
+              102,
+              103,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "status": {
+              "allow_process": true,
+              "cap_storage_slot": 0,
+              "params_written": false,
+              "process_complete": 0,
+              "process_select": 0,
+              "station_ready": true
+            },
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 266,
+        "runId": "bdf91a4752734197a144ca8fd5cb6853",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785422585.5546024,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 266
+  }
+}

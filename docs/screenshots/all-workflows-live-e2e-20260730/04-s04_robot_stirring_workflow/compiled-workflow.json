@@ -1,0 +1,159 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "s04_robot_stirring_workflow",
+  "parameters": [
+    {
+      "name": "position",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "position",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "s04_robot_stirring_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+      "action_ref": "szlab_mixer_robot.submit_place_to_s04",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        },
+        "sample_id": {
+          "kind": "literal",
+          "value": "beaker-1"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring",
+      "action_ref": "szlab_mixer_stirrer.run_stirring",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        },
+        "mode": {
+          "kind": "literal",
+          "value": 3
+        },
+        "speed": {
+          "kind": "literal",
+          "value": 300
+        },
+        "temperature": {
+          "kind": "literal",
+          "value": 25
+        },
+        "duration": {
+          "kind": "literal",
+          "value": 30
+        },
+        "safe_temperature": {
+          "kind": "literal",
+          "value": 80
+        },
+        "reset": {
+          "kind": "literal",
+          "value": false
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s04_robot_stirring_workflow-003-szlab_mixer_robot.submit_pick_from_s04",
+      "action_ref": "szlab_mixer_robot.submit_pick_from_s04",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "s04_robot_stirring_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+      "target": "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring",
+      "edge_id": ""
+    },
+    {
+      "source": "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring",
+      "target": "s04_robot_stirring_workflow-003-szlab_mixer_robot.submit_pick_from_s04",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "s04_robot_stirring_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "line": 14,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "s04_robot_stirring_workflow-001-szlab_mixer_robot.submit_place_to_s04"
+        ]
+      },
+      {
+        "node_id": "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring",
+        "line": 18,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring"
+        ]
+      },
+      {
+        "node_id": "s04_robot_stirring_workflow-003-szlab_mixer_robot.submit_pick_from_s04",
+        "line": 27,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "s04_robot_stirring_workflow-003-szlab_mixer_robot.submit_pick_from_s04"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"legacy s04_robot_stirring_workflow.json 的等价 Python 表达。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_robot = device(\"szlab_mixer_robot\")\nszlab_mixer_stirrer = device(\"szlab_mixer_stirrer\")\n\n\n@workflow_definition(\n    workflow_id=\"s04_robot_stirring_workflow\",\n    revision=\"python-v1\",\n)\ndef s04_robot_stirring_workflow(position: int = 1) -> None:\n    szlab_mixer_robot.submit_place_to_s04(\n        position=position,\n        sample_id=\"beaker-1\",\n    )\n    szlab_mixer_stirrer.run_stirring(\n        position=position,\n        mode=3,\n        speed=300.0,\n        temperature=25.0,\n        duration=30.0,\n        safe_temperature=80.0,\n        reset=False,\n    )\n    szlab_mixer_robot.submit_pick_from_s04(position=position)\n",
+    "uri": "workflows/s04_robot_stirring.py",
+    "content_hash": "sha256:d45fe80dd502afd0e40d4311cee900ffbb3c5075923a4694d8d460b5d8505927"
+  }
+}

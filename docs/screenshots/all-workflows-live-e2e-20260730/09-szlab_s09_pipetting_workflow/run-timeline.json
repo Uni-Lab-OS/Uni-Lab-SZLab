@@ -1,0 +1,36 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "2199499aa7fc798d32231e8c6982729695b151b9d1f187707f245589652b2765",
+    "items": [
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

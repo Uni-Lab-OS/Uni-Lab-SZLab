@@ -3,23 +3,47 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "uni-lab-szlab-integration"
+name = "szlab-poly-studio"
 version = "0.1.0"
-description = "SZLab external device packages, materials, warehouses and Python workflows for Uni-Lab-OS"
+description = "SZLab polymer-studio domain device package for Uni-Lab-OS"
 requires-python = ">=3.11"
 dependencies = [
-  "jsonschema>=4.21",
-  "PyYAML>=6.0",
+  "opcua>=0.98.13",
+  "pylabrobot>=0.1.4",
+  "requests>=2.31",
 ]
 
 [project.optional-dependencies]
+runtime = ["unilabos>=0.11.3"]
 dev = [
+  "build>=1.2",
+  "jsonschema>=4.21",
+  "PyYAML>=6.0",
   "pytest>=8.0",
   "ruff>=0.6",
 ]
 
-[tool.setuptools]
-packages = []
+[tool.setuptools.packages.find]
+include = ["szlab_poly_studio*"]
+
+[tool.setuptools.package-data]
+szlab_poly_studio = [
+  "**/*.csv",
+  "**/*.json",
+  "**/*.yaml",
+  "**/*.yml",
+  "**/*.xacro",
+  "**/*.urdf",
+  "**/*.stl",
+  "**/*.dae",
+  "**/*.obj",
+  "**/*.mtl",
+  "**/*.gltf",
+  "**/*.glb",
+  "**/*.png",
+  "**/*.jpg",
+  "**/*.jpeg",
+]
 
 [tool.pytest.ini_options]
 addopts = "-q"

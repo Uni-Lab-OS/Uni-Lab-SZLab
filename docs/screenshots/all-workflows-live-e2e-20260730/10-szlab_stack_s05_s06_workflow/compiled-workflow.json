@@ -1,0 +1,145 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_stack_s05_s06_workflow",
+  "parameters": [],
+  "invocations": [
+    {
+      "node_id": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+      "action_ref": "szlab_poly_plc.get_stack_status",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {},
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+      "action_ref": "szlab_mixer_photoshotting.take_photo",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "sample_id": {
+          "kind": "literal",
+          "value": "debug-sample"
+        },
+        "photo_path": {
+          "kind": "literal",
+          "value": ""
+        },
+        "inspection_result": {
+          "kind": "literal",
+          "value": ""
+        },
+        "require_material": {
+          "kind": "literal",
+          "value": false
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+      "action_ref": "szlab_mixer_pump.run_solvent_addition",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "pump": {
+          "kind": "literal",
+          "value": 1
+        },
+        "volume": {
+          "kind": "literal",
+          "value": 8
+        },
+        "skip_level_check": {
+          "kind": "literal",
+          "value": false
+        },
+        "skip_robot": {
+          "kind": "literal",
+          "value": true
+        },
+        "beaker_true_means_present": {
+          "kind": "literal",
+          "value": true
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+      "target": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+      "edge_id": ""
+    },
+    {
+      "source": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+      "target": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "line": 15,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status"
+        ]
+      },
+      {
+        "node_id": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "line": 16,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo"
+        ]
+      },
+      {
+        "node_id": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "line": 22,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"堆栈状态、S05 拍照和 S06 加液的联合调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_poly_plc = device(\"szlab_poly_plc\")\nszlab_mixer_photoshotting = device(\"szlab_mixer_photoshotting\")\nszlab_mixer_pump = device(\"szlab_mixer_pump\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_stack_s05_s06_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_stack_s05_s06_workflow() -> None:\n    szlab_poly_plc.get_stack_status()\n    szlab_mixer_photoshotting.take_photo(\n        sample_id=\"debug-sample\",\n        photo_path=\"\",\n        inspection_result=\"\",\n        require_material=False,\n    )\n    szlab_mixer_pump.run_solvent_addition(\n        pump=1,\n        volume=8.0,\n        skip_level_check=False,\n        skip_robot=True,\n        beaker_true_means_present=True,\n    )\n",
+    "uri": "workflows/stack_s05_s06.py",
+    "content_hash": "sha256:494ee1300be80905fad76f3b627ece4f301a96e5df753ee4085dd167a628edeb"
+  }
+}

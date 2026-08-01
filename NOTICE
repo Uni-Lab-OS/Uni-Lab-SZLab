@@ -1,5 +1,5 @@
-This repository contains a normalized migration of SZLab and AI4C device
-integration code from styxhuang/Uni-Lab-OS, dev commit
+This repository contains a normalized migration of SZLab device integration
+code from styxhuang/Uni-Lab-OS, dev commit
 d58a8c0d6de26b9de77161359bb627d75fa8e4e8.
 
 The original Uni-Lab-OS repository marks device-driver code as DP Technology

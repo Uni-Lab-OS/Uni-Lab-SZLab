@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-07-30T05:02:59.068Z",
+  "frontendUrl": "http://127.0.0.1:5173",
+  "osUrl": "http://127.0.0.1:8015",
+  "opcuaUrl": "opc.tcp://opcua.ideawit.com:4855/xuse_sim",
+  "runId": "79e2d4634f43499ebecfa89f3a1a9993",
+  "runState": "整体：已完成",
+  "nodeStates": [
+    {
+      "id": "s04_robot_stirring_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+      "state": "success"
+    },
+    {
+      "id": "s04_robot_stirring_workflow-002-szlab_mixer_stirrer.run_stirring",
+      "state": "success"
+    },
+    {
+      "id": "s04_robot_stirring_workflow-003-szlab_mixer_robot.submit_pick_from_s04",
+      "state": "success"
+    }
+  ],
+  "screenshots": [
+    "szlab-live-opcua-s04-completed.png",
+    "szlab-live-opcua-s04-stage-completed.png"
+  ],
+  "browserErrors": []
+}

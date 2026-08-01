@@ -1,0 +1,36 @@
+{
+  "run": {
+    "id": "c346d965854643d8be37a9816e71d3ec",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "sourceNodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_photoshotting",
+        "action": "take_photo",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 221,
+        "runId": "c346d965854643d8be37a9816e71d3ec",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422117.6723413,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "2b1e6bfa0674dd18a45c853e6f9d64206df7af37edf66e6577259fec9e76e15c"
+        }
+      }
+    ],
+    "nextSeq": 221
+  }
+}

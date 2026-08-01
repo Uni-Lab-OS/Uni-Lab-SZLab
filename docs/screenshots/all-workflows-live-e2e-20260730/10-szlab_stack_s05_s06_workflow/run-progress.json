@@ -1,0 +1,56 @@
+{
+  "run": {
+    "id": "a4135ccdad5b42e5a935aeff0aac6b1b",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "nodeType": "action",
+        "deviceId": "szlab_poly_plc",
+        "action": "get_stack_status",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_photoshotting",
+        "action": "take_photo",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pump",
+        "action": "run_solvent_addition",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 310,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785424706.6881137,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "b669a92a04a0511125ab7d83fcedcd2e71adcb811e5dc7ceae8d22f8fce3fe2b"
+        }
+      }
+    ],
+    "nextSeq": 310
+  }
+}

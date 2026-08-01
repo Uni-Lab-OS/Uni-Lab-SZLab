@@ -1,0 +1,191 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_s09_pipetting_workflow",
+  "parameters": [
+    {
+      "name": "liquid_bottle_index",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "liquid_bottle_index",
+      "description": ""
+    },
+    {
+      "name": "volume_ul",
+      "type": "number",
+      "required": false,
+      "default": 100,
+      "title": "volume_ul",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+      "action_ref": "szlab_mixer_pipetting_station.prepare_liquid_station",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {},
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+      "action_ref": "szlab_mixer_pipetting_station.bind_sample_to_station",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "sample_id": {
+          "kind": "literal",
+          "value": "debug-sample"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+      "action_ref": "szlab_mixer_pipetting_station.add_liquid",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "liquid_bottle_index": {
+          "kind": "runtime_parameter",
+          "parameter": "liquid_bottle_index"
+        },
+        "aspirate_volume": {
+          "kind": "runtime_parameter",
+          "parameter": "volume_ul"
+        },
+        "dispense_volume": {
+          "kind": "runtime_parameter",
+          "parameter": "volume_ul"
+        },
+        "tip_box_index": {
+          "kind": "literal",
+          "value": 1
+        },
+        "tip_index": {
+          "kind": "literal",
+          "value": 1
+        },
+        "station": {
+          "kind": "literal",
+          "value": 1
+        },
+        "volume_unit": {
+          "kind": "literal",
+          "value": "ul"
+        },
+        "skip_level_check": {
+          "kind": "literal",
+          "value": false
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+      "action_ref": "szlab_mixer_pipetting_station.release_station",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {},
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+      "target": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+      "edge_id": ""
+    },
+    {
+      "source": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+      "target": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+      "edge_id": ""
+    },
+    {
+      "source": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+      "target": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station",
+        "line": 16,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_s09_pipetting_workflow-001-szlab_mixer_pipetting_station.prepare_liquid_station"
+        ]
+      },
+      {
+        "node_id": "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station",
+        "line": 17,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "szlab_s09_pipetting_workflow-002-szlab_mixer_pipetting_station.bind_sample_to_station"
+        ]
+      },
+      {
+        "node_id": "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid",
+        "line": 20,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "szlab_s09_pipetting_workflow-003-szlab_mixer_pipetting_station.add_liquid"
+        ]
+      },
+      {
+        "node_id": "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station",
+        "line": 30,
+        "column": 4,
+        "source_step_index": 3,
+        "compiled_node_ids": [
+          "szlab_s09_pipetting_workflow-004-szlab_mixer_pipetting_station.release_station"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"S09 移液 local UI preset 的 Python 调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_pipetting_station = device(\"szlab_mixer_pipetting_station\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_s09_pipetting_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_s09_pipetting_workflow(\n    liquid_bottle_index: int = 1,\n    volume_ul: float = 100.0,\n) -> None:\n    szlab_mixer_pipetting_station.prepare_liquid_station()\n    szlab_mixer_pipetting_station.bind_sample_to_station(\n        sample_id=\"debug-sample\",\n    )\n    szlab_mixer_pipetting_station.add_liquid(\n        liquid_bottle_index=liquid_bottle_index,\n        aspirate_volume=volume_ul,\n        dispense_volume=volume_ul,\n        tip_box_index=1,\n        tip_index=1,\n        station=1,\n        volume_unit=\"ul\",\n        skip_level_check=False,\n    )\n    szlab_mixer_pipetting_station.release_station()\n",
+    "uri": "workflows/s09_pipetting.py",
+    "content_hash": "sha256:7f2749b8935031461a484e2efb0007ccca4e856a72e740bb499ac4741534f206"
+  }
+}

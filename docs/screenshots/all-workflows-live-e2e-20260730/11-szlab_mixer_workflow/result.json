@@ -1,0 +1,22 @@
+{
+  "order": 11,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/szlab_mixer.py",
+  "source_file": "szlab_mixer.py",
+  "workflow_id": "szlab_mixer_workflow",
+  "node_count": 1,
+  "edge_count": 0,
+  "run_id": "215272bc84b04633a04585621fa112a9",
+  "run_status": "completed",
+  "node_states": [
+    "success"
+  ],
+  "started_at": "2026-07-30T15:14:41.112Z",
+  "finished_at": "2026-07-30T15:15:17.286Z",
+  "directory": "11-szlab_mixer_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

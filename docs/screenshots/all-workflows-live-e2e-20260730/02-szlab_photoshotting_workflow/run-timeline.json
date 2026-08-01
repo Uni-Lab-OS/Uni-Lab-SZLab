@@ -1,0 +1,21 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "2b1e6bfa0674dd18a45c853e6f9d64206df7af37edf66e6577259fec9e76e15c",
+    "items": [
+      {
+        "nodeId": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}

@@ -1,0 +1,10 @@
+schema_version: 1
+shape:
+  id: tip_stack
+  display_name: TIP 头堆栈 / 上料过渡仓
+  applies_to:
+  - category: tip_stack
+  sort: rear-edge
+  parts:
+  - type: sites
+    generator: open-rack

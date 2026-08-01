@@ -1,0 +1,22 @@
+{
+  "order": 12,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/szlab_mixer_pump_production.py",
+  "source_file": "szlab_mixer_pump_production.py",
+  "workflow_id": "szlab_mixer_pump_production",
+  "node_count": 1,
+  "edge_count": 0,
+  "run_id": "9d279a874e0e4c9581c37fca9fcf587a",
+  "run_status": "completed",
+  "node_states": [
+    "success"
+  ],
+  "started_at": "2026-07-30T15:15:17.307Z",
+  "finished_at": "2026-07-30T15:15:52.018Z",
+  "directory": "12-szlab_mixer_pump_production",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

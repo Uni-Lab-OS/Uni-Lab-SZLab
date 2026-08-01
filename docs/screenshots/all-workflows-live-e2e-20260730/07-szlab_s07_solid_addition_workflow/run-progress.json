@@ -1,0 +1,56 @@
+{
+  "run": {
+    "id": "3543dd3cee0747ada4e76e99c4e52297",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+        "sourceNodeId": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+        "nodeType": "action",
+        "deviceId": "szlab_s07_solid_addition",
+        "action": "scan_powder_cartridges",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+        "sourceNodeId": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+        "nodeType": "action",
+        "deviceId": "szlab_s07_solid_addition",
+        "action": "rotate_powder_cartridge_to_feed",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+        "sourceNodeId": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+        "nodeType": "action",
+        "deviceId": "szlab_s07_solid_addition",
+        "action": "dose_powder",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 280,
+        "runId": "3543dd3cee0747ada4e76e99c4e52297",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785423195.3824863,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "82ddda9629953e820821d265e60e7b3beb5719d70a58b345411af00625388653"
+        }
+      }
+    ],
+    "nextSeq": 280
+  }
+}

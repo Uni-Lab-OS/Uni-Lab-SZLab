@@ -6,15 +6,14 @@ runtime_dir="${UNILAB_SZLAB_RUNTIME_DIR:-${repo_root}/runtime/os}"
 unilab_command="${UNILAB_COMMAND:-unilab}"
 
 mkdir -p "${runtime_dir}"
+export PYTHONPATH="${repo_root}${PYTHONPATH:+:${PYTHONPATH}}"
 
 exec "${unilab_command}" \
-  --graph "${repo_root}/deployment/graphs/local-debug.json" \
+  --graph "${repo_root}/deployment/graphs/szlab-local-debug.json" \
   --config "${repo_root}/deployment/local_config.py" \
   --working_dir "${runtime_dir}" \
-  --devices "${repo_root}/packages/szlab_poly_studio/szlab_poly_studio" \
-  --devices "${repo_root}/packages/ai4c_robot/ai4c_robot" \
-  --profile "${repo_root}/packages/szlab_poly_studio/package.yaml" \
-  --profile "${repo_root}/packages/ai4c_robot/package.yaml" \
+  --devices "${repo_root}/szlab_poly_studio" \
+  --profile "${repo_root}/szlab_poly_studio/profiles/default/package.yaml" \
   --external_devices_only \
   --backend ros \
   --app_bridges fastapi \

@@ -1,0 +1,24 @@
+{
+  "order": 7,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/s07_solid_addition.py",
+  "source_file": "s07_solid_addition.py",
+  "workflow_id": "szlab_s07_solid_addition_workflow",
+  "node_count": 3,
+  "edge_count": 2,
+  "run_id": "3543dd3cee0747ada4e76e99c4e52297",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T14:53:06.241Z",
+  "finished_at": "2026-07-30T14:56:05.826Z",
+  "directory": "07-szlab_s07_solid_addition_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

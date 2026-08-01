@@ -1,0 +1,65 @@
+schema_version: 1
+shape:
+  id: tip_box
+  display_name: TIP 盒组件
+  applies_to:
+  - category: tip_box
+  envelope:
+  - 86.0
+  - 128.0
+  - 136.0
+  units: ratio
+  note: 底托 + 四角立柱 + 近顶部的孔板（顶面 113/136），枪头孔与孔上的枪头由 位点生成。上料过渡仓里的盒子转了 90°，所以用归一坐标而不是 mm。
+  parts:
+  - type: box
+    style: shell
+    from:
+    - 0.0
+    - 1.0
+    - 0.06
+    to:
+    - 0.09
+    - 1.0
+    - 0.756882
+  - type: box
+    style: shell
+    from:
+    - 0.91
+    - 1.0
+    - 0.06
+    to:
+    - 1.0
+    - 1.0
+    - 0.756882
+  - type: slab
+    style: plain
+    z:
+    - 0.0
+    - 0.06
+  - type: box
+    style: plate
+    from:
+    - 0.0
+    - 0.0
+    - 0.06
+    to:
+    - 0.09
+    - 0.0
+    - 0.756882
+  - type: box
+    style: plate
+    from:
+    - 0.91
+    - 0.0
+    - 0.06
+    to:
+    - 1.0
+    - 0.0
+    - 0.756882
+  - type: slab
+    style: plain
+    z:
+    - 0.756882
+    - 0.830882
+  - type: sites
+    generator: site-holes

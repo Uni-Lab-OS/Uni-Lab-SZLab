@@ -1,0 +1,27 @@
+schema_version: 1
+shape:
+  id: capped_sample_vial
+  display_name: 500 mL 样品瓶
+  applies_to:
+  - category: sample_vial
+  envelope: [86.0, 86.0, 175.0]
+  units: ratio
+  shadow: round
+  note: 高身样品瓶采用收肩瓶身与深色旋盖，区别于同架位的敞口烧杯。
+  parts:
+  - type: lathe
+    style: glass
+    center: [0.5, 0.5]
+    d: 0.88
+    z: [0.0, 1.0]
+    ribs: 11
+    rings:
+    - {z: 0.0, r: 0.82}
+    - {z: 0.04, r: 0.88}
+    - {z: 0.72, r: 0.88}
+    - {z: 0.82, r: 0.58}
+    - {z: 1.0, r: 0.58}
+    cap:
+    - {z: 0.82, r: 0.62}
+    - {z: 0.97, r: 0.62}
+    - {z: 1.0, r: 0.56}

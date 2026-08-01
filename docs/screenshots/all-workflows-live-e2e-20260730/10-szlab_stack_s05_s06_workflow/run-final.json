@@ -1,0 +1,1089 @@
+{
+  "run": {
+    "id": "a4135ccdad5b42e5a935aeff0aac6b1b",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "nodeType": "action",
+        "deviceId": "szlab_poly_plc",
+        "action": "get_stack_status",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_photoshotting",
+        "action": "take_photo",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "sourceNodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pump",
+        "action": "run_solvent_addition",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 310,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785424706.6881137,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "b669a92a04a0511125ab7d83fcedcd2e71adcb811e5dc7ceae8d22f8fce3fe2b"
+        }
+      },
+      {
+        "seq": 311,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.feedback",
+        "nodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "timestamp": 1785424739.148372,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"schema\": \"szlab_poly_studio.stack_status.v1\", \"updated_at\": \"2026-07-30T15:18:59.118443+00:00\", \"stacks\": {\"s2_tip\": {\"id\": \"s2_tip\", \"display_name\": \"S2枪头仓\", \"warehouse_name\": \"S2枪头仓占位\", \"managed_resource\": \"physical_only\", \"content_type\": [\"tip\"], \"slots\": {\"1\": {\"site_key\": \"1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2\": {\"site_key\": \"2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3\": {\"site_key\": \"3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4\": {\"site_key\": \"4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"5\": {\"site_key\": \"5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"6\": {\"site_key\": \"6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"s3_unused_beaker\": {\"id\": \"s3_unused_beaker\", \"display_name\": \"S3未使用烧杯仓\", \"warehouse_name\": \"S3未使用烧杯仓\", \"managed_resource\": \"physical_only\", \"content_type\": [\"beaker\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-4\": {\"site_key\": \"1-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-5\": {\"site_key\": \"1-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-6\": {\"site_key\": \"1-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-4\": {\"site_key\": \"2-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-5\": {\"site_key\": \"2-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-6\": {\"site_key\": \"2-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-1\": {\"site_key\": \"3-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-2\": {\"site_key\": \"3-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-3\": {\"site_key\": \"3-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-4\": {\"site_key\": \"3-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-5\": {\"site_key\": \"3-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-6\": {\"site_key\": \"3-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"s3_unused_sample_vial\": {\"id\": \"s3_unused_sample_vial\", \"display_name\": \"S3未使用样品瓶仓\", \"warehouse_name\": \"S3未使用样品瓶仓\", \"managed_resource\": \"physical_only\", \"content_type\": [\"sample_vial\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-4\": {\"site_key\": \"1-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-5\": {\"site_key\": \"1-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-6\": {\"site_key\": \"1-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-4\": {\"site_key\": \"2-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-5\": {\"site_key\": \"2-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-6\": {\"site_key\": \"2-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-1\": {\"site_key\": \"3-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-2\": {\"site_key\": \"3-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-3\": {\"site_key\": \"3-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-4\": {\"site_key\": \"3-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-5\": {\"site_key\": \"3-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-6\": {\"site_key\": \"3-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"s10_liquid_reagent\": {\"id\": \"s10_liquid_reagent\", \"display_name\": \"S10液体试剂瓶仓\", \"warehouse_name\": \"S10液体试剂瓶仓占位\", \"managed_resource\": \"reagent\", \"content_type\": [\"liquid_reagent\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": true, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-4\": {\"site_key\": \"1-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-5\": {\"site_key\": \"1-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-4\": {\"site_key\": \"2-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-5\": {\"site_key\": \"2-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-1\": {\"site_key\": \"3-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-2\": {\"site_key\": \"3-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-3\": {\"site_key\": \"3-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-4\": {\"site_key\": \"3-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-5\": {\"site_key\": \"3-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4-1\": {\"site_key\": \"4-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4-2\": {\"site_key\": \"4-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4-3\": {\"site_key\": \"4-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4-4\": {\"site_key\": \"4-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"4-5\": {\"site_key\": \"4-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"s11_used_beaker\": {\"id\": \"s11_used_beaker\", \"display_name\": \"S11使用烧杯成品仓\", \"warehouse_name\": \"S11使用烧杯成品仓\", \"managed_resource\": \"physical_only\", \"content_type\": [\"beaker\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-4\": {\"site_key\": \"1-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-5\": {\"site_key\": \"1-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-6\": {\"site_key\": \"1-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-4\": {\"site_key\": \"2-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-5\": {\"site_key\": \"2-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-6\": {\"site_key\": \"2-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-1\": {\"site_key\": \"3-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-2\": {\"site_key\": \"3-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-3\": {\"site_key\": \"3-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-4\": {\"site_key\": \"3-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-5\": {\"site_key\": \"3-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-6\": {\"site_key\": \"3-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"s11_used_sample_vial\": {\"id\": \"s11_used_sample_vial\", \"display_name\": \"S11使用样品瓶成品仓\", \"warehouse_name\": \"S11使用样品瓶成品仓\", \"managed_resource\": \"physical_only\", \"content_type\": [\"sample_vial\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-4\": {\"site_key\": \"1-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-5\": {\"site_key\": \"1-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-6\": {\"site_key\": \"1-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-4\": {\"site_key\": \"2-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-5\": {\"site_key\": \"2-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-6\": {\"site_key\": \"2-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-1\": {\"site_key\": \"3-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-2\": {\"site_key\": \"3-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-3\": {\"site_key\": \"3-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-4\": {\"site_key\": \"3-4\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-5\": {\"site_key\": \"3-5\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"3-6\": {\"site_key\": \"3-6\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}, \"powder_container\": {\"id\": \"powder_container\", \"display_name\": \"固体粉桶仓\", \"warehouse_name\": \"固体粉桶仓占位\", \"managed_resource\": \"reagent\", \"content_type\": [\"powder_reagent\"], \"slots\": {\"1-1\": {\"site_key\": \"1-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-2\": {\"site_key\": \"1-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"1-3\": {\"site_key\": \"1-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-1\": {\"site_key\": \"2-1\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-2\": {\"site_key\": \"2-2\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}, \"2-3\": {\"site_key\": \"2-3\", \"occupied\": false, \"reagent_id\": null, \"qr_code\": null, \"remaining_amount\": null, \"unit\": null}}}}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 312,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.result",
+        "nodeId": "szlab_stack_s05_s06_workflow-001-szlab_poly_plc.get_stack_status",
+        "timestamp": 1785424739.1494408,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "schema": "szlab_poly_studio.stack_status.v1",
+            "stacks": {
+              "powder_container": {
+                "content_type": [
+                  "powder_reagent"
+                ],
+                "display_name": "固体粉桶仓",
+                "id": "powder_container",
+                "managed_resource": "reagent",
+                "slots": {
+                  "1-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "固体粉桶仓占位"
+              },
+              "s10_liquid_reagent": {
+                "content_type": [
+                  "liquid_reagent"
+                ],
+                "display_name": "S10液体试剂瓶仓",
+                "id": "s10_liquid_reagent",
+                "managed_resource": "reagent",
+                "slots": {
+                  "1-1": {
+                    "occupied": true,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "1-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-4",
+                    "unit": null
+                  },
+                  "1-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-5",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  },
+                  "2-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-4",
+                    "unit": null
+                  },
+                  "2-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-5",
+                    "unit": null
+                  },
+                  "3-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-1",
+                    "unit": null
+                  },
+                  "3-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-2",
+                    "unit": null
+                  },
+                  "3-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-3",
+                    "unit": null
+                  },
+                  "3-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-4",
+                    "unit": null
+                  },
+                  "3-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-5",
+                    "unit": null
+                  },
+                  "4-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4-1",
+                    "unit": null
+                  },
+                  "4-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4-2",
+                    "unit": null
+                  },
+                  "4-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4-3",
+                    "unit": null
+                  },
+                  "4-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4-4",
+                    "unit": null
+                  },
+                  "4-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4-5",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S10液体试剂瓶仓占位"
+              },
+              "s11_used_beaker": {
+                "content_type": [
+                  "beaker"
+                ],
+                "display_name": "S11使用烧杯成品仓",
+                "id": "s11_used_beaker",
+                "managed_resource": "physical_only",
+                "slots": {
+                  "1-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "1-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-4",
+                    "unit": null
+                  },
+                  "1-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-5",
+                    "unit": null
+                  },
+                  "1-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-6",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  },
+                  "2-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-4",
+                    "unit": null
+                  },
+                  "2-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-5",
+                    "unit": null
+                  },
+                  "2-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-6",
+                    "unit": null
+                  },
+                  "3-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-1",
+                    "unit": null
+                  },
+                  "3-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-2",
+                    "unit": null
+                  },
+                  "3-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-3",
+                    "unit": null
+                  },
+                  "3-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-4",
+                    "unit": null
+                  },
+                  "3-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-5",
+                    "unit": null
+                  },
+                  "3-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-6",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S11使用烧杯成品仓"
+              },
+              "s11_used_sample_vial": {
+                "content_type": [
+                  "sample_vial"
+                ],
+                "display_name": "S11使用样品瓶成品仓",
+                "id": "s11_used_sample_vial",
+                "managed_resource": "physical_only",
+                "slots": {
+                  "1-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "1-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-4",
+                    "unit": null
+                  },
+                  "1-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-5",
+                    "unit": null
+                  },
+                  "1-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-6",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  },
+                  "2-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-4",
+                    "unit": null
+                  },
+                  "2-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-5",
+                    "unit": null
+                  },
+                  "2-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-6",
+                    "unit": null
+                  },
+                  "3-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-1",
+                    "unit": null
+                  },
+                  "3-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-2",
+                    "unit": null
+                  },
+                  "3-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-3",
+                    "unit": null
+                  },
+                  "3-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-4",
+                    "unit": null
+                  },
+                  "3-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-5",
+                    "unit": null
+                  },
+                  "3-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-6",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S11使用样品瓶成品仓"
+              },
+              "s2_tip": {
+                "content_type": [
+                  "tip"
+                ],
+                "display_name": "S2枪头仓",
+                "id": "s2_tip",
+                "managed_resource": "physical_only",
+                "slots": {
+                  "1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1",
+                    "unit": null
+                  },
+                  "2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2",
+                    "unit": null
+                  },
+                  "3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3",
+                    "unit": null
+                  },
+                  "4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "4",
+                    "unit": null
+                  },
+                  "5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "5",
+                    "unit": null
+                  },
+                  "6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "6",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S2枪头仓占位"
+              },
+              "s3_unused_beaker": {
+                "content_type": [
+                  "beaker"
+                ],
+                "display_name": "S3未使用烧杯仓",
+                "id": "s3_unused_beaker",
+                "managed_resource": "physical_only",
+                "slots": {
+                  "1-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "1-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-4",
+                    "unit": null
+                  },
+                  "1-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-5",
+                    "unit": null
+                  },
+                  "1-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-6",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  },
+                  "2-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-4",
+                    "unit": null
+                  },
+                  "2-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-5",
+                    "unit": null
+                  },
+                  "2-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-6",
+                    "unit": null
+                  },
+                  "3-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-1",
+                    "unit": null
+                  },
+                  "3-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-2",
+                    "unit": null
+                  },
+                  "3-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-3",
+                    "unit": null
+                  },
+                  "3-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-4",
+                    "unit": null
+                  },
+                  "3-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-5",
+                    "unit": null
+                  },
+                  "3-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-6",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S3未使用烧杯仓"
+              },
+              "s3_unused_sample_vial": {
+                "content_type": [
+                  "sample_vial"
+                ],
+                "display_name": "S3未使用样品瓶仓",
+                "id": "s3_unused_sample_vial",
+                "managed_resource": "physical_only",
+                "slots": {
+                  "1-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-1",
+                    "unit": null
+                  },
+                  "1-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-2",
+                    "unit": null
+                  },
+                  "1-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-3",
+                    "unit": null
+                  },
+                  "1-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-4",
+                    "unit": null
+                  },
+                  "1-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-5",
+                    "unit": null
+                  },
+                  "1-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "1-6",
+                    "unit": null
+                  },
+                  "2-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-1",
+                    "unit": null
+                  },
+                  "2-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-2",
+                    "unit": null
+                  },
+                  "2-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-3",
+                    "unit": null
+                  },
+                  "2-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-4",
+                    "unit": null
+                  },
+                  "2-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-5",
+                    "unit": null
+                  },
+                  "2-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "2-6",
+                    "unit": null
+                  },
+                  "3-1": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-1",
+                    "unit": null
+                  },
+                  "3-2": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-2",
+                    "unit": null
+                  },
+                  "3-3": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-3",
+                    "unit": null
+                  },
+                  "3-4": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-4",
+                    "unit": null
+                  },
+                  "3-5": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-5",
+                    "unit": null
+                  },
+                  "3-6": {
+                    "occupied": false,
+                    "qr_code": null,
+                    "reagent_id": null,
+                    "remaining_amount": null,
+                    "site_key": "3-6",
+                    "unit": null
+                  }
+                },
+                "warehouse_name": "S3未使用样品瓶仓"
+              }
+            },
+            "success": true,
+            "updated_at": "2026-07-30T15:18:59.118443+00:00"
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 313,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.feedback",
+        "nodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "timestamp": 1785424742.9621596,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S05 拍照检测完成，结果 OK\", \"data\": {\"sample_id\": \"debug-sample\", \"photo_path\": \"\", \"photo_url\": \"\", \"result_code\": 1, \"result\": \"OK\"}}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 314,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.result",
+        "nodeId": "szlab_stack_s05_s06_workflow-002-szlab_mixer_photoshotting.take_photo",
+        "timestamp": 1785424742.9640474,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "photo_path": "",
+              "photo_url": "",
+              "result": "OK",
+              "result_code": 1,
+              "sample_id": "debug-sample"
+            },
+            "message": "S05 拍照检测完成，结果 OK",
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 315,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.feedback",
+        "nodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "timestamp": 1785424780.449071,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S06 泵 1 加液流程完成\", \"data\": {\"pump\": 1, \"volume\": 8, \"volume_pump_1\": 0, \"volume_pump_2\": 0}, \"steps\": [{\"step\": \"写入溶液添加量并启动 S06\", \"success\": true, \"message\": \"S06 工艺 1 溶液添加完成\", \"data\": {\"process\": 1, \"volume\": 8, \"volume_pump_1\": 0, \"volume_pump_2\": 0, \"amount_values\": {\"S06_1号溶液添加量\": 8}}}, {\"step\": \"机械臂至磁搅\", \"success\": true, \"message\": \"已跳过机械臂搬运\", \"skipped\": true}]}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 316,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "node.result",
+        "nodeId": "szlab_stack_s05_s06_workflow-003-szlab_mixer_pump.run_solvent_addition",
+        "timestamp": 1785424780.4505467,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "pump": 1,
+              "volume": 8,
+              "volume_pump_1": 0,
+              "volume_pump_2": 0
+            },
+            "message": "S06 泵 1 加液流程完成",
+            "steps": [
+              {
+                "data": {
+                  "amount_values": {
+                    "S06_1号溶液添加量": 8
+                  },
+                  "process": 1,
+                  "volume": 8,
+                  "volume_pump_1": 0,
+                  "volume_pump_2": 0
+                },
+                "message": "S06 工艺 1 溶液添加完成",
+                "step": "写入溶液添加量并启动 S06",
+                "success": true
+              },
+              {
+                "message": "已跳过机械臂搬运",
+                "skipped": true,
+                "step": "机械臂至磁搅",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 317,
+        "runId": "a4135ccdad5b42e5a935aeff0aac6b1b",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785424780.4515758,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 317
+  }
+}

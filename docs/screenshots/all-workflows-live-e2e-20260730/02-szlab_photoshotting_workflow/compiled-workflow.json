@@ -1,0 +1,74 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_photoshotting_workflow",
+  "parameters": [
+    {
+      "name": "sample_id",
+      "type": "string",
+      "required": false,
+      "default": "debug-sample",
+      "title": "sample_id",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+      "action_ref": "szlab_mixer_photoshotting.take_photo",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "sample_id": {
+          "kind": "runtime_parameter",
+          "parameter": "sample_id"
+        },
+        "photo_path": {
+          "kind": "literal",
+          "value": ""
+        },
+        "inspection_result": {
+          "kind": "literal",
+          "value": ""
+        },
+        "require_material": {
+          "kind": "literal",
+          "value": false
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo",
+        "line": 13,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_photoshotting_workflow-001-szlab_mixer_photoshotting.take_photo"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"S05 拍照与算法结果链路调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_photoshotting = device(\"szlab_mixer_photoshotting\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_photoshotting_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_photoshotting_workflow(sample_id: str = \"debug-sample\") -> None:\n    szlab_mixer_photoshotting.take_photo(\n        sample_id=sample_id,\n        photo_path=\"\",\n        inspection_result=\"\",\n        require_material=False,\n    )\n",
+    "uri": "workflows/photoshotting.py",
+    "content_hash": "sha256:f92b1d05aa35bc239931a943e206752b44029b792b89800f26369434e05bfffb"
+  }
+}

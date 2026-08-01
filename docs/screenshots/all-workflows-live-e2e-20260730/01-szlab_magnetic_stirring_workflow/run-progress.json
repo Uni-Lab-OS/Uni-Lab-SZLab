@@ -1,0 +1,36 @@
+{
+  "run": {
+    "id": "572f7d649302435990842cf955c838cc",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "sourceNodeId": "szlab_magnetic_stirring_workflow-001-szlab_mixer_stirrer.run_stirring",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_stirrer",
+        "action": "run_stirring",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 217,
+        "runId": "572f7d649302435990842cf955c838cc",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785422082.4397936,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "f72979d2822e98a22a6649fee3eb13ea2cef31bad4b4ccc8b382279b295b2d02"
+        }
+      }
+    ],
+    "nextSeq": 217
+  }
+}

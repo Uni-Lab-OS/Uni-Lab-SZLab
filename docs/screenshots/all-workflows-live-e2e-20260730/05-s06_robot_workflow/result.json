@@ -1,0 +1,24 @@
+{
+  "order": 5,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/s06_robot.py",
+  "source_file": "s06_robot.py",
+  "workflow_id": "s06_robot_workflow",
+  "node_count": 3,
+  "edge_count": 2,
+  "run_id": "908ef5f67baf481abae1fc0d0478e8b4",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T14:37:08.575Z",
+  "finished_at": "2026-07-30T14:37:58.398Z",
+  "directory": "05-s06_robot_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

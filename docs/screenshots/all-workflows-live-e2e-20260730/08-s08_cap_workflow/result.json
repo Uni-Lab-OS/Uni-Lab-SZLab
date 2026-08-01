@@ -1,0 +1,23 @@
+{
+  "order": 8,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/s08_cap.py",
+  "source_file": "s08_cap.py",
+  "workflow_id": "s08_cap_workflow",
+  "node_count": 2,
+  "edge_count": 1,
+  "run_id": "bdf91a4752734197a144ca8fd5cb6853",
+  "run_status": "completed",
+  "node_states": [
+    "success",
+    "success"
+  ],
+  "started_at": "2026-07-30T14:39:45.696Z",
+  "finished_at": "2026-07-30T14:43:20.975Z",
+  "directory": "08-s08_cap_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator
-
-PACKAGES = ("szlab_poly_studio", "ai4c_robot")
 
 
 def _read_yaml(path: Path) -> dict:
@@ -16,38 +15,56 @@ def _read_yaml(path: Path) -> dict:
     return value
 
 
-def test_device_specs_and_profiles_match_current_template_schemas(repo_root: Path) -> None:
-    device_schema = json.loads((repo_root / "schemas" / "device-template-v2.schema.json").read_text(encoding="utf-8"))
-    profile_schema = json.loads((repo_root / "schemas" / "profile-v1.schema.json").read_text(encoding="utf-8"))
-    device_validator = Draft202012Validator(device_schema)
-    profile_validator = Draft202012Validator(profile_schema)
-
-    for package_name in PACKAGES:
-        spec = _read_yaml(repo_root / "specs" / f"{package_name}.yaml")
-        profile = _read_yaml(repo_root / "packages" / package_name / "package.yaml")
-        device_validator.validate(spec)
-        profile_validator.validate(profile)
+def _profile_root(repo_root: Path) -> Path:
+    return repo_root / "szlab_poly_studio" / "profiles" / "default"
 
 
-def test_shape_manifest_matches_schema_and_declares_every_station(
-    repo_root: Path,
-) -> None:
+def _shape_assets(repo_root: Path) -> list[dict]:
+    package_root = repo_root / "szlab_poly_studio"
+    payloads = [
+        _read_yaml(path)
+        for path in sorted(package_root.glob("**/models/shape.yml"))
+    ]
+    assert payloads
+    assert all(payload.get("schema_version") == 1 for payload in payloads)
+    return [payload["shape"] for payload in payloads]
+
+
+def test_packaged_profile_matches_current_template_schemas(repo_root: Path) -> None:
+    device_schema = json.loads(
+        (repo_root / "schemas" / "device-template-v2.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    profile_schema = json.loads(
+        (repo_root / "schemas" / "profile-v1.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    profile_root = _profile_root(repo_root)
+    Draft202012Validator(device_schema).validate(_read_yaml(profile_root / "device.yaml"))
+    Draft202012Validator(profile_schema).validate(_read_yaml(profile_root / "package.yaml"))
+
+
+def test_device_and_resource_shapes_are_split_and_schema_valid(repo_root: Path) -> None:
     schema = json.loads(
         (repo_root / "schemas" / "shape-manifest-v1.schema.json").read_text(
             encoding="utf-8"
         )
     )
-    manifest = _read_yaml(
-        repo_root
-        / "packages"
-        / "szlab_poly_studio"
-        / "szlab_poly_studio"
-        / "shape_manifest.yaml"
-    )
-    Draft202012Validator(schema).validate(manifest)
+    shapes = _shape_assets(repo_root)
+    compatibility_manifest = {
+        "schema_version": 1,
+        "bundle": {
+            "id": "szlab-poly-studio",
+            "display_name": "SZLab 聚合物工作站",
+            "source_namespace": "szlab",
+        },
+        "shapes": shapes,
+    }
+    Draft202012Validator(schema).validate(compatibility_manifest)
 
-    shapes_by_id = {shape["id"]: shape for shape in manifest["shapes"]}
-    # 前端不再内置这些外形，缺一个就会退回实心方盒
+    shapes_by_id = {shape["id"]: shape for shape in shapes}
     assert {
         "carousel_feeder",
         "gantry_pump",
@@ -63,14 +80,47 @@ def test_shape_manifest_matches_schema_and_declares_every_station(
         "capped_sample_vial",
         "tip_box",
         "powder_container",
-    } <= set(shapes_by_id)
-
-    # 有实测占位的设备必须带 envelope，导出脚本拿它当 size
+    } == set(shapes_by_id)
     for shape_id in ("carousel_feeder", "gantry_pump", "stirrer_rack", "vision_cell"):
         assert len(shapes_by_id[shape_id]["envelope"]) == 3
-
-    # 注粉瓶的 category 同时含 powder 与 reagent，必须赢过通用试剂瓶
     assert shapes_by_id["powder_container"]["priority"] > 0
+
+
+def test_every_decorator_model_entry_is_literal_and_package_local(repo_root: Path) -> None:
+    package_root = (repo_root / "szlab_poly_studio").resolve()
+    resolved_assets: set[Path] = set()
+
+    for source_path in package_root.rglob("*.py"):
+        tree = ast.parse(source_path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for decorator in node.decorator_list:
+                if not isinstance(decorator, ast.Call):
+                    continue
+                name = decorator.func.id if isinstance(decorator.func, ast.Name) else ""
+                if name not in {"device", "resource"}:
+                    continue
+                model_kw = next(
+                    (keyword for keyword in decorator.keywords if keyword.arg == "model"),
+                    None,
+                )
+                if model_kw is None:
+                    continue
+                model = ast.literal_eval(model_kw.value)
+                descriptors = [model]
+                if isinstance(model.get("shape"), dict):
+                    descriptors.append(model["shape"])
+                for descriptor in descriptors:
+                    entry = descriptor.get("entry")
+                    if not entry:
+                        continue
+                    asset = (source_path.parent / entry).resolve()
+                    assert asset.is_relative_to(package_root)
+                    assert asset.is_file(), f"missing model asset: {asset}"
+                    resolved_assets.add(asset)
+
+    assert resolved_assets == set(package_root.glob("**/models/shape.yml"))
 
 
 def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> None:
@@ -80,7 +130,7 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
     同为子串匹配时先比 priority、再比 token 长度。
     """
 
-    from szlab_poly_studio.shape_library import material_shape_items
+    from szlab_poly_studio.common.shape_library import material_shape_items
 
     shapes = material_shape_items()
 
@@ -146,7 +196,7 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
 
 
 def test_shape_library_matches_frontend_wire_contract() -> None:
-    from szlab_poly_studio.shape_library import material_shape_items
+    from szlab_poly_studio.common.shape_library import material_shape_items
 
     shapes = material_shape_items()
     shapes_by_id = {shape["id"]: shape for shape in shapes}
@@ -164,41 +214,38 @@ def _normalize_category(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
 
 
-def test_packaged_profile_copies_are_in_sync(repo_root: Path) -> None:
-    for package_name in PACKAGES:
-        source_spec = _read_yaml(repo_root / "specs" / f"{package_name}.yaml")
-        packaged_spec = _read_yaml(repo_root / "packages" / package_name / package_name / "profile" / "device.yaml")
-        assert packaged_spec == source_spec
-
-        source_profile = _read_yaml(repo_root / "packages" / package_name / "package.yaml")
-        packaged_profile = _read_yaml(repo_root / "packages" / package_name / package_name / "profile" / "package.yaml")
-        assert packaged_profile == {
-            **source_profile,
-            "device_spec": "device.yaml",
-        }
+def test_profile_is_self_contained(repo_root: Path) -> None:
+    profile_root = _profile_root(repo_root)
+    profile = _read_yaml(profile_root / "package.yaml")
+    assert profile["device_spec"] == "device.yaml"
+    assert (profile_root / profile["device_spec"]).is_file()
 
 
-def test_profiles_load_and_expose_decorated_actions(profiles) -> None:
-    assert set(profiles) == {"szlab_poly_studio", "ai4c_robot"}
-    assert "szlab_mixer_stirrer.run_stirring" in profiles["szlab_poly_studio"].action_catalog
-    assert "szlab_s08_cap_station.process_cap_with_sample_parts" in profiles["szlab_poly_studio"].action_catalog
-    assert "AI4C_robot_arm.pick_well_plate_from_loading_rack" in profiles["ai4c_robot"].action_catalog
+def test_profile_and_decorators_contribute_to_one_action_catalog(
+    profiles,
+    decorated_action_catalog,
+) -> None:
+    assert set(profiles) == {"szlab_poly_studio"}
+    assert "szlab_poly_studio.run_stirring" in profiles["szlab_poly_studio"].action_catalog
+    assert "szlab_mixer_stirrer.run_stirring" in decorated_action_catalog
+    assert "szlab_s08_cap_station.process_cap_with_sample_parts" in decorated_action_catalog
 
 
 def test_macro_calls_use_generic_driver_method_contract(repo_root: Path) -> None:
-    for package_name in PACKAGES:
-        profile = _read_yaml(repo_root / "packages" / package_name / "package.yaml")
-        spec = _read_yaml(repo_root / "specs" / f"{package_name}.yaml")
-        assert profile["default_device_binding"]["driver_key"] == "generic_plc_macro"
+    profile_root = _profile_root(repo_root)
+    profile = _read_yaml(profile_root / "package.yaml")
+    spec = _read_yaml(profile_root / "device.yaml")
+    assert profile["default_device_binding"]["driver_key"] == "generic_plc_macro"
 
-        params_by_action = {
-            action["id"]: {param["name"] for param in action.get("params", [])} for action in spec["actions"]
-        }
-        for action_id, steps in profile["driver_config"]["macros"].items():
-            referenced_inputs: set[str] = set()
-            for step in steps:
-                assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", step["call"])
-                for arg in step.get("args", []):
-                    if isinstance(arg, dict) and set(arg) == {"input"}:
-                        referenced_inputs.add(arg["input"])
-            assert referenced_inputs <= params_by_action[action_id]
+    params_by_action = {
+        action["id"]: {param["name"] for param in action.get("params", [])}
+        for action in spec["actions"]
+    }
+    for action_id, steps in profile["driver_config"]["macros"].items():
+        referenced_inputs: set[str] = set()
+        for step in steps:
+            assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", step["call"])
+            for arg in step.get("args", []):
+                if isinstance(arg, dict) and set(arg) == {"input"}:
+                    referenced_inputs.add(arg["input"])
+        assert referenced_inputs <= params_by_action[action_id]

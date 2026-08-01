@@ -1,0 +1,22 @@
+{
+  "order": 2,
+  "outcome": "passed",
+  "source": "szlab_poly_studio/workflows/photoshotting.py",
+  "source_file": "photoshotting.py",
+  "workflow_id": "szlab_photoshotting_workflow",
+  "node_count": 1,
+  "edge_count": 0,
+  "run_id": "c346d965854643d8be37a9816e71d3ec",
+  "run_status": "completed",
+  "node_states": [
+    "success"
+  ],
+  "started_at": "2026-07-30T14:35:01.091Z",
+  "finished_at": "2026-07-30T14:35:19.915Z",
+  "directory": "02-szlab_photoshotting_workflow",
+  "screenshots": [
+    "01-running.png",
+    "02-completed.png",
+    "03-events.png"
+  ]
+}

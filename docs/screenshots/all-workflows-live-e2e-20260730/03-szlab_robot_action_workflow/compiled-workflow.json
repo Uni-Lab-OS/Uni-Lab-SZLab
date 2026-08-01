@@ -1,0 +1,101 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_robot_action_workflow",
+  "parameters": [
+    {
+      "name": "position",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "position",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+      "action_ref": "szlab_mixer_robot.submit_place_to_s04",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        },
+        "sample_id": {
+          "kind": "literal",
+          "value": "debug-beaker"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+      "action_ref": "szlab_mixer_robot.submit_pick_from_s04",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "position"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+      "target": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04",
+        "line": 13,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_robot_action_workflow-001-szlab_mixer_robot.submit_place_to_s04"
+        ]
+      },
+      {
+        "node_id": "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04",
+        "line": 17,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "szlab_robot_action_workflow-002-szlab_mixer_robot.submit_pick_from_s04"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"机械臂单工位取放调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_robot = device(\"szlab_mixer_robot\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_robot_action_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_robot_action_workflow(position: int = 1) -> None:\n    szlab_mixer_robot.submit_place_to_s04(\n        position=position,\n        sample_id=\"debug-beaker\",\n    )\n    szlab_mixer_robot.submit_pick_from_s04(position=position)\n",
+    "uri": "workflows/robot_action.py",
+    "content_hash": "sha256:94fa775505dee1b002f89916b761223dd01fe706148d92cfd2f0428356488744"
+  }
+}

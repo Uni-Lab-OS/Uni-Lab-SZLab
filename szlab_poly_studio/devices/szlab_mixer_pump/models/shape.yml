@@ -1,0 +1,167 @@
+schema_version: 1
+shape:
+  id: gantry_pump
+  display_name: S06 注射泵（溶剂加样）
+  applies_to:
+  - category: gantry_pump
+  envelope:
+  - 285.0
+  - 205.0
+  - 727.0
+  note: 底板站在 4 根 Ø11 抛光立柱上，中层平台 z=288..303；背面两块 12 厚立板 顶到 556、上端一道 29 深横梁，梁下伸出加样臂，臂下挂 Ø12 加样针；顶部 两台泵模组各坐在一块占满宽度的安装板上。立板朝 +Y，加样针朝台面前侧。
+  parts:
+  - type: box
+    style: plate
+    from:
+    - 42.5
+    - 0.0
+    - 0.0
+    to:
+    - 242.5
+    - 190.0
+    - 12.0
+  - type: cylinder
+    style: shaft
+    center:
+    - 60.5
+    - 171.0
+    d: 11.0
+    z:
+    - 12.0
+    - 288.0
+  - type: cylinder
+    style: shaft
+    center:
+    - 230.5
+    - 171.0
+    d: 11.0
+    z:
+    - 12.0
+    - 288.0
+  - type: cylinder
+    style: shaft
+    center:
+    - 60.5
+    - 11.0
+    d: 11.0
+    z:
+    - 12.0
+    - 288.0
+  - type: cylinder
+    style: shaft
+    center:
+    - 230.5
+    - 11.0
+    d: 11.0
+    z:
+    - 12.0
+    - 288.0
+  - type: box
+    style: plate
+    from:
+    - 32.5
+    - 0.0
+    - 288.0
+    to:
+    - 252.5
+    - 204.0
+    - 303.0
+  - type: box
+    style: column
+    from:
+    - 32.5
+    - 190.0
+    - 303.0
+    to:
+    - 92.5
+    - 202.0
+    - 556.0
+  - type: box
+    style: column
+    from:
+    - 192.5
+    - 190.0
+    - 303.0
+    to:
+    - 252.5
+    - 202.0
+    - 556.0
+  - type: box
+    style: column
+    from:
+    - 32.5
+    - 173.0
+    - 510.0
+    to:
+    - 252.5
+    - 202.0
+    - 556.0
+  - type: box
+    style: column
+    from:
+    - 55.5
+    - 64.5
+    - 303.0
+    to:
+    - 82.5
+    - 100.5
+    - 335.0
+  - type: cylinder
+    style: probe
+    center:
+    - 144.5
+    - 97.0
+    d: 12.0
+    z:
+    - 303.0
+    - 430.0
+  - type: box
+    style: module
+    from:
+    - 131.0
+    - 85.0
+    - 430.0
+    to:
+    - 158.0
+    - 205.0
+    - 500.0
+  - type: box
+    style: plate
+    from:
+    - 0.0
+    - 0.0
+    - 556.0
+    to:
+    - 285.0
+    - 190.0
+    - 568.0
+  - type: box
+    style: module
+    from:
+    - 16.5
+    - 36.5
+    - 568.0
+    to:
+    - 269.5
+    - 148.5
+    - 633.0
+  - type: box
+    style: plate
+    from:
+    - 0.0
+    - 0.0
+    - 649.0
+    to:
+    - 285.0
+    - 190.0
+    - 661.0
+  - type: box
+    style: module
+    from:
+    - 16.5
+    - 36.5
+    - 661.0
+    to:
+    - 269.5
+    - 148.5
+    - 726.0

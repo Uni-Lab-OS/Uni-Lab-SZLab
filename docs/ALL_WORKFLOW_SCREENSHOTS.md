@@ -1,6 +1,6 @@
 # 全部生产工作流 E2E 截图
 
-总计 13 个生产 Python 工作流：SZLab 12 个、AI4C 1 个。每个工作流都经过：
+总计 12 个 SZLab 生产 Python 工作流。每个工作流都经过：
 
 1. Python 源码直接提交 `/api/v1/authoring/compile`；
 2. 最新 `uni-lab-fe` Python 编辑器重新载入源码；
@@ -85,22 +85,13 @@
 
 ![Mixer Pump 生产流程](screenshots/workflows/12-szlab_mixer_pump_production.png)
 
-## AI4C
-
-### 13. AI4C 完整搬运流程
-
-`szlab_canvas_workflow`：8 节点、7 边。该 ID 沿用原 local UI/legacy 工作流命名，源码由
-AI4C 包维护。
-
-![AI4C 完整搬运流程](screenshots/workflows/13-szlab_canvas_workflow.png)
-
 ## 复现
 
-启动同时加载两个包的本地 bridge 与最新前端后运行：
+启动 SZLab 本地 bridge 与最新前端后运行：
 
 ```bash
 ./scripts/capture-all-workflows-e2e.sh
 ```
 
-脚本自动发现两个包 `workflows/` 下除 `__init__.py` 外的生产源码；数量不是 13、任一编译或
+脚本自动发现 `szlab_poly_studio/workflows/` 下除 `__init__.py` 外的生产源码；数量不是 12、任一编译或
 校验失败、节点数不一致、出现未预期的 HTTP/浏览器错误时都会失败。

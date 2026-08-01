@@ -1,0 +1,86 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_mixer_workflow",
+  "parameters": [
+    {
+      "name": "pump",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "pump",
+      "description": ""
+    },
+    {
+      "name": "volume",
+      "type": "number",
+      "required": false,
+      "default": 8,
+      "title": "volume",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_mixer_workflow-001-szlab_mixer_pump.run_solvent_addition",
+      "action_ref": "szlab_mixer_pump.run_solvent_addition",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "pump": {
+          "kind": "runtime_parameter",
+          "parameter": "pump"
+        },
+        "volume": {
+          "kind": "runtime_parameter",
+          "parameter": "volume"
+        },
+        "skip_level_check": {
+          "kind": "literal",
+          "value": false
+        },
+        "skip_robot": {
+          "kind": "literal",
+          "value": true
+        },
+        "beaker_true_means_present": {
+          "kind": "literal",
+          "value": true
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_mixer_workflow-001-szlab_mixer_pump.run_solvent_addition",
+        "line": 13,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_mixer_workflow-001-szlab_mixer_pump.run_solvent_addition"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"legacy szlab_mixer_workflow.json 的等价 Python 表达。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_pump = device(\"szlab_mixer_pump\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_mixer_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_mixer_workflow(pump: int = 1, volume: float = 8.0) -> None:\n    szlab_mixer_pump.run_solvent_addition(\n        pump=pump,\n        volume=volume,\n        skip_level_check=False,\n        skip_robot=True,\n        beaker_true_means_present=True,\n    )\n",
+    "uri": "workflows/szlab_mixer.py",
+    "content_hash": "sha256:a400e7f232f8071745132ed8a0ee53349d73ba021e0993207f1878607a80963a"
+  }
+}

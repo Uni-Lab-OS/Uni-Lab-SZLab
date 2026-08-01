@@ -53,20 +53,16 @@ def _scan(root: Path) -> tuple[set[str], set[str], Registry]:
 
 
 def test_external_registry_contains_expected_devices_and_resources(repo_root: Path) -> None:
-    szlab_root = repo_root / "packages" / "szlab_poly_studio" / "szlab_poly_studio"
-    ai4c_root = repo_root / "packages" / "ai4c_robot" / "ai4c_robot"
+    szlab_root = repo_root / "szlab_poly_studio"
 
     szlab_devices, szlab_resources, _ = _scan(szlab_root)
-    ai4c_devices, ai4c_resources, _ = _scan(ai4c_root)
 
     assert szlab_devices == SZLAB_DEVICES
     assert szlab_resources == SZLAB_RESOURCES
-    assert ai4c_devices == {"AI4C_plc", "AI4C_robot_arm"}
-    assert ai4c_resources == set()
 
 
 def test_action_names_are_python_authoring_safe(action_catalog: dict) -> None:
-    decorated_refs = [ref for ref in action_catalog if not ref.startswith(("szlab_poly_studio.", "ai4c_station."))]
+    decorated_refs = [ref for ref in action_catalog if not ref.startswith("szlab_poly_studio.")]
     assert decorated_refs
     assert not [ref for ref in decorated_refs if ".auto-" in ref]
     assert all(ref.rsplit(".", 1)[1].isidentifier() for ref in decorated_refs)

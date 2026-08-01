@@ -21,8 +21,6 @@ await mkdir(outputRoot, { recursive: true })
 const workflowSource = await readFile(
   resolve(
     repoRoot,
-    'packages',
-    'szlab_poly_studio',
     'szlab_poly_studio',
     'workflows',
     's04_robot_stirring.py'

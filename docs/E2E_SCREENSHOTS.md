@@ -1,6 +1,6 @@
 # SZLab 最新前端 E2E 截图
 
-本页聚焦 SZLab 物料视图和一个代表性工作流。全部 13 个生产工作流截图见
+本页聚焦 SZLab 物料视图和一个代表性工作流。全部 12 个生产工作流截图见
 [`ALL_WORKFLOW_SCREENSHOTS.md`](ALL_WORKFLOW_SCREENSHOTS.md)。
 
 截图由 `uni-lab-fe@2d77758`、SZLab 独立 Profile、
@@ -22,8 +22,8 @@ S04 机械臂—磁搅流程通过真实 `/api/v1/authoring/compile` 和
 
 ## 2.5D 物料界面
 
-2.5D SVG 投影使用同一份 126 对象 Material Aggregate。Bridge 从
-`shape_manifest.yaml` 的 14 条 SZLab 外形声明生成 `/api/v1/material-shapes`。除工站设备外，
+2.5D SVG 投影使用同一份 126 对象 Material Aggregate。Bridge 从由装饰器绑定、分布在各
+`models/shape.yml` 中的 14 条 SZLab 外形声明生成 `/api/v1/material-shapes`。除工站设备外，
 试剂瓶、样品瓶与烧杯也使用设备包自带的可辨识轮廓。E2E 会断言 S04 磁搅节点使用
 `stirrer_rack`、试剂瓶使用 `capped_reagent_bottle`，并验证 2.5D 缩放和适应全部控制。
 
@@ -40,7 +40,7 @@ S04 机械臂—磁搅流程通过真实 `/api/v1/authoring/compile` 和
 
 ```bash
 UNILAB_PYTHON=/home/changjunhan/.micromamba/envs/unilab/bin/python \
-  bash ./scripts/start-szlab-authoring-bridge.sh
+  ./scripts/start-authoring-bridge.sh
 
 cd ../uni-lab-fe
 pnpm --filter @unilab/kernel-web preview --host 127.0.0.1 --port 4173

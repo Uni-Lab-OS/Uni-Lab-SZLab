@@ -1,0 +1,110 @@
+{
+  "run": {
+    "id": "cbace3de8a584aab82c39c952c449179",
+    "status": "pending"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "sourceNodeId": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_place_to_s06",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+        "sourceNodeId": "s06_robot_workflow-002-szlab_mixer_pump.run_solvent_addition",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pump",
+        "action": "run_solvent_addition",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      },
+      {
+        "nodeId": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+        "sourceNodeId": "s06_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s06",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_robot",
+        "action": "submit_pick_from_s06",
+        "state": "pending",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 63,
+        "runId": "cbace3de8a584aab82c39c952c449179",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785408310.1758583,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "d3c7e7b10970d97c63fa06572a81566269f647df94f33f0ba2f3a0e3a05c1572"
+        }
+      },
+      {
+        "seq": 64,
+        "runId": "cbace3de8a584aab82c39c952c449179",
+        "type": "node.feedback",
+        "nodeId": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "timestamp": 1785408323.3864505,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"机器人任务已完成: S06 place\", \"task\": \"place\", \"station\": \"S06\", \"task_number\": 11, \"status\": \"completed\", \"written_variables\": {\"任务号\": 11, \"Robot_任务写入完成\": true}, \"write_readback\": {\"任务号\": 11}, \"completion_variable\": \"Robot_任务完成\", \"completion_value\": 11, \"completion_message\": \"Robot_任务完成 已非 0\", \"handshake_precheck\": {\"target_station\": \"S06\", \"Robot_Home\": true, \"Robot_任务允许写入\": true}, \"reset\": {\"success\": true, \"written_variables\": {\"Robot_任务写入完成\": false, \"任务号\": 0}, \"errors\": {}}, \"target_sensor_variable\": \"传感器状态_上位机[3].NO[1]\"}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 65,
+        "runId": "cbace3de8a584aab82c39c952c449179",
+        "type": "node.result",
+        "nodeId": "s06_robot_workflow-001-szlab_mixer_robot.submit_place_to_s06",
+        "timestamp": 1785408323.387473,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "completion_message": "Robot_任务完成 已非 0",
+            "completion_value": 11,
+            "completion_variable": "Robot_任务完成",
+            "handshake_precheck": {
+              "Robot_Home": true,
+              "Robot_任务允许写入": true,
+              "target_station": "S06"
+            },
+            "message": "机器人任务已完成: S06 place",
+            "reset": {
+              "errors": {},
+              "success": true,
+              "written_variables": {
+                "Robot_任务写入完成": false,
+                "任务号": 0
+              }
+            },
+            "station": "S06",
+            "status": "completed",
+            "success": true,
+            "target_sensor_variable": "传感器状态_上位机[3].NO[1]",
+            "task": "place",
+            "task_number": 11,
+            "write_readback": {
+              "任务号": 11
+            },
+            "written_variables": {
+              "Robot_任务写入完成": true,
+              "任务号": 11
+            }
+          },
+          "suc": true
+        }
+      }
+    ],
+    "nextSeq": 65
+  }
+}

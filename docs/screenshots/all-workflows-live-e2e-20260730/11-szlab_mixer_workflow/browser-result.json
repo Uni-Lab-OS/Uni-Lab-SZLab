@@ -1,0 +1,105 @@
+{
+  "apiCalls": [
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/health"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/health"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/workflow-node-templates"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/authoring/generate-python"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/authoring/compile"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/authoring/validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/workflows:validate"
+    },
+    {
+      "method": "POST",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9/nodes"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9/nodes"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9/nodes"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9/nodes"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "url": "http://127.0.0.1:8015/api/v1/runtime/runs/215272bc84b04633a04585621fa112a9/nodes"
+    }
+  ],
+  "browserErrors": []
+}

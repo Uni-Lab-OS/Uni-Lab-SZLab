@@ -1,0 +1,98 @@
+{
+  "run": {
+    "id": "9d279a874e0e4c9581c37fca9fcf587a",
+    "status": "completed"
+  },
+  "nodes": {
+    "items": [
+      {
+        "nodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "sourceNodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "nodeType": "action",
+        "deviceId": "szlab_mixer_pump",
+        "action": "run_solvent_addition",
+        "state": "success",
+        "result": {},
+        "attempt": 0
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "seq": 306,
+        "runId": "9d279a874e0e4c9581c37fca9fcf587a",
+        "type": "run.created",
+        "nodeId": null,
+        "timestamp": 1785424526.1921794,
+        "payload": {
+          "profile_ref": "",
+          "workflow_revision_hash": "7de26433c08acd53f6979eb65a6ec9acad0b6f338bdd9a12993bb2e6262c7dda"
+        }
+      },
+      {
+        "seq": 307,
+        "runId": "9d279a874e0e4c9581c37fca9fcf587a",
+        "type": "node.feedback",
+        "nodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "timestamp": 1785424547.0323281,
+        "payload": {
+          "return_info": "{\"error\": \"\", \"suc\": true, \"return_value\": {\"success\": true, \"message\": \"S06 泵 1 加液流程完成\", \"data\": {\"pump\": 1, \"volume\": 8, \"volume_pump_1\": 0, \"volume_pump_2\": 0}, \"steps\": [{\"step\": \"写入溶液添加量并启动 S06\", \"success\": true, \"message\": \"S06 工艺 1 溶液添加完成\", \"data\": {\"process\": 1, \"volume\": 8, \"volume_pump_1\": 0, \"volume_pump_2\": 0, \"amount_values\": {\"S06_1号溶液添加量\": 8}}}, {\"step\": \"机械臂至磁搅\", \"success\": true, \"message\": \"已跳过机械臂搬运\", \"skipped\": true}]}}",
+          "success": true
+        }
+      },
+      {
+        "seq": 308,
+        "runId": "9d279a874e0e4c9581c37fca9fcf587a",
+        "type": "node.result",
+        "nodeId": "szlab_mixer_pump_production-001-szlab_mixer_pump.run_solvent_addition",
+        "timestamp": 1785424547.033522,
+        "payload": {
+          "error": "",
+          "return_value": {
+            "data": {
+              "pump": 1,
+              "volume": 8,
+              "volume_pump_1": 0,
+              "volume_pump_2": 0
+            },
+            "message": "S06 泵 1 加液流程完成",
+            "steps": [
+              {
+                "data": {
+                  "amount_values": {
+                    "S06_1号溶液添加量": 8
+                  },
+                  "process": 1,
+                  "volume": 8,
+                  "volume_pump_1": 0,
+                  "volume_pump_2": 0
+                },
+                "message": "S06 工艺 1 溶液添加完成",
+                "step": "写入溶液添加量并启动 S06",
+                "success": true
+              },
+              {
+                "message": "已跳过机械臂搬运",
+                "skipped": true,
+                "step": "机械臂至磁搅",
+                "success": true
+              }
+            ],
+            "success": true
+          },
+          "suc": true
+        }
+      },
+      {
+        "seq": 309,
+        "runId": "9d279a874e0e4c9581c37fca9fcf587a",
+        "type": "run.status",
+        "nodeId": null,
+        "timestamp": 1785424547.0340168,
+        "payload": {}
+      }
+    ],
+    "nextSeq": 309
+  }
+}

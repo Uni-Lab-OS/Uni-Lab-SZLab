@@ -1,0 +1,130 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "s07_robot_workflow",
+  "parameters": [],
+  "invocations": [
+    {
+      "node_id": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+      "action_ref": "szlab_mixer_robot.submit_place_to_s071",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "literal",
+          "value": "1-1"
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+      "action_ref": "szlab_mixer_robot.submit_place_to_s072",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "product_type": {
+          "kind": "literal",
+          "value": 1
+        },
+        "position": {
+          "kind": "literal",
+          "value": 1
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+      "action_ref": "szlab_mixer_robot.submit_pick_from_s072",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "product_type": {
+          "kind": "literal",
+          "value": 1
+        },
+        "position": {
+          "kind": "literal",
+          "value": 1
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+      "target": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+      "edge_id": ""
+    },
+    {
+      "source": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+      "target": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071",
+        "line": 13,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "s07_robot_workflow-001-szlab_mixer_robot.submit_place_to_s071"
+        ]
+      },
+      {
+        "node_id": "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072",
+        "line": 14,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "s07_robot_workflow-002-szlab_mixer_robot.submit_place_to_s072"
+        ]
+      },
+      {
+        "node_id": "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072",
+        "line": 15,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "s07_robot_workflow-003-szlab_mixer_robot.submit_pick_from_s072"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"legacy s07_robot_workflow.json 的等价 Python 表达。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_mixer_robot = device(\"szlab_mixer_robot\")\n\n\n@workflow_definition(\n    workflow_id=\"s07_robot_workflow\",\n    revision=\"python-v1\",\n)\ndef s07_robot_workflow() -> None:\n    szlab_mixer_robot.submit_place_to_s071(position=\"1-1\")\n    szlab_mixer_robot.submit_place_to_s072(product_type=1, position=1)\n    szlab_mixer_robot.submit_pick_from_s072(product_type=1, position=1)\n",
+    "uri": "workflows/s07_robot.py",
+    "content_hash": "sha256:7bca72475ca6bec5ce379e84debca9f644a6b7bee8524d6bd6d9b92b13e59e69"
+  }
+}

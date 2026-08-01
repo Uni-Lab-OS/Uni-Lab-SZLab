@@ -1,0 +1,163 @@
+{
+  "schema_version": "2",
+  "revision_id": "python-v1",
+  "workflow_id": "szlab_s07_solid_addition_workflow",
+  "parameters": [
+    {
+      "name": "cartridge_position",
+      "type": "integer",
+      "required": false,
+      "default": 1,
+      "title": "cartridge_position",
+      "description": ""
+    },
+    {
+      "name": "target_weight",
+      "type": "number",
+      "required": false,
+      "default": 10,
+      "title": "target_weight",
+      "description": ""
+    }
+  ],
+  "invocations": [
+    {
+      "node_id": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+      "action_ref": "szlab_s07_solid_addition.scan_powder_cartridges",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "timeout": {
+          "kind": "literal",
+          "value": 300
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+      "action_ref": "szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "position": {
+          "kind": "runtime_parameter",
+          "parameter": "cartridge_position"
+        },
+        "timeout": {
+          "kind": "literal",
+          "value": 300
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    },
+    {
+      "node_id": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+      "action_ref": "szlab_s07_solid_addition.dose_powder",
+      "node_type": "action",
+      "name": "",
+      "description": "",
+      "input_bindings": {
+        "coarse_position": {
+          "kind": "runtime_parameter",
+          "parameter": "cartridge_position"
+        },
+        "fine_position": {
+          "kind": "runtime_parameter",
+          "parameter": "cartridge_position"
+        },
+        "target_weight": {
+          "kind": "runtime_parameter",
+          "parameter": "target_weight"
+        },
+        "recipe_name": {
+          "kind": "literal",
+          "value": "default"
+        },
+        "params_json": {
+          "kind": "literal",
+          "value": ""
+        },
+        "timeout": {
+          "kind": "literal",
+          "value": 300
+        }
+      },
+      "output_schema": {},
+      "material_bindings": {},
+      "resource_claims": [],
+      "effects": [],
+      "estimated_duration_s": 0,
+      "control": {},
+      "cleanup_for": []
+    }
+  ],
+  "control_edges": [
+    {
+      "source": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+      "target": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+      "edge_id": ""
+    },
+    {
+      "source": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+      "target": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+      "edge_id": ""
+    }
+  ],
+  "data_edges": [],
+  "material_edges": [],
+  "constraint_edges": [],
+  "resource_holds": [],
+  "layout": {},
+  "source_map": {
+    "entries": [
+      {
+        "node_id": "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges",
+        "line": 16,
+        "column": 4,
+        "source_step_index": 0,
+        "compiled_node_ids": [
+          "szlab_s07_solid_addition_workflow-001-szlab_s07_solid_addition.scan_powder_cartridges"
+        ]
+      },
+      {
+        "node_id": "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed",
+        "line": 17,
+        "column": 4,
+        "source_step_index": 1,
+        "compiled_node_ids": [
+          "szlab_s07_solid_addition_workflow-002-szlab_s07_solid_addition.rotate_powder_cartridge_to_feed"
+        ]
+      },
+      {
+        "node_id": "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder",
+        "line": 21,
+        "column": 4,
+        "source_step_index": 2,
+        "compiled_node_ids": [
+          "szlab_s07_solid_addition_workflow-003-szlab_s07_solid_addition.dose_powder"
+        ]
+      }
+    ]
+  },
+  "source_artifact": {
+    "format": "python",
+    "text": "\"\"\"S07 固体投料 local UI preset 的 Python 调试流程。\"\"\"\n\nfrom unilabos.workflow.authoring import device, workflow_definition\n\nszlab_s07_solid_addition = device(\"szlab_s07_solid_addition\")\n\n\n@workflow_definition(\n    workflow_id=\"szlab_s07_solid_addition_workflow\",\n    revision=\"python-v1\",\n)\ndef szlab_s07_solid_addition_workflow(\n    cartridge_position: int = 1,\n    target_weight: float = 10.0,\n) -> None:\n    szlab_s07_solid_addition.scan_powder_cartridges(timeout=300.0)\n    szlab_s07_solid_addition.rotate_powder_cartridge_to_feed(\n        position=cartridge_position,\n        timeout=300.0,\n    )\n    szlab_s07_solid_addition.dose_powder(\n        coarse_position=cartridge_position,\n        fine_position=cartridge_position,\n        target_weight=target_weight,\n        recipe_name=\"default\",\n        params_json=\"\",\n        timeout=300.0,\n    )\n",
+    "uri": "workflows/s07_solid_addition.py",
+    "content_hash": "sha256:9a2d7b0b1c1b99bbe7e9ca202fd70628cd4cb49fd5ffd21515b0d1303cd8642c"
+  }
+}

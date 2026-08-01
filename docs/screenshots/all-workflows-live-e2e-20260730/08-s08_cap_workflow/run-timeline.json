@@ -1,0 +1,26 @@
+{
+  "estimated": {
+    "kind": "estimated",
+    "label": "预计（未排程）",
+    "resourceGuaranteeLabel": "无资源保证",
+    "isResourceConstrained": false,
+    "basis": "dag_topology+action_duration",
+    "workflowRevisionHash": "0ecce59182f3abd41c659a9e8acfb4bfc4ee0737c8af10cb9a8937effc9a2922",
+    "items": [
+      {
+        "nodeId": "s08_cap_workflow-001-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      },
+      {
+        "nodeId": "s08_cap_workflow-002-szlab_s08_cap_station.process_cap_with_sample_parts",
+        "earliestStartOffsetS": 0,
+        "estimatedEndOffsetS": 0
+      }
+    ]
+  },
+  "observed": {
+    "source": "run_events",
+    "items": []
+  }
+}
