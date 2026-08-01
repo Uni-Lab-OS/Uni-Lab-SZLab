@@ -69,6 +69,10 @@ Issue #147 里的 OS package manager 和
 ./scripts/start-test-os.sh
 ```
 
+OPC UA 仿真与 Edge 联调可直接使用 5 节点演示工作流
+`szlab_poly_studio/workflows/robot_liquid_stirring_demo.py`；对应握手器启动命令见
+[`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。
+
 默认图中的直连 PLC 驱动均为 `auto_connect: false`。真机接入前必须单独核验 IP、NodeId、
 账号、联锁、急停、物料占用和恢复语义。
 

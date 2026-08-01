@@ -1048,9 +1048,13 @@ class SZLabPolyPLCDevice(BaseClient):
             "status": self._read_sensor_group(sensors),
         }
 
+    @not_action
+    def _build_stack_status(self, group_names: Optional[List[str]] = None) -> Dict[str, Any]:
+        return build_stack_status(self._read_stack_sensor_groups(group_names=group_names))
+
     @action(always_free=True, description="读取前端堆栈 JSON 状态")
     def get_stack_status(self, group_names: Optional[List[str]] = None) -> Dict[str, Any]:
-        return build_stack_status(self._read_stack_sensor_groups(group_names=group_names))
+        return self._build_stack_status(group_names=group_names)
 
     @action(always_free=True, description="写入 S01 上料过渡仓取料编号和入料产品")
     def set_s1_loading_request(self, pick_index: int, product_type: int) -> Dict[str, Any]:
@@ -1103,7 +1107,7 @@ class SZLabPolyPLCDevice(BaseClient):
 
     @topic_config(period=10.0)
     def stack_status(self) -> Dict[str, Any]:
-        return self.get_stack_status()
+        return self._build_stack_status()
 
 
 install_action_logging(SZLabPolyPLCDevice)

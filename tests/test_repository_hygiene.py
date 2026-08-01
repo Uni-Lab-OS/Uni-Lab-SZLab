@@ -63,7 +63,7 @@ def test_repository_is_one_distribution_with_one_import_package(repo_root: Path)
     assert "unilabos.model_bundles" not in pyproject
 
 
-def test_stack_status_topic_uses_a_ten_second_period(repo_root: Path) -> None:
+def test_stack_status_topic_does_not_call_logged_action(repo_root: Path) -> None:
     device_path = (
         repo_root
         / "szlab_poly_studio"
@@ -94,8 +94,13 @@ def test_stack_status_topic_uses_a_ten_second_period(repo_root: Path) -> None:
         for keyword in topic_config.keywords
         if keyword.arg == "period"
     )
+    return_statement = stack_status.body[0]
 
     assert ast.literal_eval(period) == 10.0
+    assert isinstance(return_statement, ast.Return)
+    assert isinstance(return_statement.value, ast.Call)
+    assert isinstance(return_statement.value.func, ast.Attribute)
+    assert return_statement.value.func.attr == "_build_stack_status"
 
 
 def test_szlab_source_does_not_cross_import_ai4c(repo_root: Path) -> None:

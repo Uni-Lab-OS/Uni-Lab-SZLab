@@ -271,6 +271,35 @@ cd /home/changjunhan/Uni-Lab-Core/Uni-Lab-SZLab
 该场景从 `S06` 无烧杯开始，依次响应机器人任务号 11、S06 加液和机器人任务号
 12；`--max-actions 3` 会等最后一个动作的 PC 复位完成后再退出。
 
+### 机器人加液搅拌五节点演示工作流
+
+演示源码位于 `szlab_poly_studio/workflows/robot_liquid_stirring_demo.py`，画布上依次显示：
+
+1. `szlab_mixer_robot.submit_place_to_s06`
+2. `szlab_mixer_pump.run_solvent_addition`
+3. `szlab_mixer_robot.submit_pick_from_s06`
+4. `szlab_mixer_robot.submit_place_to_s04`
+5. `szlab_mixer_stirrer.run_stirring`
+
+先启动这个工作流对应的 OPC UA 握手场景：
+
+```bash
+cd /home/raoyi/Uni-Lab-SZLab
+
+python -u scripts/szlab_workflow_handshake.py serve \
+  --workflow szlab_robot_liquid_stirring_demo_workflow \
+  --url 'opc.tcp://opcua.ideawit.com:4855/xuse_sim' \
+  --node-prefix 'ns=4;s=上位机通讯|' \
+  --pump 1 \
+  --process-delay 5.0 \
+  --poll-interval 0.1 \
+  --max-actions 5
+```
+
+五个节点都会产生实际 PLC 握手，因此握手器的 `--max-actions` 使用 5。随后在 Edge
+工作流界面导入并运行 `robot_liquid_stirring_demo.py`。默认使用 1 号泵向烧杯加入
+8 mL 液体，再把烧杯转运至 S04 的 1 号位，以 300 rpm、25 °C 搅拌 30 秒。
+
 `-u` 用于立即输出握手事件。默认持续运行，按 `Ctrl+C` 后清理脚本负责的 PLC→PC
 仿真信号。自动完成指定数量动作后退出可增加：
 
