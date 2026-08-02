@@ -64,16 +64,16 @@ EXPECTED_ROOTS = {
         (0.0, 0.0, 0.0),
     ),
     "resources/szlab_poly_powder_container_placeholder_warehouse/models/resource.xacro": (
-        (0.184986, 0.05, 0.0),
-        (0.0, 0.0, 1.5707963267948966),
+        (0.05, 0.185014, 0.0),
+        (0.0, 0.0, 0.0),
     ),
     "resources/szlab_poly_s10_liquid_reagent_placeholder_warehouse/models/resource.xacro": (
         (0.279986, 0.06, 0.0),
         (0.0, 0.0, 0.0),
     ),
     "resources/szlab_poly_s1_loading_buffer_warehouse/models/resource.xacro": (
-        (0.23492, 0.135083, 0.0),
-        (0.0, 0.0, 1.5707963267948966),
+        (0.100083, 0.22108, 0.0),
+        (0.0, 0.0, 0.0),
     ),
     "resources/szlab_poly_s2_tip_placeholder_warehouse/models/resource.xacro": (
         (0.155012, 0.07, 0.0),

@@ -9,8 +9,8 @@
     </joint>
     <link name="${station_name}${device_name}device_link"/>
     <joint name="${station_name}${device_name}device_link_joint" type="fixed">
-      <!-- Turn the CAD into deck orientation, then normalize its rotated bbox. -->
-      <origin xyz="0.184986 0.05 0" rpy="0 0 1.5707963267948966"/>
+      <!-- The latest STL is pre-oriented; normalize its bbox to the PLR origin. -->
+      <origin xyz="0.05 0.185014 0" rpy="0 0 0"/>
       <parent link="${station_name}${device_name}device_link"/>
       <child link="${station_name}${device_name}base_link"/>
       <axis xyz="0 0 0"/>
