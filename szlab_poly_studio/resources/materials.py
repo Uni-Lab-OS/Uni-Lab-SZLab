@@ -30,6 +30,9 @@ def _container(
     category=["szlab_poly_studio", "container", "beaker"],
     description="S03/S11 堆栈与 S04-S07 工艺使用的 500 mL 烧杯。",
     model={
+        "format": "xacro",
+        "entry": "szlab_beaker_500ml/models/resource.xacro",
+        "macro": "szlab_beaker_500ml",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_beaker_500ml/models/shape.yml",
@@ -68,6 +71,9 @@ def sample_vial_250ml(name: str = "SZLabSampleVial250mL") -> Container:
     category=["szlab_poly_studio", "container", "sample_vial"],
     description="S08 开关盖与成品堆栈使用的 500 mL 样品瓶。",
     model={
+        "format": "xacro",
+        "entry": "szlab_sample_vial_500ml/models/resource.xacro",
+        "macro": "szlab_sample_vial_500ml",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_sample_vial_500ml/models/shape.yml",
@@ -90,6 +96,9 @@ def sample_vial_500ml(name: str = "SZLabSampleVial500mL") -> Container:
     category=["szlab_poly_studio", "container", "liquid_reagent"],
     description="S09/S10 使用的 100 mL 液体试剂瓶。",
     model={
+        "format": "xacro",
+        "entry": "szlab_liquid_reagent_bottle_100ml/models/resource.xacro",
+        "macro": "szlab_liquid_reagent_bottle_100ml",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_liquid_reagent_bottle_100ml/models/shape.yml",
@@ -114,6 +123,9 @@ def liquid_reagent_bottle_100ml(
     category=["szlab_poly_studio", "container", "powder_reagent"],
     description="S07 固体投料工位使用的二维码注粉瓶（锥形料斗）。",
     model={
+        "format": "xacro",
+        "entry": "szlab_powder_container/models/resource.xacro",
+        "macro": "szlab_powder_container",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_powder_container/models/shape.yml",

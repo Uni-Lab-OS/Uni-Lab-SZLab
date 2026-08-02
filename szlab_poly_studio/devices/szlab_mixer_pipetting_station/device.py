@@ -52,6 +52,13 @@ S09_VOLUME_UL_MAX = 5000.0
     display_name="SZLab 移液站",
     category=["liquid_handler"],
     description="SZLab Poly Studio S09 移液/加液工位设备",
+    model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_mixer_pipetting_station",
+        # 合并装配原点=底板左下角底面；FE 默认按底面中心补半占位，需跳过。
+        "origin": "bottom_left",
+    },
 )
 class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
     def __init__(

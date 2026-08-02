@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="szlab_poly_s2_tip_placeholder_warehouse" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        
+      
+        <origin xyz="-1.9542E-05 -1.8186E-07 0.25878" rpy="0 0 0"/>
+        
+      
+        <mass value="9.4376"/>
+        
+      
+        <inertia ixx="0.10143" ixy="2.8634E-08" ixz="-1.3922E-08" iyy="0.12344" iyz="1.1553E-08" izz="0.053696"/>
+        
+    
+      </inertial>
+      <visual>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+      
+        <material name="">
+          
+        
+          <color rgba="0.75294 0.75294 0.75294 1"/>
+          
+      
+        </material>
+        
+    
+      </visual>
+      <collision>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+    
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

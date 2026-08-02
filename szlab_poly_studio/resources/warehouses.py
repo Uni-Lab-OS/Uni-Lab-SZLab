@@ -7,6 +7,11 @@ from unilabos.resources.warehouse import WareHouse, warehouse_factory
     category=["szlab_poly_studio", "warehouse", "tip_stack"],
     description="苏州实验室 S1 上料过渡仓：tip 盒上料工装，2层×3个TIP盒（CAD DXY260502-13.03-00）",
     model={
+        "format": "xacro",
+        "entry": "szlab_poly_s1_loading_buffer_warehouse/models/resource.xacro",
+        "macro": "szlab_poly_s1_loading_buffer_warehouse",
+        # CAD long axis is along mesh X; PLR footprint is already yawed 90° (200×442).
+        "rotation": [0.0, 0.0, 1.5707963267948966],
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_poly_s1_loading_buffer_warehouse/models/shape.yml",
@@ -20,43 +25,39 @@ def s1_loading_buffer_warehouse(name: str = "S1上料过渡仓"):
 
 
 @resource(
-    id="szlab_poly_s3_unused_beaker_warehouse",
+    id="szlab_poly_beaker_warehouse",
     category=["szlab_poly_studio", "warehouse", "beaker_stack"],
-    description="苏州实验室烧杯堆栈2：3层×6列，A行500mL样品瓶 / B行烧杯",
+    description="苏州实验室烧杯堆栈：3层×6列，A行500mL样品瓶 / B行烧杯（S3/S11 同型，图中可多实例）",
     model={
+        "format": "xacro",
+        "entry": "szlab_poly_beaker_warehouse/models/resource.xacro",
+        "macro": "szlab_poly_beaker_warehouse",
         "shape": {
             "format": "unilab.shape/v1",
-            "entry": "szlab_poly_s3_unused_beaker_warehouse/models/shape.yml",
+            "entry": "szlab_poly_beaker_warehouse/models/shape.yml",
         },
     },
 )
-def s3_unused_beaker_warehouse(name: str = "烧杯堆栈2"):
+def beaker_warehouse(name: str = "烧杯堆栈"):
     from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
 
     return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
 
 
-@resource(
-    id="szlab_poly_s11_used_beaker_warehouse",
-    category=["szlab_poly_studio", "warehouse", "beaker_stack"],
-    description="苏州实验室烧杯堆栈1：3层×6列，A行500mL样品瓶 / B行烧杯",
-    model={
-        "shape": {
-            "format": "unilab.shape/v1",
-            "entry": "szlab_poly_s11_used_beaker_warehouse/models/shape.yml",
-        },
-    },
-)
-def s11_used_beaker_warehouse(name: str = "烧杯堆栈1"):
-    from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
-
-    return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
+# 历史别名：同一类，便于旧调用迁移；不再各自注册 @resource。
+s3_unused_beaker_warehouse = beaker_warehouse
+s11_used_beaker_warehouse = beaker_warehouse
 
 
 @resource(
     id="szlab_poly_s2_tip_placeholder_warehouse",
     category=["szlab_poly_studio", "warehouse"],
     description="苏州实验室 S2 枪头仓占位，6位",
+    model={
+        "format": "xacro",
+        "entry": "szlab_poly_s2_tip_placeholder_warehouse/models/resource.xacro",
+        "macro": "szlab_poly_s2_tip_placeholder_warehouse",
+    },
 )
 def s2_tip_placeholder_warehouse(name: str = "S2枪头仓占位") -> WareHouse:
     return warehouse_factory(
@@ -80,6 +81,11 @@ def s2_tip_placeholder_warehouse(name: str = "S2枪头仓占位") -> WareHouse:
     category=["szlab_poly_studio", "warehouse", "powder_stack"],
     description="苏州实验室固体粉桶堆栈：2层×3位，落座面 z=220/530（CAD DXY260502-05-00）",
     model={
+        "format": "xacro",
+        "entry": "szlab_poly_powder_container_placeholder_warehouse/models/resource.xacro",
+        "macro": "szlab_poly_powder_container_placeholder_warehouse",
+        # CAD long axis along mesh X; PLR footprint is 100×370 (long along Y).
+        "rotation": [0.0, 0.0, 1.5707963267948966],
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_poly_powder_container_placeholder_warehouse/models/shape.yml",
@@ -99,6 +105,9 @@ def powder_container_placeholder_warehouse(name: str = "固体粉桶仓占位"):
     category=["szlab_poly_studio", "warehouse", "reagent_stack"],
     description="苏州实验室试剂瓶堆栈：4层×5列，Ø56（bottle_carriers 风格）",
     model={
+        "format": "xacro",
+        "entry": "szlab_poly_s10_liquid_reagent_placeholder_warehouse/models/resource.xacro",
+        "macro": "szlab_poly_s10_liquid_reagent_placeholder_warehouse",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_poly_s10_liquid_reagent_placeholder_warehouse/models/shape.yml",

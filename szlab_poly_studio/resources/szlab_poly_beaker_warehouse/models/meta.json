@@ -1,0 +1,12 @@
+﻿{
+  "device_id": "szlab_poly_beaker_warehouse",
+  "source_kind": "urdf",
+  "source_path": "resources/szlab_poly_beaker_warehouse/urdf/装配体5^DXY260502-03-00 烧杯堆栈.urdf.urdf",
+  "note": "Unified S3/S11 beaker stack type",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  }
+}

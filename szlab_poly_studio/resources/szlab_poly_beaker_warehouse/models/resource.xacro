@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="szlab_poly_beaker_warehouse" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        
+      
+        <origin xyz="-0.00100939302730718 -0.00576614254273743 0.295226278274503" rpy="0 0 0"/>
+        
+      
+        <mass value="19.4826380775023"/>
+        
+      
+        <inertia ixx="0.217161372576495" ixy="-2.0324721592706E-06" ixz="-2.40225309163583E-07" iyy="0.580434490637301" iyz="0.000395207508821636" izz="0.490642757008924"/>
+        
+    
+      </inertial>
+      <visual>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+      
+        <material name="">
+          
+        
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+          
+      
+        </material>
+        
+    
+      </visual>
+      <collision>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+    
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

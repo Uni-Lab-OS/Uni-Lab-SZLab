@@ -1,0 +1,19 @@
+{
+  "device_id": "szlab_mixer_photoshotting",
+  "source_kind": "urdf",
+  "source_path": "devices/szlab_mixer_photoshotting/urdf/装配体1^DXY260502-10-00 视觉检测模块.urdf.urdf",
+  "generated_at": "2026-08-01T23:54:38",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "sanitized_link_names": {
+    "base_link": "base_link"
+  },
+  "sanitized_joint_names": {},
+  "orient_fix": "origin = gear/turntable axis (d234 rim) intersect bottom; xy=0 zmin=0",
+  "frame": "z_up_turntable_axis_bottom"
+}

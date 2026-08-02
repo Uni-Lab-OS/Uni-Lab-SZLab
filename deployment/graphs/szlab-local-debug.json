@@ -11,19 +11,19 @@
         "s10_liquid_reagent",
         "s11_used_beaker"
       ],
-      "parent": null,
+      "parent": "s1_workstation",
       "type": "deck",
       "class": "szlab_poly_studio_deck",
       "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
+        "x": 0.0,
+        "y": 0.0,
+        "z": 20.0
       },
       "config": {
         "setup": false,
-        "size_x": 3634,
-        "size_y": 1674,
-        "size_z": 2200
+        "size_x": 3634.0,
+        "size_y": 1674.0,
+        "size_z": 0.0
       },
       "data": {}
     },
@@ -364,7 +364,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s3_unused_beaker_warehouse",
+      "class": "szlab_poly_beaker_warehouse",
       "position": {
         "x": 2235,
         "y": 190,
@@ -1685,7 +1685,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s11_used_beaker_warehouse",
+      "class": "szlab_poly_beaker_warehouse",
       "position": {
         "x": 2538.5,
         "y": 1394,
@@ -2482,23 +2482,25 @@
     {
       "id": "s1_workstation",
       "name": "S1 连续流工作站",
-      "children": [],
+      "children": [
+        "szlab_poly_deck"
+      ],
       "parent": null,
       "type": "device",
       "class": "s1_workstation",
       "position": {
-        "x": 250,
-        "y": 1500,
-        "z": 0
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
       },
       "config": {
         "host": "127.0.0.1",
         "port": 18055,
         "test_mode": true,
         "allow_hardware_action": false,
-        "size_x": 400,
-        "size_y": 300,
-        "size_z": 400
+        "size_x": 3634.0,
+        "size_y": 1674.0,
+        "size_z": 10.0
       },
       "data": {
         "status": "Idle"
@@ -2561,7 +2563,7 @@
       "class": "szlab_mixer_photoshotting",
       "position": {
         "x": 1105,
-        "y": 185,
+        "y": 84,
         "z": 0
       },
       "config": {
@@ -2569,7 +2571,7 @@
         "size_y": 329,
         "size_z": 510,
         "category": "vision_cell",
-        "layout_note": "《理论交点测距结果》: 交点=占位左下角(x/y)+底面(z); size=bbox of 装配体1^DXY260502-10-00 视觉检测模块/base_link.STL; 框架前后敞开供取放，探出的侧臂电机不计占位",
+        "layout_note": "占位 340×329；转盘中心距+Y边128→相对LL (170,201)；同一中心(1275,285)下 LL=(1105,84)；model.position Y=+36.5mm；侧臂不计占位",
         "plc_device_id": "szlab_poly_plc"
       },
       "data": {
@@ -2584,8 +2586,8 @@
       "type": "device",
       "class": "szlab_mixer_pump",
       "position": {
-        "x": 855,
-        "y": 195,
+        "x": 812.5,
+        "y": 183,
         "z": 0
       },
       "config": {
@@ -2593,7 +2595,7 @@
         "size_y": 205,
         "size_z": 727,
         "category": "gantry_pump",
-        "layout_note": "《理论交点测距结果》: 交点=占位左下角(x/y)+底面(z); size=bbox of 装配体6^DXY260502-08-00 溶剂加样/base_link.STL; 靠背立板朝 +Y，中层平台与加样针朝台面前侧",
+        "layout_note": "LL=(812.5,183)；STL 交点特征在 local Y=+16.5mm → 中心 Y=302；距底约119.5mm",
         "plc_device_id": "szlab_poly_plc"
       },
       "data": {
@@ -2655,15 +2657,15 @@
       "type": "device",
       "class": "szlab_mixer_pipetting_station",
       "position": {
-        "x": 1084.5,
+        "x": 1084,
         "y": 1164,
-        "z": 12
+        "z": 0
       },
       "config": {
-        "size_x": 814.5,
-        "size_y": 108,
-        "size_z": 638,
-        "layout_note": "《理论交点测距结果》: 交点=占位左下角(x/y)+底面(z); size=bbox of DXY260502-07.05-00 移液枪模组/base_link.STL",
+        "size_x": 800,
+        "size_y": 470,
+        "size_z": 650,
+        "layout_note": "合并装配 800x470x12; origin=bottom_left=底板左下角; 相对 deck LL (1084,1164); tip(105,98,12)/reagent(93,0,12)/balance_shield中心(408.5,223.5,12)mm",
         "plc_device_id": "szlab_poly_plc"
       },
       "data": {

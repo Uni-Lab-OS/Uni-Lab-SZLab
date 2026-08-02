@@ -1,0 +1,13 @@
+{
+  "device_id": "szlab_powder_container",
+  "source_kind": "generated_lathe",
+  "note": "Revolution solid from models/shape.yml rings; Ø70×190 mm → meters",
+  "generated_at": "2026-08-01T22:25:00",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link"
+}

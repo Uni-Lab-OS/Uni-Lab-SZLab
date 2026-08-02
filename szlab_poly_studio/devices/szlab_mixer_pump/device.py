@@ -72,6 +72,10 @@ DEFAULT_OPCUA_URL = os.environ.get(
     category=["pump_and_valve"],
     description="SZLab VirtualMixer S06 加溶液工位（注射泵）",
     model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_mixer_pump",
+        # STL 已烘焙 Rz(180°)，原点=交点中心（距 mesh 底边 119.5mm）。
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",

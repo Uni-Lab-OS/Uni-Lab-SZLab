@@ -1,0 +1,17 @@
+{
+  "device_id": "szlab_liquid_reagent_bottle_100ml",
+  "source_kind": "stl",
+  "note": "STL scaled mm->m (x0.001) for ROS/FE meter units",
+  "generated_at": "2026-08-01T22:21:29",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "source_format": "stl",
+  "scale_applied": 0.001,
+  "orient_fix": "Y-up->Z-up + bottom-center",
+  "frame": "z_up_bottom_center"
+}

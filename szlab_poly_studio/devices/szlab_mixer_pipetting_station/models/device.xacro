@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!--
+    合并装配：底板(800x470x12mm) + 移液枪模组(含 XYZ 关节) + TIP头放置平台 + 试剂瓶放置平台。
+    坐标系：base_link 原点 = 底板左下角（底面），Z 向上；单位米。
+    子件关节 xyz 已按各自 mesh 包围盒 min 补偿，使「模型左下角」落在给定底板偏移处。
+  -->
+  <xacro:macro name="szlab_mixer_pipetting_station" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+
+    <!-- 1) 底板：800 x 470 x 12 mm；visual origin 在板中心，使左下角落在 (0,0,0) -->
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        <origin xyz="0.4 0.235 0.006" rpy="0 0 0"/>
+        <mass value="20.0"/>
+        <inertia ixx="0.3687" ixy="0" ixz="0" iyy="1.0667" iyz="0" izz="1.4333"/>
+      </inertial>
+      <visual>
+        <origin xyz="0.4 0.235 0.006" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.8 0.47 0.012"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.75 0.75 0.78 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0.4 0.235 0.006" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.8 0.47 0.012"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- 2) 原移液枪模组底座：左下角 → 底板 (4, 388, 12) mm -->
+    <joint name="${station_name}${device_name}pipetting_station_joint" type="fixed">
+      <origin xyz="0.2615 0.429 0.012" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}base_link"/>
+      <child link="${station_name}${device_name}pipetting_station"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}pipetting_station">
+      <inertial>
+        <origin xyz="0.0197060862260998 0.0190352862014106 0.297332736876544" rpy="0 0 0"/>
+        <mass value="9.62327791097001"/>
+        <inertia ixx="0.0437503175809414" ixy="-0.000621193559103827" ixz="-0.00134071585178894" iyy="0.252333905040701" iyz="0.0013586038298251" izz="0.217158615807505"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- 原 XYZ 运动链：挂在 pipetting_station 上，关节参数保持不变 -->
+    <link name="${station_name}${device_name}mx_link">
+      <inertial>
+        <origin xyz="-0.0261820136431608 -0.129016031135948 0.0773928355405431" rpy="0 0 0"/>
+        <mass value="2.40311603103846"/>
+        <inertia ixx="0.0291555943908411" ixy="2.3282670011668E-06" ixz="0.000175450332485485" iyy="0.00233407152388026" iyz="-0.000206866181723288" izz="0.0283364686653123"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/mx_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/mx_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${station_name}${device_name}my_link">
+      <inertial>
+        <origin xyz="0.00966989436612542 0.015223001194224 -0.000920195330581686" rpy="0 0 0"/>
+        <mass value="0.81249207130995"/>
+        <inertia ixx="0.00149505807667588" ixy="-7.60591491855534E-07" ixz="0.000105350539292373" iyy="0.00127557636746751" iyz="-2.42695852120077E-06" izz="0.00072290002910335"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/my_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/my_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${station_name}${device_name}mz_link">
+      <inertial>
+        <origin xyz="0.000301508907735393 -0.054995 -0.16201064591941" rpy="0 0 0"/>
+        <mass value="0.0270765241188538"/>
+        <inertia ixx="4.93883006162547E-06" ixy="-8.6186443797611E-12" ixz="3.33144894424992E-19" iyy="4.93882485045058E-06" iyz="-5.95226506349366E-20" izz="1.01882869038693E-06"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/mz_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/mz_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${station_name}${device_name}mx_joint" type="prismatic">
+      <origin xyz="-0.20902 0 0.405" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}pipetting_station"/>
+      <child link="${station_name}${device_name}mx_link"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="0.54" effort="0" velocity="0"/>
+    </joint>
+    <joint name="${station_name}${device_name}my_joint" type="prismatic">
+      <origin xyz="0.039017 -0.356 0.068" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}mx_link"/>
+      <child link="${station_name}${device_name}my_link"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="0" upper="0.25" effort="0" velocity="0"/>
+    </joint>
+    <joint name="${station_name}${device_name}mz_joint" type="prismatic">
+      <origin xyz="0.032198 -0.027 0.036305" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}my_link"/>
+      <child link="${station_name}${device_name}mz_link"/>
+      <axis xyz="0 0 -1"/>
+      <limit lower="0" upper="0.18" effort="0" velocity="0"/>
+    </joint>
+
+    <!-- 3) TIP头放置平台：左下角 → 底板 (105, 98, 12) mm -->
+    <joint name="${station_name}${device_name}tip_platform_joint" type="fixed">
+      <origin xyz="0.230279 0.168125 0.012" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}base_link"/>
+      <child link="${station_name}${device_name}tip_platform"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}tip_platform">
+      <inertial>
+        <origin xyz="-0.000347088367277444 -9.71045386745258E-05 0.107097368994441" rpy="0 0 0"/>
+        <mass value="4.63852389146957"/>
+        <inertia ixx="0.00577141869274322" ixy="-2.94534946542633E-05" ixz="-2.35859928426854E-07" iyy="0.0121305393237008" iyz="-3.60439814769316E-07" izz="0.0168548787058267"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/tip_platform.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/tip_platform.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- 4) 试剂瓶放置平台：左下角 → 底板 (93, 0, 12) mm -->
+    <joint name="${station_name}${device_name}reagent_platform_joint" type="fixed">
+      <origin xyz="0.301612 0.04 0.012" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}base_link"/>
+      <child link="${station_name}${device_name}reagent_platform"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}reagent_platform">
+      <inertial>
+        <origin xyz="0.0132681341208297 1.85704936205289E-05 0.0378724241274126" rpy="0 0 0"/>
+        <mass value="2.3172510944123"/>
+        <inertia ixx="0.00143535678353775" ixy="2.14078190770086E-09" ixz="-8.13320793929701E-07" iyy="0.0349387910653332" iyz="-1.03760830049792E-07" izz="0.0362588262150037"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/reagent_platform.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/reagent_platform.stl"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- 5) 天平开合护罩 (DXY260502-07.03-00)：中心 → 底板 (408.5, 223.5, 12) mm；mesh XY 近原点居中 -->
+    <joint name="${station_name}${device_name}balance_shield_joint" type="fixed">
+      <origin xyz="0.4085 0.2235 0.012" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}base_link"/>
+      <child link="${station_name}${device_name}balance_shield"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}balance_shield">
+      <inertial>
+        <origin xyz="-0.108919629585566 0.0679356981259998 0.0610381696743503" rpy="0 0 0"/>
+        <mass value="3.99604616856123"/>
+        <inertia ixx="0.0104765834585837" ixy="0.00223845805565493" ixz="0.000287851904684379" iyy="0.0313596854251707" iyz="0.00072256174707983" izz="0.0318351581113385"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/balance_shield.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/balance_shield.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${station_name}${device_name}balance_door">
+      <inertial>
+        <origin xyz="0.391472461601486 -0.0689929195735358 -0.000484426777066227" rpy="0 0 0"/>
+        <mass value="1.92095332718505"/>
+        <inertia ixx="0.00558900063673506" ixy="0.000597734115162664" ixz="-0.000518661444363214" iyy="0.0152766030579863" iyz="-0.000551499987047724" izz="0.0166973230653344"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/balance_door.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/balance_door.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${station_name}${device_name}balance_door_joint" type="prismatic">
+      <origin xyz="-0.29587 0.045148 0.13" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}balance_shield"/>
+      <child link="${station_name}${device_name}balance_door"/>
+      <axis xyz="-1 0 0"/>
+      <limit lower="0" upper="0.2" effort="0" velocity="0"/>
+    </joint>
+  </xacro:macro>
+</robot>

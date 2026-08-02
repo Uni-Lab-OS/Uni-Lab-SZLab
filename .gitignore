@@ -12,3 +12,7 @@ runtime/
 *.sqlite3
 *.sqlite-shm
 *.sqlite-wal
+
+# Legacy nested package layout (forbidden by CONFORMANCE)
+packages/
+

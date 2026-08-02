@@ -10,12 +10,11 @@ from szlab_poly_studio.resources.materials import (
     sample_vial_500ml,
 )
 from szlab_poly_studio.resources.warehouses import (
+    beaker_warehouse,
     powder_container_placeholder_warehouse,
     s1_loading_buffer_warehouse,
     s2_tip_placeholder_warehouse,
-    s3_unused_beaker_warehouse,
     s10_liquid_reagent_placeholder_warehouse,
-    s11_used_beaker_warehouse,
 )
 
 
@@ -24,11 +23,10 @@ def test_warehouse_site_counts_and_keys() -> None:
         # tip 盒上料工装：2 层 × 3 个 TIP 盒
         s1_loading_buffer_warehouse: 6,
         s2_tip_placeholder_warehouse: 6,
-        # 烧杯堆栈：3 层 × 6 列 × (样品瓶 + 烧杯)
-        s3_unused_beaker_warehouse: 36,
+        # 烧杯堆栈：3 层 × 6 列 × (样品瓶 + 烧杯)；S3/S11 同型
+        beaker_warehouse: 36,
         powder_container_placeholder_warehouse: 6,
         s10_liquid_reagent_placeholder_warehouse: 20,
-        s11_used_beaker_warehouse: 36,
     }
     for factory, expected in warehouses.items():
         warehouse = factory(factory.__name__)

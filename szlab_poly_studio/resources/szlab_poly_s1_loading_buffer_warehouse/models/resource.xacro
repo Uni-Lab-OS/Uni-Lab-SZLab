@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="szlab_poly_s1_loading_buffer_warehouse" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        
+      
+        <origin xyz="-0.00100812907407755 0.0334923686520553 0.210564230275677" rpy="0 0 0"/>
+        
+      
+        <mass value="10.4623765097138"/>
+        
+      
+        <inertia ixx="0.020443425652082" ixy="-6.53023552602405E-05" ixz="-7.84738934791391E-08" iyy="0.0433240791717095" iyz="-0.000830926061855975" izz="0.0511146991202323"/>
+        
+    
+      </inertial>
+      <visual>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+      
+        <material name="">
+          
+        
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+          
+      
+        </material>
+        
+    
+      </visual>
+      <collision>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+    
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

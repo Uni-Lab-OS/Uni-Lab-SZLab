@@ -1,0 +1,17 @@
+{
+  "device_id": "szlab_s07_solid_addition",
+  "source_kind": "stl",
+  "note": "STL scaled mm->m (x0.001) for ROS/FE meter units",
+  "generated_at": "2026-08-01T23:20:29",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "source_format": "stl",
+  "scale_applied": 0.001,
+  "orient_fix": "user STL Y-up->Z-up via Rx(-90) (x,z,-y); origin=bbox bottom-center (Z flip fix)",
+  "frame": "z_up_bottom_center"
+}

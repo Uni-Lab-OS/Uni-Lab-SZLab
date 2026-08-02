@@ -1,0 +1,18 @@
+{
+  "device_id": "szlab_mixer_pump",
+  "source_kind": "urdf",
+  "source_path": "devices/szlab_mixer_pump/urdf/装配体6^DXY260502-08-00 溶剂加样.urdf.urdf",
+  "generated_at": "2026-08-01T16:59:22",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "mesh_orient": "Rz(180); placement feature at local Y=+16.5mm so LL.y=183 + half → center Y=302; backup=base_link.stl.pre_rz180.bak",
+  "sanitized_link_names": {
+    "base_link": "base_link"
+  },
+  "sanitized_joint_names": {}
+}

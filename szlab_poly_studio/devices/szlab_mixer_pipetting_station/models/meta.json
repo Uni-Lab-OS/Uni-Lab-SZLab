@@ -1,0 +1,54 @@
+{
+  "device_id": "szlab_mixer_pipetting_station",
+  "source_kind": "merged_assembly",
+  "generated_at": "2026-08-01T17:20:00",
+  "assembly": {
+    "base_plate_mm": {"x": 800, "y": 470, "z": 12},
+    "frame": "origin_at_plate_bottom_left_corner",
+    "parts": [
+      {
+        "link": "base_link",
+        "kind": "box",
+        "note": "底板"
+      },
+      {
+        "link": "pipetting_station",
+        "mesh": "meshes/base_link.stl",
+        "source": "original szlab_mixer_pipetting_station URDF (with mx/my/mz chain)",
+        "bottom_left_on_plate_mm": {"x": 4, "y": 388, "z": 12}
+      },
+      {
+        "link": "tip_platform",
+        "mesh": "meshes/tip_platform.stl",
+        "source": "dxy260502_07_04_00_tip",
+        "bottom_left_on_plate_mm": {"x": 105, "y": 98, "z": 12}
+      },
+      {
+        "link": "reagent_platform",
+        "mesh": "meshes/reagent_platform.stl",
+        "source": "dev_1_dxy260502_07_02_00",
+        "bottom_left_on_plate_mm": {"x": 93, "y": 0, "z": 12}
+      },
+      {
+        "link": "balance_shield",
+        "mesh": "meshes/balance_shield.stl",
+        "movable_child": {
+          "link": "balance_door",
+          "mesh": "meshes/balance_door.stl",
+          "joint": "prismatic",
+          "axis": [-1, 0, 0],
+          "limit_m": [0, 0.2]
+        },
+        "source": "dxy260502_07_03_00 天平开合护罩",
+        "center_on_plate_mm": {"x": 408.5, "y": 223.5, "z": 12}
+      }
+    ]
+  },
+  "stats": {
+    "link_total": 9,
+    "joint_total": 8,
+    "movable_joint_total": 4,
+    "mesh_total": 8
+  },
+  "root_link": "base_link"
+}

@@ -34,6 +34,9 @@ DEFAULT_OPCUA_URL = os.environ.get(
     category=["heaterstirrer"],
     description="SZLab Poly Studio S04 磁搅工位设备",
     model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_mixer_stirrer",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",

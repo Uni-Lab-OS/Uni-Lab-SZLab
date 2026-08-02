@@ -35,7 +35,9 @@ from szlab_poly_studio.resources.materials import (
 )
 
 # 工站：宽 3634 (X) × 长 1674 (Y)
-DECK_SIZE = {"size_x": 3634.0, "size_y": 1674.0, "size_z": 2200.0}
+DECK_SIZE = {"size_x": 3634.0, "size_y": 1674.0, "size_z": 0.0}
+S1_WORKSTATION_HEIGHT_MM = 10.0
+DECK_LOCAL_Z_MM = S1_WORKSTATION_HEIGHT_MM + 10.0
 
 # Tip 头架子（相对工站左下角）
 # 尺寸与层板高度取自 CAD：DXY260502-02-00 tip 头堆栈 / 02.02-00 TIP 盒组件。
@@ -131,17 +133,23 @@ STATION_PARTS = [
     {
         "node_id": "szlab_mixer_pipetting_station",
         "name": "S09 移液站",
-        "position": {"x": 1084.5, "y": 1164.0, "z": 12.0},
-        "size": {"size_x": 814.5, "size_y": 108.0, "size_z": 638.0},
-        "model": "DXY260502-07.05-00 移液枪模组/base_link.STL",
+        "position": {"x": 1084.0, "y": 1164.0, "z": 0.0},
+        "size": {"size_x": 800.0, "size_y": 470.0, "size_z": 650.0},
+        "model": "merged: plate+pipetting+tip+reagent platforms",
+        "note": (
+            "底板 800×470×12；origin=bottom_left=底板左下角；"
+            "相对 deck LL (1084,1164)；"
+            "tip/reagent 相对底板 (105,98,12)/(93,0,12) mm；"
+            "天平开合护罩中心相对底板 (408.5,223.5,12) mm"
+        ),
     },
     {
         "node_id": "szlab_mixer_pump",
         "name": "S06 注射泵",
-        "position": {"x": 855.0, "y": 195.0, "z": 0.0},
+        "position": {"x": 812.5, "y": 183.0, "z": 0.0},
         "category": "gantry_pump",
         "model": "装配体6^DXY260502-08-00 溶剂加样/base_link.STL",
-        "note": "靠背立板朝 +Y，中层平台与加样针朝台面前侧",
+        "note": "LL=(812.5,183)；STL 原点=交点、距底边119.5mm（Rz180）",
     },
     {
         "node_id": "szlab_mixer_stirrer",
@@ -154,10 +162,10 @@ STATION_PARTS = [
     {
         "node_id": "szlab_mixer_photoshotting",
         "name": "S05 拍照检测",
-        "position": {"x": 1105.0, "y": 185.0, "z": 0.0},
+        "position": {"x": 1105.0, "y": 84.0, "z": 0.0},
         "category": "vision_cell",
         "model": "装配体1^DXY260502-10-00 视觉检测模块/base_link.STL",
-        "note": "框架前后敞开供取放，探出的侧臂电机不计占位",
+        "note": "占位 340×329；中心距+Y边128→相对LL (170,201)；中心(1275,285)→LL=(1105,84)；model.position Y=+36.5mm；侧臂不计占位",
     },
 ]
 
@@ -243,10 +251,15 @@ RESERVED_OCCUPANTS: dict[tuple[str, str], str] = {
     ("powder_container_warehouse", "L1C1"): "debug_powder_container",
 }
 
-# 还没实测、也没有外形声明的设备保持占位包络
+# s1_workstation 与 deck 同足迹：deck 作为其子节点。
+# deck 高度 0；局部 z = workstation 高度，铺在台面上方便 3D 显示。
 DEVICE_SIZES: dict[str, dict[str, float]] = {
     "szlab_poly_plc": {"size_x": 200.0, "size_y": 120.0, "size_z": 80.0},
-    "s1_workstation": {"size_x": 400.0, "size_y": 300.0, "size_z": 400.0},
+    "s1_workstation": {
+        "size_x": DECK_SIZE["size_x"],
+        "size_y": DECK_SIZE["size_y"],
+        "size_z": S1_WORKSTATION_HEIGHT_MM,
+    },
 }
 
 
@@ -445,6 +458,18 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
 
     deck = nodes_by_id["szlab_poly_deck"]
     deck.setdefault("config", {}).update(DECK_SIZE)
+    deck["parent"] = "s1_workstation"
+    deck["position"] = {"x": 0.0, "y": 0.0, "z": DECK_LOCAL_Z_MM}
+
+    s1 = nodes_by_id.get("s1_workstation")
+    if s1 is not None:
+        s1["parent"] = None
+        s1["position"] = {"x": 0.0, "y": 0.0, "z": 0.0}
+        s1.setdefault("config", {}).update(DEVICE_SIZES["s1_workstation"])
+        s1_children = list(s1.get("children") or [])
+        if "szlab_poly_deck" not in s1_children:
+            s1_children.insert(0, "szlab_poly_deck")
+        s1["children"] = s1_children
 
     # Tip rack
     tip = nodes_by_id[TIP_RACK["node_id"]]
@@ -465,13 +490,14 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         "tips live in the tip box (4 cols x 6 rows, pitch 18)"
     )
 
-    # Beaker stacks — 两个规格相同
+    # Beaker stacks — 两个规格相同，共用 s3 烧杯堆栈类型（同一 3D mesh）
     for stack in BEAKER_STACKS:
         carrier = SZLab_BeakerStackCarrier(stack["name"], fill_placeholders=False)
         node = nodes_by_id[stack["node_id"]]
         node["name"] = stack["name"]
         node["position"] = dict(stack["position"])
         node["parent"] = "szlab_poly_deck"
+        node["class"] = "szlab_poly_beaker_warehouse"
         cfg = node.setdefault("config", {})
         cfg["size_x"] = float(carrier.get_size_x())
         cfg["size_y"] = float(carrier.get_size_y())
@@ -485,7 +511,8 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         cfg["layout_note"] = (
             "origin=bottom-left; SZLab_BeakerStackCarrier 3x6x2; "
             "L{layer}A{col}=sample_vial_500ml(+50,+50), "
-            "L{layer}B{col}=beaker_500ml(+50,+150)"
+            "L{layer}B{col}=beaker_500ml(+50,+150); "
+            "class=szlab_poly_beaker_warehouse (S3/S11 shared)"
         )
 
     # Reagent bottle stack — SZLab_ReagentBottleStackCarrier

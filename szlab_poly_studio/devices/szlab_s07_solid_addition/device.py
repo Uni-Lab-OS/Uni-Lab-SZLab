@@ -47,6 +47,9 @@ DEFAULT_POWDER_PARAMS_PATH = Path(__file__).resolve().parent / "s07_powder_param
     category=["workstation", "szlab"],
     description="苏州实验室 S07 固体加料工位，通过 szlab_poly_plc 转发 PLC 读写",
     model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_s07_solid_addition",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",

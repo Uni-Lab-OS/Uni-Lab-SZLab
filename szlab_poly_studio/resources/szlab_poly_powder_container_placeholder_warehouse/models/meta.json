@@ -1,0 +1,17 @@
+{
+  "device_id": "szlab_poly_powder_container_placeholder_warehouse",
+  "source_kind": "urdf",
+  "source_path": "resources/szlab_poly_powder_container_placeholder_warehouse/urdf/装配体9^DXY260502-05-00 粉桶堆栈.urdf.urdf",
+  "generated_at": "2026-08-01T16:59:22",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "sanitized_link_names": {
+    "base_link": "base_link"
+  },
+  "sanitized_joint_names": {}
+}

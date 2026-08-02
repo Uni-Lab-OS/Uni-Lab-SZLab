@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="szlab_mixer_stirrer" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        
+      
+        <origin xyz="0.00090138410687518 5.94790366356263E-05 0.376988397961134" rpy="0 0 0"/>
+        
+      
+        <mass value="45.5919699023364"/>
+        
+      
+        <inertia ixx="1.10758909875164" ixy="-8.76425304011537E-06" ixz="1.58242458961115E-05" iyy="1.88685362178322" iyz="-1.67297882958595E-06" izz="1.59431437186427"/>
+        
+    
+      </inertial>
+      <visual>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+      
+        <material name="">
+          
+        
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+          
+      
+        </material>
+        
+    
+      </visual>
+      <collision>
+        
+      
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        
+      
+        <geometry>
+          
+        
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+          
+      
+        </geometry>
+        
+    
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

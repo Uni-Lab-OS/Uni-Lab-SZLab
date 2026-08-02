@@ -30,6 +30,13 @@ DEFAULT_OPCUA_URL = os.environ.get(
     category=["camera"],
     description="SZLab Poly Studio S05 拍照检测工位设备",
     model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_mixer_photoshotting",
+        # Mesh origin = turntable axis ∩ bottom.
+        # Footprint 340×329：中心距 +Y 边界 128 → 相对 LL 为 (170, 201)；
+        # 半占位中心 (170, 164.5)，故 Y 补偿 201−164.5 = +36.5 mm。
+        "position": [0.0, 0.0365, 0.0],
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",
