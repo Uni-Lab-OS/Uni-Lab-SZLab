@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -7,7 +8,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CORE_ROOT = REPO_ROOT.parent
-OS_ROOT = CORE_ROOT / "Uni-Lab-OS"
+OS_ROOT = Path(os.environ.get("UNILAB_OS_ROOT", CORE_ROOT / "Uni-Lab-OS"))
 
 for path in (OS_ROOT, REPO_ROOT):
     if str(path) not in sys.path:
@@ -20,35 +21,16 @@ def repo_root() -> Path:
 
 
 @pytest.fixture(scope="session")
-def profiles(repo_root: Path):
-    from unilabos.runtime.profile_loader import load_profiles
+def package_catalog(repo_root: Path):
+    from unilabos.package_manager import WorkspaceSource, compile_package_source
 
-    return load_profiles(
-        [
-            repo_root
-            / "szlab_poly_studio"
-            / "profiles"
-            / "default"
-            / "package.yaml",
-        ]
+    return compile_package_source(WorkspaceSource(repo_root))
+
+
+@pytest.fixture(scope="session")
+def action_catalog(package_catalog) -> dict:
+    from unilabos.package_manager.consumers import (
+        action_catalog_from_package_catalog,
     )
 
-
-@pytest.fixture(scope="session")
-def decorated_action_catalog(repo_root: Path) -> dict:
-    from unilabos.registry.action_catalog import scan_decorated_device_package
-
-    return scan_decorated_device_package(repo_root / "szlab_poly_studio")
-
-
-@pytest.fixture(scope="session")
-def action_catalog(profiles, decorated_action_catalog) -> dict:
-    catalog: dict = {}
-    for profile in profiles.values():
-        overlap = set(catalog) & set(profile.action_catalog)
-        assert not overlap, f"duplicate action refs across profiles: {sorted(overlap)}"
-        catalog.update(profile.action_catalog)
-    overlap = set(catalog) & set(decorated_action_catalog)
-    assert not overlap, f"duplicate profile/decorator action refs: {sorted(overlap)}"
-    catalog.update(decorated_action_catalog)
-    return catalog
+    return action_catalog_from_package_catalog(package_catalog)

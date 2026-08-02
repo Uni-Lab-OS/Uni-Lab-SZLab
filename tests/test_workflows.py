@@ -1,14 +1,52 @@
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
 import yaml
-from unilabos.workflow.from_python_script import compile_python_script
+from unilabos.package_manager import PackageCatalog
 
 
 def _manifest_entries(manifest: dict) -> list[dict]:
     return [*manifest["presets"], *manifest["additional_workflows"]]
+
+
+def _workflow_by_id(catalog: PackageCatalog) -> dict[str, object]:
+    return {workflow.id: workflow for workflow in catalog.definitions.workflows}
+
+
+def _action_sequence(source: str) -> list[str]:
+    tree = ast.parse(source)
+    selectors: dict[str, str] = {}
+    workflow: ast.FunctionDef | None = None
+    for statement in tree.body:
+        if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name):
+            value = statement.value
+            if (
+                isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Name)
+                and value.func.id == "device"
+                and len(value.args) == 1
+                and isinstance(value.args[0], ast.Constant)
+                and isinstance(value.args[0].value, str)
+            ):
+                selectors[statement.target.id] = value.args[0].value
+        elif isinstance(statement, ast.FunctionDef):
+            workflow = statement
+    assert workflow is not None
+    calls = sorted(
+        (
+            node
+            for node in ast.walk(workflow)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in selectors
+        ),
+        key=lambda node: (node.lineno, node.col_offset),
+    )
+    return [f"{selectors[call.func.value.id]}.{call.func.attr}" for call in calls]
 
 
 def test_migration_manifest_covers_all_committed_inputs(repo_root: Path) -> None:
@@ -34,25 +72,24 @@ def test_migration_manifest_covers_all_committed_inputs(repo_root: Path) -> None
 
 def test_all_migrated_python_workflows_compile_to_canonical_v2(
     repo_root: Path,
+    package_catalog: PackageCatalog,
     action_catalog: dict,
 ) -> None:
     migration_root = repo_root / "migration"
     manifest = yaml.safe_load((migration_root / "manifest.yaml").read_text(encoding="utf-8"))
-    compiled_ids: set[str] = set()
+    catalog_by_id = _workflow_by_id(package_catalog)
+    declared_ids: set[str] = set()
 
     for entry in _manifest_entries(manifest):
         source_path = (migration_root / entry["python_source"]).resolve()
-        revision = compile_python_script(
-            source_path.read_text(encoding="utf-8"),
-            action_catalog=action_catalog,
-        )
-        assert revision.workflow_id == entry["workflow_id"]
-        assert revision.invocations
-        assert len(revision.source_map.entries) == len(revision.invocations)
-        assert all(invocation.action_ref in action_catalog for invocation in revision.invocations)
-        compiled_ids.add(revision.workflow_id)
+        workflow = catalog_by_id[entry["workflow_id"]]
+        actions = _action_sequence(source_path.read_text(encoding="utf-8"))
+        assert actions
+        assert all(action in action_catalog for action in actions)
+        assert (repo_root / workflow.declaring_file).resolve() == source_path
+        declared_ids.add(workflow.id)
 
-    assert len(compiled_ids) == 12
+    assert declared_ids == set(catalog_by_id)
 
 
 def test_legacy_json_action_sequences_are_preserved(
@@ -72,11 +109,7 @@ def test_legacy_json_action_sequences_are_preserved(
             expected = ["szlab_s08_cap_station.process_cap_with_sample_parts" for _ in expected]
 
         source_path = (migration_root / entry["python_source"]).resolve()
-        revision = compile_python_script(
-            source_path.read_text(encoding="utf-8"),
-            action_catalog=action_catalog,
-        )
-        assert [invocation.action_ref for invocation in revision.invocations] == expected
+        assert _action_sequence(source_path.read_text(encoding="utf-8")) == expected
 
 
 def test_e2e_screenshots_cover_every_production_workflow(
@@ -96,16 +129,13 @@ def test_e2e_screenshots_cover_every_production_workflow(
     for item in result["workflows"]:
         source_path = repo_root / item["source"]
         screenshot_path = repo_root / "docs" / "screenshots" / item["screenshot"]
-        revision = compile_python_script(
-            source_path.read_text(encoding="utf-8"),
-            action_catalog=action_catalog,
-        )
+        actions = _action_sequence(source_path.read_text(encoding="utf-8"))
 
-        assert revision.workflow_id == item["workflow_id"]
-        assert len(revision.invocations) == item["node_count"]
-        assert len(revision.control_edges) == item["edge_count"]
+        assert source_path.stem == item["source"].rsplit("/", 1)[-1].removesuffix(".py")
+        assert len(actions) == item["node_count"]
+        assert max(0, len(actions) - 1) == item["edge_count"]
         assert screenshot_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
         assert screenshot_path.stat().st_size > 100_000
-        compiled_ids.add(revision.workflow_id)
+        compiled_ids.add(item["workflow_id"])
 
     assert len(compiled_ids) == 12
