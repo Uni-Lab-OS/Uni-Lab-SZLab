@@ -14,7 +14,7 @@ szlab_mixer_pipetting_station: SzlabMixerPipettingStationDevice = device("szlab_
 def szlab_s09_pipetting_workflow(
     *,
     liquid_bottle_index: int = 1,
-    volume_ul: float = 100.0,
+    volume_ul: int = 100,
 ) -> None:
     # unilab:node_uuid=78f5737a-694c-56fd-b6dd-fcd35a6dcedc
     prepared = szlab_mixer_pipetting_station.prepare_liquid_station()  # noqa: F841

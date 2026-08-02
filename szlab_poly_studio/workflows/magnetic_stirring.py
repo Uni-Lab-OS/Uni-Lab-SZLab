@@ -14,8 +14,8 @@ szlab_mixer_stirrer: SzlabMixerMagneticStirrerDevice = device("szlab_mixer_stirr
 def szlab_magnetic_stirring_workflow(
     *,
     position: int = 1,
-    speed: float = 300.0,
-    temperature: float = 25.0,
+    speed: int = 300,
+    temperature: int = 25,
     duration: float = 30.0,
 ) -> None:
     # unilab:node_uuid=194ed35e-9c30-5a2d-9da5-9e70ff3992e4
