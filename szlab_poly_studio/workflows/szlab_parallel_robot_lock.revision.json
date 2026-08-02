@@ -1,6 +1,6 @@
 {
   "schema_version": "2",
-  "revision_id": "szlab-parallel-robot-lock-rev-1",
+  "revision_id": "szlab-parallel-robot-lock-rev-2",
   "workflow_id": "szlab_stack_s05_s06_workflow",
   "invocations": [
     {
@@ -76,15 +76,9 @@
       }
     },
     {
-      "node_id": "join",
-      "action_ref": "os_control.join",
-      "node_type": "join",
-      "name": "两条并行分支汇合"
-    },
-    {
       "node_id": "final_stir",
       "action_ref": "szlab_mixer_stirrer.run_stirring",
-      "name": "汇合后：S04 磁搅",
+      "name": "两分支完成后：S04 磁搅",
       "input_bindings": {
         "position": {
           "kind": "literal",
@@ -131,16 +125,11 @@
     {
       "edge_id": "e3",
       "source": "robot_pour_type_1",
-      "target": "join"
+      "target": "final_stir"
     },
     {
       "edge_id": "e4",
       "source": "robot_pour_type_2",
-      "target": "join"
-    },
-    {
-      "edge_id": "e5",
-      "source": "join",
       "target": "final_stir"
     }
   ],
@@ -162,12 +151,8 @@
         "x": 360,
         "y": 300
       },
-      "join": {
-        "x": 690,
-        "y": 185
-      },
       "final_stir": {
-        "x": 920,
+        "x": 690,
         "y": 185
       }
     }
