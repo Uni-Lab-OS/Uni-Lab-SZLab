@@ -21,7 +21,8 @@
 
     <link name="${station_name}${device_name}device_link"/>
     <joint name="${station_name}${device_name}device_link_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- The rail mesh spans y=-0.08..0.08; expose a lower-left base origin. -->
+      <origin xyz="0 0.08 0" rpy="0 0 0"/>
       <parent link="${station_name}${device_name}device_link"/>
       <child link="${station_name}${device_name}arm_slideway"/>
       <axis xyz="0 0 0"/>

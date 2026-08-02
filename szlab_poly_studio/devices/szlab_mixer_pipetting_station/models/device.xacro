@@ -14,7 +14,8 @@
     </joint>
     <link name="${station_name}${device_name}device_link"/>
     <joint name="${station_name}${device_name}device_link_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- Normalize the compound assembly bbox to the PLR lower-left-bottom origin. -->
+      <origin xyz="0.0585 0.033 0" rpy="0 0 0"/>
       <parent link="${station_name}${device_name}device_link"/>
       <child link="${station_name}${device_name}base_link"/>
       <axis xyz="0 0 0"/>
