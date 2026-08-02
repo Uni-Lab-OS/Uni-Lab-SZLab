@@ -4,6 +4,10 @@ shape:
   display_name: 固体粉桶堆栈
   applies_to:
   - category: powder_stack
+  envelope:
+  - 100.0
+  - 370.0
+  - 531.0
   priority: 20
   sort: rear-edge
   parts:

@@ -1025,7 +1025,7 @@ class SZLabPolyPLCDevice(BaseClient):
                 "error": str(exc),
             }
 
-    @action(always_free=True, description="写入指定 PLC 变量")
+    @not_action
     def write_variable_action(self, variable_name: str, value: Any) -> Dict[str, Any]:
         try:
             self.write_variable(variable_name, value)

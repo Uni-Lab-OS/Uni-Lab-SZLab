@@ -1,0 +1,28 @@
+package:
+  name: szlab_poly_studio
+
+workflows:
+  - workflow_uuid: 67da810c-34f6-59c6-94ba-7e73dcc06207
+    source: szlab_poly_studio/workflows/magnetic_stirring.py
+  - workflow_uuid: ab421e20-1c93-529b-b715-38737edf343b
+    source: szlab_poly_studio/workflows/photoshotting.py
+  - workflow_uuid: 25166c6a-2e85-5008-ba3c-03d742ef9b1a
+    source: szlab_poly_studio/workflows/robot_action.py
+  - workflow_uuid: 1bc5a151-445a-5a53-b24a-7a4b521ac60c
+    source: szlab_poly_studio/workflows/s04_robot_stirring.py
+  - workflow_uuid: 0b4e6fce-14bc-5866-a373-16ad25c7f8cf
+    source: szlab_poly_studio/workflows/s06_robot.py
+  - workflow_uuid: 4f6ec98a-d3e1-580b-a72e-8ce4fe9d5def
+    source: szlab_poly_studio/workflows/s07_robot.py
+  - workflow_uuid: b1370434-7eb7-553a-ac93-b25f3b3ef742
+    source: szlab_poly_studio/workflows/s07_solid_addition.py
+  - workflow_uuid: 230df44a-c725-551d-b43b-303ab5bd90ea
+    source: szlab_poly_studio/workflows/s08_cap.py
+  - workflow_uuid: d176a938-5e34-511b-9e28-68540833559b
+    source: szlab_poly_studio/workflows/s09_pipetting.py
+  - workflow_uuid: 335da2e9-024b-562f-8bf8-35dba0b52a90
+    source: szlab_poly_studio/workflows/stack_s05_s06.py
+  - workflow_uuid: 33930b26-2780-555f-8668-e56462846716
+    source: szlab_poly_studio/workflows/szlab_mixer.py
+  - workflow_uuid: 127cf68e-43b3-58ab-932f-984f2b57019e
+    source: szlab_poly_studio/workflows/szlab_mixer_pump_production.py

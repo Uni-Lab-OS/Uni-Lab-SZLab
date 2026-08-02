@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action
 from unilabos.utils.log import logger
 
@@ -265,8 +266,8 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
         coarse_position: int,
         fine_position: int,
         target_weight: float,
-        coarse_params: dict[str, Any] | None = None,
-        fine_params: dict[str, Any] | None = None,
+        coarse_params: dict[str, JSONValue] | None = None,
+        fine_params: dict[str, JSONValue] | None = None,
         timeout: float = 300.0,
         params_json: str | None = None,
         recipe_name: str = "default",
