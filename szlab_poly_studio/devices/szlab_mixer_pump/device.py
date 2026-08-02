@@ -314,6 +314,17 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
                     "message": f"{amount_var} 的 OPC UA NodeId 无效，无法执行工艺 {pump}: {detail}",
                 }
 
+        # 必须在触发新一轮加工前完成旧信号复位检查。跨设备 PLC gateway 的下一次
+        # wait 调用可能晚于快速仿真器的完成反馈；若触发后才用 wait_new_cycle_done，
+        # 已经到达的本轮 True 会被误判为旧信号，Edge 与握手器将互相等待复位。
+        if not self._wait_variable_equal(
+            S06_DONE_VAR,
+            False,
+            description="等待 S06 上一轮加工完成信号复位",
+        ):
+            self._status = "Error"
+            return {"success": False, "message": "S06 上一轮加工完成信号未复位"}
+
         self._status = "Running"
         try:
             self._client.write(S06_PROCESS_SELECT_VAR, int(pump))
@@ -325,7 +336,11 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             self._clear_s06_written_params(pump)
             return {"success": False, "message": str(exc)}
         try:
-            if not self._client.wait_new_cycle_done(S06_DONE_VAR, timeout=self.timeout):
+            if not self._wait_variable_equal(
+                S06_DONE_VAR,
+                True,
+                description="等待 S06 本轮加工完成",
+            ):
                 self._status = "Error"
                 return {"success": False, "message": "S06 加工完成等待超时"}
         finally:
