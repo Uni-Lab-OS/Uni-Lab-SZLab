@@ -13,7 +13,7 @@
       ],
       "parent": null,
       "type": "deck",
-      "class": "szlab_poly_studio_deck",
+      "class": "community.szlab_poly_studio.szlab_poly_studio_deck",
       "position": {
         "x": 0,
         "y": 0,
@@ -40,7 +40,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s1_loading_buffer_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s1_loading_buffer_warehouse",
       "position": {
         "x": 3434,
         "y": 616,
@@ -187,7 +187,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s2_tip_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s2_tip_placeholder_warehouse",
       "position": {
         "x": 3065,
         "y": 250,
@@ -364,7 +364,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s3_unused_beaker_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s3_unused_beaker_warehouse",
       "position": {
         "x": 2235,
         "y": 190,
@@ -1081,7 +1081,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_powder_container_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_powder_container_placeholder_warehouse",
       "position": {
         "x": 80,
         "y": 786.5,
@@ -1242,7 +1242,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s10_liquid_reagent_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s10_liquid_reagent_placeholder_warehouse",
       "position": {
         "x": 1928.5,
         "y": 1404,
@@ -1685,7 +1685,7 @@
       ],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s11_used_beaker_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s11_used_beaker_warehouse",
       "position": {
         "x": 2538.5,
         "y": 1394,
@@ -2395,7 +2395,7 @@
       "children": [],
       "parent": "s3_unused_beaker",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "position": {
         "x": 52,
         "y": 107,
@@ -2417,7 +2417,7 @@
       "children": [],
       "parent": "s10_liquid_reagent",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "position": {
         "x": 52,
         "y": 22,
@@ -2439,7 +2439,7 @@
       "children": [],
       "parent": "powder_container_warehouse",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "position": {
         "x": 15,
         "y": 50,
@@ -2461,7 +2461,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_poly_plc",
+      "class": "community.szlab_poly_studio.szlab_poly_plc",
       "position": {
         "x": 0,
         "y": 1500,
@@ -2485,7 +2485,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "s1_workstation",
+      "class": "community.szlab_poly_studio.s1_workstation",
       "position": {
         "x": 250,
         "y": 1500,
@@ -2510,7 +2510,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_robot",
+      "class": "community.szlab_poly_studio.szlab_mixer_robot",
       "position": {
         "x": 306.85,
         "y": 625.5,
@@ -2531,10 +2531,12 @@
     {
       "id": "szlab_mixer_stirrer",
       "name": "S04 磁搅",
-      "children": [],
+      "children": [
+        "s04_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_stirrer",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
       "position": {
         "x": 1480,
         "y": 80,
@@ -2555,10 +2557,12 @@
     {
       "id": "szlab_mixer_photoshotting",
       "name": "S05 拍照检测",
-      "children": [],
+      "children": [
+        "s05_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_photoshotting",
+      "class": "community.szlab_poly_studio.szlab_mixer_photoshotting",
       "position": {
         "x": 1105,
         "y": 185,
@@ -2579,10 +2583,12 @@
     {
       "id": "szlab_mixer_pump",
       "name": "S06 注射泵",
-      "children": [],
+      "children": [
+        "s06_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_pump",
+      "class": "community.szlab_poly_studio.szlab_mixer_pump",
       "position": {
         "x": 855,
         "y": 195,
@@ -2603,10 +2609,12 @@
     {
       "id": "szlab_s07_solid_addition",
       "name": "S07 固体加料",
-      "children": [],
+      "children": [
+        "s07_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
-      "class": "szlab_s07_solid_addition",
+      "class": "community.szlab_poly_studio.szlab_s07_solid_addition",
       "position": {
         "x": 50,
         "y": 30,
@@ -2625,12 +2633,107 @@
       }
     },
     {
+      "id": "s04_process_warehouse",
+      "name": "S04磁搅工位仓",
+      "children": [],
+      "parent": "szlab_mixer_stirrer",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {
+        "size_x": 710,
+        "size_y": 359,
+        "size_z": 780,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "sites": [
+          {"label": "S041", "name": "S041", "position": {"x": 92.1, "y": 89.4, "z": 150}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true},
+          {"label": "S042", "name": "S042", "position": {"x": 317.1, "y": 89.4, "z": 150}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true},
+          {"label": "S043", "name": "S043", "position": {"x": 542.1, "y": 89.4, "z": 150}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true},
+          {"label": "S044", "name": "S044", "position": {"x": 92.1, "y": 89.4, "z": 535}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true},
+          {"label": "S045", "name": "S045", "position": {"x": 317.1, "y": 89.4, "z": 535}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true},
+          {"label": "S046", "name": "S046", "position": {"x": 542.1, "y": 89.4, "z": 535}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true}
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s05_process_warehouse",
+      "name": "S05拍照工位仓",
+      "children": [],
+      "parent": "szlab_mixer_photoshotting",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s05_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {
+        "size_x": 340,
+        "size_y": 329,
+        "size_z": 510,
+        "category": "s05_process_warehouse",
+        "logical_mount": true,
+        "sites": [
+          {"label": "S051", "name": "S051", "position": {"x": 127, "y": 84.5, "z": 162}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true}
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s06_process_warehouse",
+      "name": "S06加液工位仓",
+      "children": [],
+      "parent": "szlab_mixer_pump",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s06_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {
+        "size_x": 285,
+        "size_y": 205,
+        "size_z": 727,
+        "category": "s06_process_warehouse",
+        "logical_mount": true,
+        "sites": [
+          {"label": "S061", "name": "S061", "position": {"x": 101.5, "y": 54, "z": 303}, "size": {"width": 86, "height": 86, "depth": 120}, "content_type": ["szlab_beaker_500ml"], "visible": true}
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s07_process_warehouse",
+      "name": "S07固体加料转盘仓",
+      "children": [],
+      "parent": "szlab_s07_solid_addition",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s07_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {
+        "size_x": 770,
+        "size_y": 503,
+        "size_z": 654.5,
+        "category": "s07_process_warehouse",
+        "logical_mount": true,
+        "robot_access": "inventory_only_rotation_coordination_deferred",
+        "sites": [
+          {"label": "P01", "name": "P01", "position": {"x": 381, "y": 216, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P02", "name": "P02", "position": {"x": 345.668, "y": 324.74, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P03", "name": "P03", "position": {"x": 253.168, "y": 391.946, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P04", "name": "P04", "position": {"x": 138.832, "y": 391.946, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P05", "name": "P05", "position": {"x": 46.332, "y": 324.74, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P06", "name": "P06", "position": {"x": 11, "y": 216, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P07", "name": "P07", "position": {"x": 46.332, "y": 107.26, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P08", "name": "P08", "position": {"x": 138.832, "y": 40.054, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P09", "name": "P09", "position": {"x": 253.168, "y": 40.054, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true},
+          {"label": "P10", "name": "P10", "position": {"x": 345.668, "y": 107.26, "z": 379.5}, "size": {"width": 70, "height": 70, "depth": 190}, "content_type": ["szlab_powder_container"], "visible": true}
+        ]
+      },
+      "data": {}
+    },
+    {
       "id": "szlab_s08_cap_station",
       "name": "S08 开关盖",
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_s08_cap_station",
+      "class": "community.szlab_poly_studio.szlab_s08_cap_station",
       "position": {
         "x": 204.5,
         "y": 1454,
@@ -2653,7 +2756,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_pipetting_station",
+      "class": "community.szlab_poly_studio.szlab_mixer_pipetting_station",
       "position": {
         "x": 1084.5,
         "y": 1164,
@@ -2676,7 +2779,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B1 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -2696,7 +2799,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -2716,7 +2819,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -2736,7 +2839,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -2756,7 +2859,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -2776,7 +2879,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -2796,7 +2899,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -2816,7 +2919,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -2836,7 +2939,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -2856,7 +2959,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -2876,7 +2979,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -2896,7 +2999,7 @@
       "data": {},
       "name": "烧杯堆栈1 L1A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -2916,7 +3019,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B1 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -2936,7 +3039,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -2956,7 +3059,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -2976,7 +3079,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -2996,7 +3099,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -3016,7 +3119,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -3036,7 +3139,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -3056,7 +3159,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -3076,7 +3179,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -3096,7 +3199,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -3116,7 +3219,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -3136,7 +3239,7 @@
       "data": {},
       "name": "烧杯堆栈1 L2A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -3156,7 +3259,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B1 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -3176,7 +3279,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 52,
@@ -3196,7 +3299,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -3216,7 +3319,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 172,
@@ -3236,7 +3339,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -3256,7 +3359,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 292,
@@ -3276,7 +3379,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -3296,7 +3399,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 412,
@@ -3316,7 +3419,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -3336,7 +3439,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 532,
@@ -3356,7 +3459,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -3376,7 +3479,7 @@
       "data": {},
       "name": "烧杯堆栈1 L3A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s11_used_beaker",
       "position": {
         "x": 652,
@@ -3396,7 +3499,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 52,
@@ -3416,7 +3519,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3436,7 +3539,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3456,7 +3559,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3476,7 +3579,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3496,7 +3599,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -3516,7 +3619,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -3536,7 +3639,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -3556,7 +3659,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -3576,7 +3679,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -3596,7 +3699,7 @@
       "data": {},
       "name": "烧杯堆栈2 L1A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -3616,7 +3719,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B1 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 52,
@@ -3636,7 +3739,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 52,
@@ -3656,7 +3759,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3676,7 +3779,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3696,7 +3799,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3716,7 +3819,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3736,7 +3839,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -3756,7 +3859,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -3776,7 +3879,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -3796,7 +3899,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -3816,7 +3919,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -3836,7 +3939,7 @@
       "data": {},
       "name": "烧杯堆栈2 L2A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -3856,7 +3959,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B1 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 52,
@@ -3876,7 +3979,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A1 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 52,
@@ -3896,7 +3999,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B2 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3916,7 +4019,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A2 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 172,
@@ -3936,7 +4039,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B3 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3956,7 +4059,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A3 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 292,
@@ -3976,7 +4079,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B4 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -3996,7 +4099,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A4 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 412,
@@ -4016,7 +4119,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B5 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -4036,7 +4139,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A5 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 532,
@@ -4056,7 +4159,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3B6 烧杯 500 mL",
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -4076,7 +4179,7 @@
       "data": {},
       "name": "烧杯堆栈2 L3A6 样品瓶 500 mL",
       "type": "container",
-      "class": "szlab_sample_vial_500ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_500ml",
       "parent": "s3_unused_beaker",
       "position": {
         "x": 652,
@@ -4096,7 +4199,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R1C2 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 152,
@@ -4116,7 +4219,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R1C3 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 252,
@@ -4136,7 +4239,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R1C4 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 352,
@@ -4156,7 +4259,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R1C5 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 452,
@@ -4176,7 +4279,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R2C1 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 52,
@@ -4196,7 +4299,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R2C2 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 152,
@@ -4216,7 +4319,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R2C3 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 252,
@@ -4236,7 +4339,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R2C4 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 352,
@@ -4256,7 +4359,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R2C5 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 452,
@@ -4276,7 +4379,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R3C1 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 52,
@@ -4296,7 +4399,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R3C2 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 152,
@@ -4316,7 +4419,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R3C3 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 252,
@@ -4336,7 +4439,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R3C4 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 352,
@@ -4356,7 +4459,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R3C5 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 452,
@@ -4376,7 +4479,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R4C1 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 52,
@@ -4396,7 +4499,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R4C2 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 152,
@@ -4416,7 +4519,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R4C3 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 252,
@@ -4436,7 +4539,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R4C4 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 352,
@@ -4456,7 +4559,7 @@
       "data": {},
       "name": "试剂瓶堆栈 R4C5 试剂瓶 100 mL",
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "parent": "s10_liquid_reagent",
       "position": {
         "x": 452,
@@ -4476,7 +4579,7 @@
       "data": {},
       "name": "Tip 头架子 T11 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 52,
@@ -4930,7 +5033,7 @@
       "data": {},
       "name": "Tip 头架子 T12 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 172,
@@ -5384,7 +5487,7 @@
       "data": {},
       "name": "Tip 头架子 T21 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 52,
@@ -5838,7 +5941,7 @@
       "data": {},
       "name": "Tip 头架子 T22 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 172,
@@ -6292,7 +6395,7 @@
       "data": {},
       "name": "Tip 头架子 T31 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 52,
@@ -6746,7 +6849,7 @@
       "data": {},
       "name": "Tip 头架子 T32 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s2_tip_warehouse",
       "position": {
         "x": 172,
@@ -7200,7 +7303,7 @@
       "data": {},
       "name": "固体粉桶堆栈 L1C2 注粉瓶",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "parent": "powder_container_warehouse",
       "position": {
         "x": 15,
@@ -7220,7 +7323,7 @@
       "data": {},
       "name": "固体粉桶堆栈 L1C3 注粉瓶",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "parent": "powder_container_warehouse",
       "position": {
         "x": 15,
@@ -7240,7 +7343,7 @@
       "data": {},
       "name": "固体粉桶堆栈 L2C1 注粉瓶",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "parent": "powder_container_warehouse",
       "position": {
         "x": 15,
@@ -7260,7 +7363,7 @@
       "data": {},
       "name": "固体粉桶堆栈 L2C2 注粉瓶",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "parent": "powder_container_warehouse",
       "position": {
         "x": 15,
@@ -7280,7 +7383,7 @@
       "data": {},
       "name": "固体粉桶堆栈 L2C3 注粉瓶",
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "parent": "powder_container_warehouse",
       "position": {
         "x": 15,
@@ -7300,7 +7403,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L1C1 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,
@@ -7754,7 +7857,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L1C2 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,
@@ -8208,7 +8311,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L1C3 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,
@@ -8662,7 +8765,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L2C1 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,
@@ -9116,7 +9219,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L2C2 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,
@@ -9570,7 +9673,7 @@
       "data": {},
       "name": "S1 上料过渡仓 L2C3 TIP 盒",
       "type": "container",
-      "class": "szlab_tip_box",
+      "class": "community.szlab_poly_studio.szlab_tip_box",
       "parent": "s1_loading_buffer",
       "position": {
         "x": 6,

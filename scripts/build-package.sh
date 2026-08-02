@@ -6,8 +6,6 @@ unilab_python="${UNILAB_PYTHON:-python}"
 dist_dir="${UNILAB_PACKAGE_DIST_DIR:-${repo_root}/dist}"
 
 mkdir -p "${dist_dir}"
-exec "${unilab_python}" -m pip wheel \
-  --no-deps \
-  --no-build-isolation \
-  --wheel-dir "${dist_dir}" \
-  "${repo_root}"
+exec "${unilab_python}" -m unilabos.app.main package build \
+  --path "${repo_root}" \
+  --out "${dist_dir}"

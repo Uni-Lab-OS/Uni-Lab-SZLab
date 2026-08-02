@@ -1,5 +1,4 @@
 from unilabos.registry.decorators import resource
-from unilabos.resources.warehouse import WareHouse, warehouse_factory
 
 
 @resource(
@@ -37,6 +36,23 @@ def s3_unused_beaker_warehouse(name: str = "烧杯堆栈2"):
 
 
 @resource(
+    id="szlab_poly_s3_unused_sample_vial_warehouse",
+    category=["szlab_poly_studio", "warehouse", "sample_vial_stack"],
+    description="苏州实验室 S3 未使用样品瓶逻辑仓：与烧杯堆栈2共用物理载架的样品瓶位",
+    model={
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "szlab_poly_s3_unused_sample_vial_warehouse/models/shape.yml",
+        },
+    },
+)
+def s3_unused_sample_vial_warehouse(name: str = "S3未使用样品瓶仓"):
+    from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
+
+    return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
+
+
+@resource(
     id="szlab_poly_s11_used_beaker_warehouse",
     category=["szlab_poly_studio", "warehouse", "beaker_stack"],
     description="苏州实验室烧杯堆栈1：3层×6列，A行500mL样品瓶 / B行烧杯",
@@ -54,25 +70,31 @@ def s11_used_beaker_warehouse(name: str = "烧杯堆栈1"):
 
 
 @resource(
-    id="szlab_poly_s2_tip_placeholder_warehouse",
-    category=["szlab_poly_studio", "warehouse"],
-    description="苏州实验室 S2 枪头仓占位，6位",
+    id="szlab_poly_s11_used_sample_vial_warehouse",
+    category=["szlab_poly_studio", "warehouse", "sample_vial_stack"],
+    description="苏州实验室 S11 使用样品瓶成品逻辑仓：与烧杯堆栈1共用物理载架的样品瓶位",
+    model={
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "szlab_poly_s11_used_sample_vial_warehouse/models/shape.yml",
+        },
+    },
 )
-def s2_tip_placeholder_warehouse(name: str = "S2枪头仓占位") -> WareHouse:
-    return warehouse_factory(
-        name=name,
-        num_items_x=6,
-        num_items_y=1,
-        num_items_z=1,
-        dx=10.0,
-        dy=10.0,
-        dz=10.0,
-        item_dx=60.0,
-        item_dy=80.0,
-        item_dz=120.0,
-        layout="row-major",
-        category="warehouse",
-    )
+def s11_used_sample_vial_warehouse(name: str = "S11使用样品瓶成品仓"):
+    from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
+
+    return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
+
+
+@resource(
+    id="szlab_poly_s2_tip_placeholder_warehouse",
+    category=["szlab_poly_studio", "warehouse", "tip_stack"],
+    description="苏州实验室 S2 枪头仓：3层×2个TIP盒（CAD DXY260502-02-00）",
+)
+def s2_tip_placeholder_warehouse(name: str = "S2枪头仓占位"):
+    from szlab_poly_studio.resources.carriers.tip_box_stack import SZLab_TipBoxStackCarrier
+
+    return SZLab_TipBoxStackCarrier(name, fill_placeholders=False)
 
 
 @resource(
@@ -109,3 +131,47 @@ def s10_liquid_reagent_placeholder_warehouse(name: str = "试剂瓶堆栈"):
     from szlab_poly_studio.resources.carriers.reagent import SZLab_ReagentBottleStackCarrier
 
     return SZLab_ReagentBottleStackCarrier(name, fill_placeholders=False)
+
+
+@resource(
+    id="szlab_s04_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s04_process_warehouse"],
+    description="S04 磁搅设备内的 6 个烧杯工位；作为设备子资源承载 Inventory Site。",
+)
+def s04_process_warehouse(name: str = "S04磁搅工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S04ProcessCarrier
+
+    return SZLab_S04ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s05_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s05_process_warehouse"],
+    description="S05 拍照检测设备内的单烧杯工位；作为设备子资源承载 Inventory Site。",
+)
+def s05_process_warehouse(name: str = "S05拍照工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S05ProcessCarrier
+
+    return SZLab_S05ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s06_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s06_process_warehouse"],
+    description="S06 注射泵设备内的单烧杯加液位；作为设备子资源承载 Inventory Site。",
+)
+def s06_process_warehouse(name: str = "S06加液工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S06ProcessCarrier
+
+    return SZLab_S06ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s07_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s07_process_warehouse"],
+    description="S07 固体加料转盘的 10 个粉罐位；本轮仅用于 Inventory/展示，不开放机械臂执行。",
+)
+def s07_process_warehouse(name: str = "S07固体加料转盘仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S07ProcessCarrier
+
+    return SZLab_S07ProcessCarrier(name)

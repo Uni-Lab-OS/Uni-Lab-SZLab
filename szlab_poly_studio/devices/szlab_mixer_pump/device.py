@@ -29,9 +29,12 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any, Literal
+from typing import Annotated, Any, Literal, TypedDict
 
+from pydantic import Field
+from unilabos.registry.annotations import AllowedResourceTemplates
 from unilabos.registry.decorators import action, device, not_action, topic_config
+from unilabos.registry.placeholder_type import ResourceSlot
 from unilabos.utils.log import logger
 
 from szlab_poly_studio.common.action_logging import (
@@ -57,6 +60,7 @@ from szlab_poly_studio.devices.szlab_mixer_pump.sensors import (
     s06_pump_valve_var,
     s06_solution_amount_var,
 )
+from szlab_poly_studio.resources.materials import beaker_500ml
 
 DOCKER_IMAGE = "registry-1.docker.io/styxhuang/unilabos:latest"
 DOCKER_UI_URL = "http://localhost:50003/"
@@ -64,6 +68,13 @@ DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
     "opc.tcp://jdht1471820.bohrium.tech:50001",
 )
+
+
+class BeakerAdditionStatus(TypedDict):
+    """烧杯由同名 ResourceSlot 端口透传，结果只保留动作状态。"""
+
+    success: bool
+    message: str
 
 
 @device(
@@ -391,10 +402,8 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             direction=direction,
         )
 
-    @action(
-        description="S06 泵加液完整流程：烧杯检测 → 液位确认 → 储液瓶抽液排至烧杯 → 可选抽空气 → 机械臂骨架",
-    )
-    def run_solvent_addition(
+    @not_action
+    def _run_solvent_addition(
         self,
         pump: int = 1,
         volume: int = 1,
@@ -459,6 +468,58 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
                 "volume_pump_2": volume_pump_2,
             },
             "steps": steps,
+        }
+
+    @action(
+        description="S06 泵加液完整流程：烧杯检测 → 液位确认 → 储液瓶抽液排至烧杯 → 可选抽空气 → 机械臂骨架",
+    )
+    def run_solvent_addition(
+        self,
+        pump: int = 1,
+        volume: int = 1,
+        volume_pump_1: int = 0,
+        volume_pump_2: int = 0,
+        skip_level_check: bool = False,
+        skip_robot: bool = True,
+        beaker_true_means_present: bool = True,
+    ) -> dict[str, Any]:
+        return self._run_solvent_addition(
+            pump=pump,
+            volume=volume,
+            volume_pump_1=volume_pump_1,
+            volume_pump_2=volume_pump_2,
+            skip_level_check=skip_level_check,
+            skip_robot=skip_robot,
+            beaker_true_means_present=beaker_true_means_present,
+        )
+
+    @action(description="向 S06 中的 500 mL 烧杯加溶剂（物料感知）")
+    def add_solvent_to_beaker(
+        self,
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+            Field(description="S06 中待加液的 500 mL 烧杯"),
+        ],
+        pump: int = 1,
+        volume: int = 1,
+        volume_pump_1: int = 0,
+        volume_pump_2: int = 0,
+        skip_level_check: bool = False,
+        beaker_true_means_present: bool = True,
+    ) -> BeakerAdditionStatus:
+        result = self._run_solvent_addition(
+            pump=pump,
+            volume=volume,
+            volume_pump_1=volume_pump_1,
+            volume_pump_2=volume_pump_2,
+            skip_level_check=skip_level_check,
+            skip_robot=True,
+            beaker_true_means_present=beaker_true_means_present,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
         }
 
 

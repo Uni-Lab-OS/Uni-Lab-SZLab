@@ -102,7 +102,7 @@ Xacro 源文件完全相同。Web 获得的是 Edge 生成的资产 URL，不是
 4. 对每个模型按声明 Python 文件解析相对 `entry`；
 5. 校验入口、include、mesh、texture、路径 containment 和 wheel package-data；
 6. 把定义及资产闭包写进同一个 PackageCatalog；
-7. Graph/Profile 选择设备后才 import 驱动；
+7. Graph 选择设备后才 import 驱动；
 8. 前端请求模型时，Edge 通过 Catalog 返回元数据和受控资产 URL；
 9. Xacro consumer 以已校验模型目录作为 `mesh_path`。
 
@@ -110,10 +110,9 @@ Xacro 源文件完全相同。Web 获得的是 Edge 生成的资产 URL，不是
 
 ## 当前与目标的差距
 
-SZLab 侧已经完成根单包、驱动归位、外形共置、装饰器绑定和 package-data；OS 侧仍需实现
-Issue #147 的 PackageCatalogCompiler、`--workspace`、资产 Source Adapter 和 Edge asset API。
-因此当前 `scripts/check-package.sh` 仍使用旧 `--devices` 做兼容 AST 检查，真实 3D Edge/Web
-闭环要等 OS delivery 与第一套真实 Xacro/mesh 到位后验收。
+SZLab 已完成根单包、驱动归位、外形共置、装饰器绑定和 package-data；OS 已提供
+PackageCatalogCompiler、`--workspace`、资产 Source Adapter 和 Shape 资产读取。真实 3D
+Edge/Web 闭环仍需等第一套真实 Xacro/mesh 到位后验收。
 
 ## 第一套真实模型建议
 

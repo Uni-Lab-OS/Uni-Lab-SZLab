@@ -4,6 +4,10 @@ shape:
   display_name: TIP 头堆栈 / 上料过渡仓
   applies_to:
   - category: tip_stack
+  envelope:
+  - 200.0
+  - 442.0
+  - 403.0
   sort: rear-edge
   parts:
   - type: sites

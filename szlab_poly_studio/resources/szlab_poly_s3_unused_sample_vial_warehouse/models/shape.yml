@@ -1,13 +1,13 @@
 schema_version: 1
 shape:
-  id: reagent_stack
-  display_name: 试剂瓶堆栈
+  id: sample_vial_stack
+  display_name: 样品瓶堆栈
   applies_to:
-  - category: reagent_stack
+  - category: sample_vial_stack
   envelope:
+  - 790.0
+  - 200.0
   - 560.0
-  - 120.0
-  - 565.0
   sort: rear-edge
   parts:
   - type: sites

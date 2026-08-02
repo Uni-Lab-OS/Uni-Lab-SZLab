@@ -12,6 +12,8 @@ workflows:
     source: szlab_poly_studio/workflows/s04_robot_stirring.py
   - workflow_uuid: 0b4e6fce-14bc-5866-a373-16ad25c7f8cf
     source: szlab_poly_studio/workflows/s06_robot.py
+  - workflow_uuid: f372fd2d-447e-5f97-85e4-f90628e9f472
+    source: szlab_poly_studio/workflows/s06_material.py
   - workflow_uuid: 4f6ec98a-d3e1-580b-a72e-8ce4fe9d5def
     source: szlab_poly_studio/workflows/s07_robot.py
   - workflow_uuid: b1370434-7eb7-553a-ac93-b25f3b3ef742

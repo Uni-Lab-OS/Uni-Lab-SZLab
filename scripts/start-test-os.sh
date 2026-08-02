@@ -10,11 +10,9 @@ export PYTHONPATH="${repo_root}${PYTHONPATH:+:${PYTHONPATH}}"
 
 exec "${unilab_command}" \
   --graph "${repo_root}/deployment/graphs/szlab-local-debug.json" \
+  --workspace "${repo_root}" \
   --config "${repo_root}/deployment/local_config.py" \
   --working_dir "${runtime_dir}" \
-  --devices "${repo_root}/szlab_poly_studio" \
-  --profile "${repo_root}/szlab_poly_studio/profiles/default/package.yaml" \
-  --external_devices_only \
   --backend ros \
   --app_bridges fastapi \
   --port "${UNILAB_OS_PORT:-18002}" \

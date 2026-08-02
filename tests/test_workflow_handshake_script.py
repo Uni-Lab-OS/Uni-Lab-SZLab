@@ -43,8 +43,8 @@ class MemoryAdapter:
 def test_catalog_matches_every_python_workflow_action() -> None:
     specs = handshake.build_workflow_specs()
 
-    assert len(specs) == 12
-    assert len(handshake.SUPPORTED_ACTIONS) == 19
+    assert len(specs) == 13
+    assert len(handshake.SUPPORTED_ACTIONS) == 23
     assert {item.workflow_id for item in specs} == {
         "szlab_magnetic_stirring_workflow",
         "szlab_photoshotting_workflow",
@@ -58,6 +58,7 @@ def test_catalog_matches_every_python_workflow_action() -> None:
         "szlab_stack_s05_s06_workflow",
         "szlab_mixer_workflow",
         "szlab_mixer_pump_production",
+        "szlab_material_s06_workflow",
     }
 
     workflows_dir = Path(__file__).parents[1] / "szlab_poly_studio" / "workflows"
@@ -66,17 +67,22 @@ def test_catalog_matches_every_python_workflow_action() -> None:
         tree = ast.parse(path.read_text(encoding="utf-8"))
         devices: dict[str, str] = {}
         for node in ast.walk(tree):
+            target = (
+                node.targets[0]
+                if isinstance(node, ast.Assign) and len(node.targets) == 1
+                else node.target
+                if isinstance(node, ast.AnnAssign)
+                else None
+            )
             if (
-                isinstance(node, ast.Assign)
-                and len(node.targets) == 1
-                and isinstance(node.targets[0], ast.Name)
+                isinstance(target, ast.Name)
                 and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Name)
                 and node.value.func.id == "device"
                 and node.value.args
                 and isinstance(node.value.args[0], ast.Constant)
             ):
-                devices[node.targets[0].id] = str(node.value.args[0].value)
+                devices[target.id] = str(node.value.args[0].value)
         for node in ast.walk(tree):
             if (
                 isinstance(node, ast.Call)
@@ -84,15 +90,9 @@ def test_catalog_matches_every_python_workflow_action() -> None:
                 and isinstance(node.func.value, ast.Name)
                 and node.func.value.id in devices
             ):
-                actual_actions.add(
-                    f"{devices[node.func.value.id]}.{node.func.attr}"
-                )
+                actual_actions.add(f"{devices[node.func.value.id]}.{node.func.attr}")
 
-    catalog_actions = {
-        action.split("(", maxsplit=1)[0]
-        for spec in specs
-        for action in spec.actions
-    }
+    catalog_actions = {action.split("(", maxsplit=1)[0] for spec in specs for action in spec.actions}
     assert set(handshake.SUPPORTED_ACTIONS) == actual_actions == catalog_actions
 
 
@@ -109,15 +109,11 @@ def test_s04_three_action_handshake_changes_sensor_and_resets() -> None:
     adapter.write(handshake.S04_ROBOT_POSITION, 1)
     adapter.write(handshake.ROBOT_WRITE_DONE, True)
     events = simulator.step(now=0.0)
-    assert [(event.action, event.phase) for event in events] == [
-        (handshake.SUPPORTED_ACTIONS[0], "accepted")
-    ]
+    assert [(event.action, event.phase) for event in events] == [(handshake.SUPPORTED_ACTIONS[0], "accepted")]
     assert adapter.read(handshake.ROBOT_WRITE_ALLOWED) is False
 
     events = simulator.step(now=1.0)
-    assert [(event.action, event.phase) for event in events] == [
-        (handshake.SUPPORTED_ACTIONS[0], "completed")
-    ]
+    assert [(event.action, event.phase) for event in events] == [(handshake.SUPPORTED_ACTIONS[0], "completed")]
     assert adapter.read(handshake.s04_sensor(1)) is True
     assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 7
 
@@ -130,13 +126,9 @@ def test_s04_three_action_handshake_changes_sensor_and_resets() -> None:
     adapter.write(handshake.s04_process(1), 3)
     adapter.write(handshake.s04_params_written(1), True)
     events = simulator.step(now=2.0)
-    assert [(event.action, event.phase) for event in events] == [
-        (handshake.SUPPORTED_ACTIONS[1], "accepted")
-    ]
+    assert [(event.action, event.phase) for event in events] == [(handshake.SUPPORTED_ACTIONS[1], "accepted")]
     events = simulator.step(now=3.0)
-    assert [(event.action, event.phase) for event in events] == [
-        (handshake.SUPPORTED_ACTIONS[1], "completed")
-    ]
+    assert [(event.action, event.phase) for event in events] == [(handshake.SUPPORTED_ACTIONS[1], "completed")]
     assert adapter.read(handshake.s04_done(1)) is True
 
     adapter.write(handshake.s04_params_written(1), False)
@@ -150,9 +142,7 @@ def test_s04_three_action_handshake_changes_sensor_and_resets() -> None:
     adapter.write(handshake.ROBOT_WRITE_DONE, True)
     simulator.step(now=4.0)
     events = simulator.step(now=5.0)
-    assert [(event.action, event.phase) for event in events] == [
-        (handshake.SUPPORTED_ACTIONS[2], "completed")
-    ]
+    assert [(event.action, event.phase) for event in events] == [(handshake.SUPPORTED_ACTIONS[2], "completed")]
     assert adapter.read(handshake.s04_sensor(1)) is False
     assert simulator.completed_actions == 3
 
@@ -171,20 +161,14 @@ def test_s06_handshake_produces_fresh_done_cycle() -> None:
     accepted = simulator.step(now=10.0)
     completed = simulator.step(now=10.5)
 
-    assert [(event.action, event.phase) for event in accepted] == [
-        (handshake.SUPPORTED_ACTIONS[4], "accepted")
-    ]
-    assert [(event.action, event.phase) for event in completed] == [
-        (handshake.SUPPORTED_ACTIONS[4], "completed")
-    ]
+    assert [(event.action, event.phase) for event in accepted] == [(handshake.SUPPORTED_ACTIONS[4], "accepted")]
+    assert [(event.action, event.phase) for event in completed] == [(handshake.SUPPORTED_ACTIONS[4], "completed")]
     assert adapter.read(handshake.S06_DONE) is True
 
     adapter.write(handshake.S06_PROCESS, 0)
     adapter.write(handshake.S06_PARAMS_WRITTEN, False)
     reset = simulator.step(now=10.6)
-    assert [(event.action, event.phase) for event in reset] == [
-        (handshake.SUPPORTED_ACTIONS[4], "reset")
-    ]
+    assert [(event.action, event.phase) for event in reset] == [(handshake.SUPPORTED_ACTIONS[4], "reset")]
     assert adapter.read(handshake.S06_DONE) is False
     assert adapter.read(handshake.S06_ALLOW) is True
 
@@ -204,21 +188,15 @@ def test_s06_robot_workflow_runs_place_pump_pick_and_resets_sensor() -> None:
     adapter.write(handshake.ROBOT_WRITE_DONE, True)
     accepted = simulator.step(now=0.0)
     completed = simulator.step(now=0.5)
-    assert [(event.action, event.phase) for event in accepted] == [
-        (handshake.S06_PLACE_ACTION, "accepted")
-    ]
-    assert [(event.action, event.phase) for event in completed] == [
-        (handshake.S06_PLACE_ACTION, "completed")
-    ]
+    assert [(event.action, event.phase) for event in accepted] == [(handshake.S06_PLACE_ACTION, "accepted")]
+    assert [(event.action, event.phase) for event in completed] == [(handshake.S06_PLACE_ACTION, "completed")]
     assert adapter.read(handshake.S06_BEAKER_SENSOR) is True
     assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 11
 
     adapter.write(handshake.ROBOT_WRITE_DONE, False)
     adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
     reset = simulator.step(now=0.6)
-    assert [(event.action, event.phase) for event in reset] == [
-        (handshake.S06_PLACE_ACTION, "reset")
-    ]
+    assert [(event.action, event.phase) for event in reset] == [(handshake.S06_PLACE_ACTION, "reset")]
     assert adapter.read(handshake.ROBOT_WRITE_ALLOWED) is True
     assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 0
 
@@ -226,32 +204,22 @@ def test_s06_robot_workflow_runs_place_pump_pick_and_resets_sensor() -> None:
     adapter.write(handshake.S06_PARAMS_WRITTEN, True)
     accepted = simulator.step(now=1.0)
     completed = simulator.step(now=1.5)
-    assert [(event.action, event.phase) for event in accepted] == [
-        (handshake.S06_PUMP_ACTION, "accepted")
-    ]
-    assert [(event.action, event.phase) for event in completed] == [
-        (handshake.S06_PUMP_ACTION, "completed")
-    ]
+    assert [(event.action, event.phase) for event in accepted] == [(handshake.S06_PUMP_ACTION, "accepted")]
+    assert [(event.action, event.phase) for event in completed] == [(handshake.S06_PUMP_ACTION, "completed")]
     assert adapter.read(handshake.S06_DONE) is True
 
     adapter.write(handshake.S06_PROCESS, 0)
     adapter.write(handshake.S06_PARAMS_WRITTEN, False)
     reset = simulator.step(now=1.6)
-    assert [(event.action, event.phase) for event in reset] == [
-        (handshake.S06_PUMP_ACTION, "reset")
-    ]
+    assert [(event.action, event.phase) for event in reset] == [(handshake.S06_PUMP_ACTION, "reset")]
     assert adapter.read(handshake.S06_DONE) is False
 
     adapter.write(handshake.ROBOT_TASK_NUMBER, 12)
     adapter.write(handshake.ROBOT_WRITE_DONE, True)
     accepted = simulator.step(now=2.0)
     completed = simulator.step(now=2.5)
-    assert [(event.action, event.phase) for event in accepted] == [
-        (handshake.S06_PICK_ACTION, "accepted")
-    ]
-    assert [(event.action, event.phase) for event in completed] == [
-        (handshake.S06_PICK_ACTION, "completed")
-    ]
+    assert [(event.action, event.phase) for event in accepted] == [(handshake.S06_PICK_ACTION, "accepted")]
+    assert [(event.action, event.phase) for event in completed] == [(handshake.S06_PICK_ACTION, "completed")]
     assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
     assert adapter.read(handshake.ROBOT_TASK_COMPLETE) == 12
     assert simulator.completed_actions == 3
@@ -260,10 +228,63 @@ def test_s06_robot_workflow_runs_place_pump_pick_and_resets_sensor() -> None:
     adapter.write(handshake.ROBOT_WRITE_DONE, False)
     adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
     reset = simulator.step(now=2.6)
-    assert [(event.action, event.phase) for event in reset] == [
-        (handshake.S06_PICK_ACTION, "reset")
-    ]
+    assert [(event.action, event.phase) for event in reset] == [(handshake.S06_PICK_ACTION, "reset")]
     assert simulator.all_cycles_idle() is True
+
+
+def test_material_s06_workflow_tracks_s03_s06_and_material_action_names() -> None:
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        pump=1,
+        process_delay=0.5,
+        workflow="szlab_material_s06_workflow",
+    )
+    simulator.initialize()
+    assert adapter.read(handshake.S03_BEAKER_SENSOR) is True
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
+
+    clock = 0.0
+    for task_number, action, expected_sensor, expected_value in (
+        (6, handshake.MATERIAL_S03_PICK_ACTION, handshake.S03_BEAKER_SENSOR, False),
+        (11, handshake.MATERIAL_S06_PLACE_ACTION, handshake.S06_BEAKER_SENSOR, True),
+    ):
+        adapter.write(handshake.ROBOT_TASK_NUMBER, task_number)
+        adapter.write(handshake.ROBOT_WRITE_DONE, True)
+        accepted = simulator.step(now=clock)
+        completed = simulator.step(now=clock + 0.5)
+        assert [(event.action, event.phase) for event in accepted] == [(action, "accepted")]
+        assert [(event.action, event.phase) for event in completed] == [(action, "completed")]
+        assert adapter.read(expected_sensor) is expected_value
+        adapter.write(handshake.ROBOT_WRITE_DONE, False)
+        simulator.step(now=clock + 0.6)
+        clock += 1.0
+
+    adapter.write(handshake.S06_PROCESS, 1)
+    adapter.write(handshake.S06_PARAMS_WRITTEN, True)
+    accepted = simulator.step(now=clock)
+    completed = simulator.step(now=clock + 0.5)
+    assert [(event.action, event.phase) for event in accepted] == [
+        (handshake.MATERIAL_S06_ADD_ACTION, "accepted")
+    ]
+    assert [(event.action, event.phase) for event in completed] == [
+        (handshake.MATERIAL_S06_ADD_ACTION, "completed")
+    ]
+    adapter.write(handshake.S06_PARAMS_WRITTEN, False)
+    simulator.step(now=clock + 0.6)
+
+    adapter.write(handshake.ROBOT_TASK_NUMBER, 12)
+    adapter.write(handshake.ROBOT_WRITE_DONE, True)
+    accepted = simulator.step(now=clock + 1.0)
+    completed = simulator.step(now=clock + 1.5)
+    assert [(event.action, event.phase) for event in accepted] == [
+        (handshake.MATERIAL_S06_PICK_ACTION, "accepted")
+    ]
+    assert [(event.action, event.phase) for event in completed] == [
+        (handshake.MATERIAL_S06_PICK_ACTION, "completed")
+    ]
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
+    assert simulator.completed_actions == 4
 
 
 def test_s07_robot_workflow_runs_three_tasks_and_rearms_next_cycle() -> None:
@@ -284,19 +305,13 @@ def test_s07_robot_workflow_runs_three_tasks_and_rearms_next_cycle() -> None:
 
         accepted = simulator.step(now=clock)
         completed = simulator.step(now=clock + 0.5)
-        assert [(event.phase, event.detail["task_number"]) for event in accepted] == [
-            ("accepted", task_number)
-        ]
-        assert [(event.phase, event.detail["task_number"]) for event in completed] == [
-            ("completed", task_number)
-        ]
+        assert [(event.phase, event.detail["task_number"]) for event in accepted] == [("accepted", task_number)]
+        assert [(event.phase, event.detail["task_number"]) for event in completed] == [("completed", task_number)]
 
         adapter.write(handshake.ROBOT_WRITE_DONE, False)
         adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
         reset = simulator.step(now=clock + 0.6)
-        assert [(event.phase, event.detail["task_number"]) for event in reset] == [
-            ("reset", task_number)
-        ]
+        assert [(event.phase, event.detail["task_number"]) for event in reset] == [("reset", task_number)]
         clock += 1.0
 
     assert adapter.read(handshake.s071_sensor(1)) is False
@@ -350,21 +365,15 @@ def test_s08_open_close_handshake_supports_two_complete_cycles() -> None:
         adapter.write(handshake.S08_CAP_STORAGE_SLOT, 1)
         accepted = simulator.step(now=clock)
         completed = simulator.step(now=clock + 0.5)
-        assert [(event.action, event.phase) for event in accepted] == [
-            (handshake.S08_CAP_ACTION, "accepted")
-        ]
-        assert [(event.action, event.phase) for event in completed] == [
-            (handshake.S08_CAP_ACTION, "completed")
-        ]
+        assert [(event.action, event.phase) for event in accepted] == [(handshake.S08_CAP_ACTION, "accepted")]
+        assert [(event.action, event.phase) for event in completed] == [(handshake.S08_CAP_ACTION, "completed")]
         assert adapter.read(handshake.S08_DONE) == process
 
         adapter.write(handshake.S08_PROCESS, 0)
         adapter.write(handshake.S08_PARAMS_WRITTEN, False)
         adapter.write(handshake.S08_CAP_STORAGE_SLOT, 0)
         reset = simulator.step(now=clock + 0.6)
-        assert [(event.action, event.phase) for event in reset] == [
-            (handshake.S08_CAP_ACTION, "reset")
-        ]
+        assert [(event.action, event.phase) for event in reset] == [(handshake.S08_CAP_ACTION, "reset")]
         assert adapter.read(handshake.S08_DONE) == 0
         assert adapter.read(handshake.S08_ALLOW) is True
         clock += 1.0
@@ -388,20 +397,14 @@ def test_s09_add_liquid_handshake_supports_two_complete_sequences() -> None:
         adapter.write(handshake.S09_PARAMS_WRITTEN, True)
         accepted = simulator.step(now=clock)
         completed = simulator.step(now=clock + 0.5)
-        assert [(event.action, event.phase) for event in accepted] == [
-            (handshake.S09_ADD_LIQUID_ACTION, "accepted")
-        ]
-        assert [(event.action, event.phase) for event in completed] == [
-            (handshake.S09_ADD_LIQUID_ACTION, "completed")
-        ]
+        assert [(event.action, event.phase) for event in accepted] == [(handshake.S09_ADD_LIQUID_ACTION, "accepted")]
+        assert [(event.action, event.phase) for event in completed] == [(handshake.S09_ADD_LIQUID_ACTION, "completed")]
         assert adapter.read(handshake.S09_DONE) == process
 
         adapter.write(handshake.S09_PROCESS, 0)
         adapter.write(handshake.S09_PARAMS_WRITTEN, False)
         reset = simulator.step(now=clock + 0.6)
-        assert [(event.action, event.phase) for event in reset] == [
-            (handshake.S09_ADD_LIQUID_ACTION, "reset")
-        ]
+        assert [(event.action, event.phase) for event in reset] == [(handshake.S09_ADD_LIQUID_ACTION, "reset")]
         assert adapter.read(handshake.S09_DONE) == 0
         assert adapter.read(handshake.S09_ALLOW) is True
         clock += 1.0
@@ -411,9 +414,7 @@ def test_s09_add_liquid_handshake_supports_two_complete_sequences() -> None:
 
 
 def test_cli_keeps_workflow_selector_compatibility(capsys: Any) -> None:
-    args = handshake.build_parser().parse_args(
-        ["serve", "--workflow", "s06_robot_workflow"]
-    )
+    args = handshake.build_parser().parse_args(["serve", "--workflow", "s06_robot_workflow"])
     assert args.workflow == "s06_robot_workflow"
 
     assert handshake.main(["list", "--workflow", "s06_robot_workflow"]) == 0
@@ -439,20 +440,10 @@ def test_selected_workflow_only_initializes_and_polls_its_components() -> None:
 
 
 def test_every_handshake_variable_exists_in_plc_0730_csv() -> None:
-    csv_path = (
-        Path(__file__).parents[1]
-        / "szlab_poly_studio"
-        / "devices"
-        / "szlab_poly_plc"
-        / "szlab_plc_0730.csv"
-    )
+    csv_path = Path(__file__).parents[1] / "szlab_poly_studio" / "devices" / "szlab_poly_plc" / "szlab_plc_0730.csv"
     with csv_path.open(encoding="utf-16", newline="") as file:
         rows = csv.reader(file, delimiter="\t")
-        csv_variables = {
-            row[1].strip()
-            for row in rows
-            if len(row) > 1 and row[1].strip()
-        }
+        csv_variables = {row[1].strip() for row in rows if len(row) > 1 and row[1].strip()}
 
     variables = {
         handshake.ROBOT_TASK_NUMBER,
