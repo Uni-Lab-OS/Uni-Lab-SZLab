@@ -227,7 +227,7 @@
         "z": 0
       },
       "config": {
-        "url": "opc.tcp://opcua.ideawit.com:4855/xuse_sim",
+        "url": "opc.tcp://127.0.0.1:4855/xuse_sim",
         "csv_path": "szlab_plc_0730.csv",
         "auto_connect": true,
         "opcua_node_id_prefix": "ns=4;s=上位机通讯|"

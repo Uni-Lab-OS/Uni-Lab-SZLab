@@ -1,0 +1,175 @@
+{
+  "schema_version": "2",
+  "revision_id": "szlab-parallel-robot-lock-rev-1",
+  "workflow_id": "szlab_stack_s05_s06_workflow",
+  "invocations": [
+    {
+      "node_id": "s05_photo",
+      "action_ref": "szlab_mixer_photoshotting.take_photo",
+      "name": "并行分支一：S05 拍照",
+      "input_bindings": {
+        "sample_id": {
+          "kind": "literal",
+          "value": "debug-sample"
+        },
+        "photo_path": {
+          "kind": "literal",
+          "value": ""
+        },
+        "inspection_result": {
+          "kind": "literal",
+          "value": ""
+        },
+        "require_material": {
+          "kind": "literal",
+          "value": false
+        }
+      }
+    },
+    {
+      "node_id": "s06_addition",
+      "action_ref": "szlab_mixer_pump.run_solvent_addition",
+      "name": "并行分支二：S06 加液",
+      "input_bindings": {
+        "pump": {
+          "kind": "literal",
+          "value": 1
+        },
+        "volume": {
+          "kind": "literal",
+          "value": 8.0
+        },
+        "skip_level_check": {
+          "kind": "literal",
+          "value": false
+        },
+        "skip_robot": {
+          "kind": "literal",
+          "value": true
+        },
+        "beaker_true_means_present": {
+          "kind": "literal",
+          "value": true
+        }
+      }
+    },
+    {
+      "node_id": "robot_pour_type_1",
+      "action_ref": "szlab_mixer_robot.submit_pour_from_s08",
+      "name": "竞争机器人锁：S08 倒料类型 1",
+      "input_bindings": {
+        "product_type": {
+          "kind": "literal",
+          "value": 1
+        }
+      }
+    },
+    {
+      "node_id": "robot_pour_type_2",
+      "action_ref": "szlab_mixer_robot.submit_pour_from_s08",
+      "name": "竞争机器人锁：S08 倒料类型 2",
+      "input_bindings": {
+        "product_type": {
+          "kind": "literal",
+          "value": 2
+        }
+      }
+    },
+    {
+      "node_id": "join",
+      "action_ref": "os_control.join",
+      "node_type": "join",
+      "name": "两条并行分支汇合"
+    },
+    {
+      "node_id": "final_stir",
+      "action_ref": "szlab_mixer_stirrer.run_stirring",
+      "name": "汇合后：S04 磁搅",
+      "input_bindings": {
+        "position": {
+          "kind": "literal",
+          "value": 1
+        },
+        "mode": {
+          "kind": "literal",
+          "value": 3
+        },
+        "speed": {
+          "kind": "literal",
+          "value": 300.0
+        },
+        "temperature": {
+          "kind": "literal",
+          "value": 25.0
+        },
+        "duration": {
+          "kind": "literal",
+          "value": 30.0
+        },
+        "safe_temperature": {
+          "kind": "literal",
+          "value": 80.0
+        },
+        "reset": {
+          "kind": "literal",
+          "value": false
+        }
+      }
+    }
+  ],
+  "control_edges": [
+    {
+      "edge_id": "e1",
+      "source": "s05_photo",
+      "target": "robot_pour_type_1"
+    },
+    {
+      "edge_id": "e2",
+      "source": "s06_addition",
+      "target": "robot_pour_type_2"
+    },
+    {
+      "edge_id": "e3",
+      "source": "robot_pour_type_1",
+      "target": "join"
+    },
+    {
+      "edge_id": "e4",
+      "source": "robot_pour_type_2",
+      "target": "join"
+    },
+    {
+      "edge_id": "e5",
+      "source": "join",
+      "target": "final_stir"
+    }
+  ],
+  "layout": {
+    "nodes": {
+      "s05_photo": {
+        "x": 30,
+        "y": 70
+      },
+      "s06_addition": {
+        "x": 30,
+        "y": 300
+      },
+      "robot_pour_type_1": {
+        "x": 360,
+        "y": 70
+      },
+      "robot_pour_type_2": {
+        "x": 360,
+        "y": 300
+      },
+      "join": {
+        "x": 690,
+        "y": 185
+      },
+      "final_stir": {
+        "x": 920,
+        "y": 185
+      }
+    }
+  }
+}
