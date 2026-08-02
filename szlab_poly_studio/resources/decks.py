@@ -25,7 +25,7 @@ class SZLabPolyStudioDeck(Deck):
         name: str = "SZLabPolyStudioDeck",
         size_x: float = 3000.0,
         size_y: float = 1800.0,
-        size_z: float = 2200.0,
+        size_z: float = 20.0,
         category: str = "deck",
         setup: bool = True,
     ) -> None:

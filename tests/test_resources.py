@@ -46,6 +46,7 @@ def test_warehouse_site_counts_and_keys() -> None:
 
 def test_deck_contains_all_warehouses() -> None:
     deck = SZLabPolyStudioDeck()
+    assert deck.get_size_z() == 20.0
     assert len(deck.children) == 6
     assert sum(warehouse.num_items for warehouse in deck.warehouses.values()) == 110
     assert set(deck.warehouses) == {

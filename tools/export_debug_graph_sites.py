@@ -35,7 +35,7 @@ from szlab_poly_studio.resources.materials import (
 )
 
 # 工站：宽 3634 (X) × 长 1674 (Y)
-DECK_SIZE = {"size_x": 3634.0, "size_y": 1674.0, "size_z": 0.0}
+DECK_SIZE = {"size_x": 3634.0, "size_y": 1674.0, "size_z": 20.0}
 S1_WORKSTATION_HEIGHT_MM = 10.0
 DECK_LOCAL_Z_MM = S1_WORKSTATION_HEIGHT_MM + 10.0
 
