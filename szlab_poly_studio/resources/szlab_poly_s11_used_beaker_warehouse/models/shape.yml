@@ -4,6 +4,10 @@ shape:
   display_name: 烧杯堆栈
   applies_to:
   - category: beaker_stack
+  envelope:
+  - 790.0
+  - 200.0
+  - 560.0
   sort: rear-edge
   parts:
   - type: sites

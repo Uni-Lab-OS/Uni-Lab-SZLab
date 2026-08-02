@@ -37,6 +37,23 @@ def s3_unused_beaker_warehouse(name: str = "烧杯堆栈2"):
 
 
 @resource(
+    id="szlab_poly_s3_unused_sample_vial_warehouse",
+    category=["szlab_poly_studio", "warehouse", "sample_vial_stack"],
+    description="苏州实验室 S3 未使用样品瓶逻辑仓：与烧杯堆栈2共用物理载架的样品瓶位",
+    model={
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "szlab_poly_s3_unused_sample_vial_warehouse/models/shape.yml",
+        },
+    },
+)
+def s3_unused_sample_vial_warehouse(name: str = "S3未使用样品瓶仓"):
+    from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
+
+    return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
+
+
+@resource(
     id="szlab_poly_s11_used_beaker_warehouse",
     category=["szlab_poly_studio", "warehouse", "beaker_stack"],
     description="苏州实验室烧杯堆栈1：3层×6列，A行500mL样品瓶 / B行烧杯",
@@ -48,6 +65,23 @@ def s3_unused_beaker_warehouse(name: str = "烧杯堆栈2"):
     },
 )
 def s11_used_beaker_warehouse(name: str = "烧杯堆栈1"):
+    from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
+
+    return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
+
+
+@resource(
+    id="szlab_poly_s11_used_sample_vial_warehouse",
+    category=["szlab_poly_studio", "warehouse", "sample_vial_stack"],
+    description="苏州实验室 S11 使用样品瓶成品逻辑仓：与烧杯堆栈1共用物理载架的样品瓶位",
+    model={
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "szlab_poly_s11_used_sample_vial_warehouse/models/shape.yml",
+        },
+    },
+)
+def s11_used_sample_vial_warehouse(name: str = "S11使用样品瓶成品仓"):
     from szlab_poly_studio.resources.carriers.beaker import SZLab_BeakerStackCarrier
 
     return SZLab_BeakerStackCarrier(name, fill_placeholders=False)
