@@ -3,9 +3,18 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+from uuid import NAMESPACE_URL, uuid5
 
 import yaml
 from unilabos.package_manager import PackageCatalog
+from unilabos.package_manager.consumers import register_package_catalog
+from unilabos.registry.catalog_consumer import (
+    workflow_template_imports_from_registry_snapshot,
+)
+from unilabos.registry.registry import Registry
+from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
+from unilabos.workflow.catalog import CatalogAuthority, TemplateCatalog
+from unilabos.workflow.store import WorkflowStore
 
 
 def _manifest_entries(manifest: dict) -> list[dict]:
@@ -90,6 +99,72 @@ def test_all_migrated_python_workflows_compile_to_canonical_v2(
         declared_ids.add(workflow.id)
 
     assert declared_ids == set(catalog_by_id)
+
+
+def test_all_package_workflows_satisfy_authoring_candidate_contract(
+    repo_root: Path,
+    package_catalog: PackageCatalog,
+    tmp_path: Path,
+) -> None:
+    registry = Registry()
+    registry.device_type_registry = {}
+    registry.resource_type_registry = {}
+    register_package_catalog(registry, package_catalog)
+
+    authority = CatalogAuthority(authority_id="szlab-test", kind="local")
+    resource_template_uuids = {
+        device.fqid: str(uuid5(NAMESPACE_URL, device.fqid))
+        for device in package_catalog.definitions.devices
+    }
+    imports = workflow_template_imports_from_registry_snapshot(
+        registry.device_type_registry,
+        authority_id=authority.authority_id,
+        resource_template_identity_resolver=resource_template_uuids.__getitem__,
+    )
+
+    store = WorkflowStore(tmp_path / "workflow.db")
+    try:
+        template_catalog = TemplateCatalog(store)
+        template_catalog.replace(authority, imports)
+        compiler = WorkflowAuthoringEngine(
+            catalog=template_catalog,
+            authority=authority,
+        )
+        timestamp = "2026-08-02T00:00:00Z"
+
+        for workflow in package_catalog.definitions.workflows:
+            details = dict(workflow.details)
+            workflow_uuid = details["workflow_uuid"]
+            result = compiler.compile(
+                workflow_uuid=workflow_uuid,
+                workflow_revision=1,
+                python_source=(repo_root / workflow.declaring_file).read_text(
+                    encoding="utf-8"
+                ),
+                source_uri=details["source_uri"],
+                applied_graph={
+                    "workflow": {
+                        "uuid": workflow_uuid,
+                        "create_time": timestamp,
+                        "update_time": timestamp,
+                        "meta_data": {},
+                        "name": workflow.displayname,
+                        "tags": [],
+                        "revision": 1,
+                    },
+                    "nodes": [],
+                    "edges": [],
+                    "node_templates": [],
+                    "handle_templates": [],
+                },
+            )
+
+            assert result.valid, (
+                workflow.id,
+                [diagnostic["code"] for diagnostic in result.diagnostics],
+            )
+    finally:
+        store.close()
 
 
 def test_legacy_json_action_sequences_are_preserved(
