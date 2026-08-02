@@ -31,6 +31,7 @@ import os
 import time
 from typing import Any, Literal
 
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import ActionInputHandle, DataSource, action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -380,23 +381,13 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
 
     @action(
         description="执行 S06 单步转液（选泵 + 管路 + 抽液或排液）",
-        handles=[
-            ActionInputHandle(
-                key="pump_index",
-                data_type="szlab_mixer_pump_index",
-                label="注射泵编号",
-                data_key="pump",
-                data_source=DataSource.HANDLE,
-                description="S06 工艺选择，1=只加1号溶液，2=只加2号溶液，3=1和2都添加",
-            )
-        ],
     )
     def transfer_liquid(
         self,
         pump: int = 1,
         volume: int = 1,
         direction: Literal["aspirate", "dispense"] = "aspirate",
-        pipeline: S06PipelineKind = "aspirate",
+        pipeline: Literal["aspirate", "dispense", "air"] = "aspirate",
     ) -> dict[str, Any]:
         return self._execute_s06_step(
             pump,
@@ -407,16 +398,6 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
 
     @action(
         description="S06 泵加液完整流程：烧杯检测 → 液位确认 → 储液瓶抽液排至烧杯 → 可选抽空气 → 机械臂骨架",
-        handles=[
-            ActionInputHandle(
-                key="pump_index",
-                data_type="szlab_mixer_pump_index",
-                label="注射泵编号",
-                data_key="pump",
-                data_source=DataSource.HANDLE,
-                description="S06 工艺选择，1=只加1号溶液，2=只加2号溶液，3=1和2都添加",
-            )
-        ],
     )
     def run_solvent_addition(
         self,

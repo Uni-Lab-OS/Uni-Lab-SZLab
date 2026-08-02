@@ -4,6 +4,7 @@ import os
 import time
 from typing import Any
 
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -57,7 +58,7 @@ S09_VOLUME_UL_MAX = 5000.0
         "entry": "models/device.xacro",
         "macro": "szlab_mixer_pipetting_station",
         # 合并装配原点=底板左下角底面；FE 默认按底面中心补半占位，需跳过。
-        "origin": "bottom_left",
+        "model_origin": "bottom_left",
     },
 )
 class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
@@ -716,7 +717,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
     @action(description="执行 S09 多步加液工作流")
     def run_liquid_workflow(
         self,
-        liquid_steps: list[dict[str, Any]] | None = None,
+        liquid_steps: list[dict[str, JSONValue]] | None = None,
         sample_id: str = "",
         release_after: bool = True,
     ) -> dict[str, Any]:
@@ -730,6 +731,12 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
         steps: list[dict[str, Any]] = []
         try:
             for index, item in enumerate(liquid_steps, start=1):
+                if not isinstance(item, dict):
+                    return {
+                        "success": False,
+                        "message": f"第 {index} 步必须是对象",
+                        "steps": steps,
+                    }
                 result = self.add_liquid(**item)
                 steps.append({"index": index, **result})
                 if not result.get("success", False):

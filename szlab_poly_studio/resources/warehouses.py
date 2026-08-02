@@ -10,8 +10,6 @@ from unilabos.resources.warehouse import WareHouse, warehouse_factory
         "format": "xacro",
         "entry": "szlab_poly_s1_loading_buffer_warehouse/models/resource.xacro",
         "macro": "szlab_poly_s1_loading_buffer_warehouse",
-        # CAD long axis is along mesh X; PLR footprint is already yawed 90° (200×442).
-        "rotation": [0.0, 0.0, 1.5707963267948966],
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_poly_s1_loading_buffer_warehouse/models/shape.yml",
@@ -84,8 +82,6 @@ def s2_tip_placeholder_warehouse(name: str = "S2枪头仓占位") -> WareHouse:
         "format": "xacro",
         "entry": "szlab_poly_powder_container_placeholder_warehouse/models/resource.xacro",
         "macro": "szlab_poly_powder_container_placeholder_warehouse",
-        # CAD long axis along mesh X; PLR footprint is 100×370 (long along Y).
-        "rotation": [0.0, 0.0, 1.5707963267948966],
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_poly_powder_container_placeholder_warehouse/models/shape.yml",

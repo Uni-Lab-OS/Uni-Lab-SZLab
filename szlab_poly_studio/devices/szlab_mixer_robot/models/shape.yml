@@ -5,10 +5,10 @@ shape:
   applies_to:
   - category: rail_robot
   envelope:
-  - 2700.0
+  - 4050.0
   - 160.0
   - 208.15
-  note: 占位就是 B17H_L50_S2700 行走轴本体（导轨顶面 z=208.15）。臂体沿导轨可移动， 这里画在左端 x=210 处仅作示意，臂体包络 420 × 420 × 850。
+  note: 导轨视觉长度相对原 mesh ×1.5（占位 4050）；顶面 z=208.15。臂体沿导轨可移动，画在左端仅作示意。
   parts:
   - type: slab
     style: plate

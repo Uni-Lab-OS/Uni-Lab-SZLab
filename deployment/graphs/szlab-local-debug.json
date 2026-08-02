@@ -2520,10 +2520,10 @@
       },
       "config": {
         "plc_device_id": "szlab_poly_plc",
-        "size_x": 2700,
+        "size_x": 4050,
         "size_y": 160,
         "size_z": 208.15,
-        "layout_note": "《理论交点测距结果》: 交点=导轨左端顶面 z=208.15; rail = B17H_L50_S2700 行走轴 (行程 2700); 臂体尺寸仍为占位包络，位置沿导轨可变",
+        "layout_note": "《理论交点测距结果》: 交点=导轨左端顶面 z=208.15; 导轨 mesh 长度 ×1.5（占位/行程 4050）；臂体尺寸仍为占位包络，位置沿导轨可变",
         "category": "rail_robot"
       },
       "data": {

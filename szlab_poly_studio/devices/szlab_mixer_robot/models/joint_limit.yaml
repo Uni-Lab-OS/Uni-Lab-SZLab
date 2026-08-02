@@ -1,0 +1,44 @@
+joint_limits:
+
+  arm_base_joint:
+    effort: 50
+    velocity: 1.0
+    lower: 0
+    upper: 2.25
+
+  # ECO65-6FB (radians, from vendor URDF)
+  eco65_joint_1:
+    effort: 60
+    velocity: 3.14
+    lower: -3.106
+    upper: 3.106
+
+  eco65_joint_2:
+    effort: 60
+    velocity: 3.14
+    lower: -3.106
+    upper: 2.356
+
+  eco65_joint_3:
+    effort: 30
+    velocity: 3.14
+    lower: -2.792
+    upper: 2.53
+
+  eco65_joint_4:
+    effort: 10
+    velocity: 3.14
+    lower: -3.106
+    upper: 3.106
+
+  eco65_joint_5:
+    effort: 10
+    velocity: 3.14
+    lower: -3.106
+    upper: 3.106
+
+  eco65_joint_6:
+    effort: 10
+    velocity: 3.14
+    lower: -6.28
+    upper: 6.28

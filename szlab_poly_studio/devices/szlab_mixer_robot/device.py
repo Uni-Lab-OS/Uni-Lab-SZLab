@@ -41,6 +41,11 @@ _UNSET = object()
     category=["robotic_arm"],
     description="SZLab Mixer 机器人任务设备，负责向 PLC 下发 S01-S11 取放料任务号",
     model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_mixer_robot",
+        # 交点=导轨左端；FE 默认按底面中心补半占位，需跳过。
+        "model_origin": "bottom_left",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",

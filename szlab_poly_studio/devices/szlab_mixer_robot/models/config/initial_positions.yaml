@@ -1,0 +1,10 @@
+# Default initial positions for ros2_control mock system
+
+initial_positions:
+  arm_base_joint: 0
+  eco65_joint_1: 0
+  eco65_joint_2: 0
+  eco65_joint_3: 0
+  eco65_joint_4: 0
+  eco65_joint_5: 0
+  eco65_joint_6: 0

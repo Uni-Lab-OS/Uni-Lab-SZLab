@@ -150,6 +150,9 @@ def powder_container(name: str = "SZLabPowderContainer") -> Container:
     category=["szlab_poly_studio", "labware", "tip_box"],
     description="S02 枪头仓中的 TIP 盒组件，孔板 4 列 × 6 行共 24 支枪头。",
     model={
+        "format": "xacro",
+        "entry": "szlab_tip_box/models/resource.xacro",
+        "macro": "szlab_tip_box",
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "szlab_tip_box/models/shape.yml",

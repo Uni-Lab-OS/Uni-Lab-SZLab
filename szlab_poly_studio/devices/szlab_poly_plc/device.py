@@ -15,6 +15,7 @@ except ModuleNotFoundError as exc:
         raise
     BaseClient = object
     OpcUaNode = None
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -832,7 +833,7 @@ class SZLabPolyPLCDevice(BaseClient):
             }
 
     @action(always_free=True, description="写入指定 PLC 变量")
-    def write_variable_action(self, variable_name: str, value: Any) -> Dict[str, Any]:
+    def write_variable_action(self, variable_name: str, value: str) -> Dict[str, Any]:
         try:
             self.write_variable(variable_name, value)
             return {"success": True, "variable_name": variable_name, "value": value}

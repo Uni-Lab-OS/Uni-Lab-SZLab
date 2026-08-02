@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="szlab_s08_cap_station" params="parent_link:='' station_name:='' device_name:='' x:=0 y:=0 z:=0 rx:=0 ry:=0 r:=0 mesh_path:=''">
+    <joint name="${station_name}${device_name}base_link_joint" type="fixed">
+      <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
+      <parent link="${parent_link}"/>
+      <child link="${station_name}${device_name}device_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}device_link"/>
+    <joint name="${station_name}${device_name}device_link_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}device_link"/>
+      <child link="${station_name}${device_name}base_link"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+    <link name="${station_name}${device_name}base_link">
+      <inertial>
+        <origin xyz="0.455061895506184 -0.0681669191939209 0.154493658359813" rpy="0 0 0"/>
+        <mass value="32.9014061187607"/>
+        <inertia ixx="0.0539204880255303" ixy="3.38548559072202E-06" ixz="4.02190484252365E-05" iyy="0.422844588763199" iyz="8.62168844962872E-06" izz="0.41472495917316"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/base_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${station_name}${device_name}move1_link">
+      <inertial>
+        <origin xyz="-1.5788407759787E-05 0.00361700636095197 0.125718381126197" rpy="0 0 0"/>
+        <mass value="1.20988873495482"/>
+        <inertia ixx="0.00564075470057669" ixy="2.75430646960877E-06" ixz="1.08882777330863E-06" iyy="0.00593332354702948" iyz="7.7331426235661E-05" izz="0.000724570472262764"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/move1_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/move1_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="${station_name}${device_name}move2_link">
+      <inertial>
+        <origin xyz="0.0350223765569004 -0.0553726417077405 -0.0106585172576261" rpy="0 0 0"/>
+        <mass value="4.791472273187"/>
+        <inertia ixx="0.0022926446469119" ixy="-1.88422993301735E-05" ixz="-2.10352666446927E-07" iyy="0.0025086233937012" iyz="1.76774165019953E-06" izz="0.00198733791042852"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/move2_link.stl"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.529411764705882 0.549019607843137 0.549019607843137 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="file://${mesh_path}/meshes/move2_link.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${station_name}${device_name}move1_joint" type="prismatic">
+      <origin xyz="0.099009 0.039988 0.259" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}base_link"/>
+      <child link="${station_name}${device_name}move1_link"/>
+      <axis xyz="1 0 0"/>
+      <limit lower="0" upper="0.6" effort="0" velocity="0"/>
+    </joint>
+    <joint name="${station_name}${device_name}move2_joint" type="prismatic">
+      <origin xyz="-0.0047586 -0.080488 0.2585" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}move1_link"/>
+      <child link="${station_name}${device_name}move2_link"/>
+      <axis xyz="0 0 -1"/>
+      <limit lower="0" upper="0.3" effort="0" velocity="0"/>
+    </joint>
+  </xacro:macro>
+</robot>

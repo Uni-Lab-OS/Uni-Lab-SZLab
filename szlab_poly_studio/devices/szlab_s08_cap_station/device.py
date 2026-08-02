@@ -240,6 +240,13 @@ def build_opcua_node_id_map_for_uplink_comm(prefix: str = DEFAULT_UPLINK_COMM_PR
     display_name="S08 开盖工位",
     category=["workstation", "szlab"],
     description="苏州实验室 S08 开盖/关盖工位（通过 szlab_poly_plc 统一通信）",
+    model={
+        "format": "xacro",
+        "entry": "models/device.xacro",
+        "macro": "szlab_s08_cap_station",
+        # 交点=占位左下角；FE 默认按底面中心补半占位，需跳过。
+        "model_origin": "bottom_left",
+    },
 )
 class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
     def __init__(

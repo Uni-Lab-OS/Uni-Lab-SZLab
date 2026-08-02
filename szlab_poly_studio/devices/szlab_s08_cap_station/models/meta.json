@@ -1,0 +1,23 @@
+{
+  "device_id": "szlab_s08_cap_station",
+  "source_kind": "urdf",
+  "source_path": "LeapLab/.../urdf_stl_to_xacro/output/dxy260502_00_00",
+  "generated_at": "2026-08-02T23:17:00",
+  "stats": {
+    "link_total": 3,
+    "joint_total": 2,
+    "movable_joint_total": 2,
+    "mesh_total": 3
+  },
+  "root_link": "base_link",
+  "note": "Copied from dxy260502_00_00 and renamed to szlab_s08_cap_station; mesh_path points at models/",
+  "sanitized_link_names": {
+    "base_link": "base_link",
+    "move1_link": "move1_link",
+    "move2_link": "move2_link"
+  },
+  "sanitized_joint_names": {
+    "move1_joint": "move1_joint",
+    "move2_joint": "move2_joint"
+  }
+}

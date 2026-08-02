@@ -1,0 +1,18 @@
+{
+  "device_id": "szlab_tip_box",
+  "source_kind": "urdf",
+  "source_path": "LeapLab/.../urdf_stl_to_xacro/output/dxy260502_02_02_00_tip",
+  "generated_at": "2026-08-02T23:17:00",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link",
+  "note": "Copied from dxy260502_02_02_00_tip and renamed to szlab_tip_box; mesh_path points at models/",
+  "sanitized_link_names": {
+    "base_link": "base_link"
+  },
+  "sanitized_joint_names": {}
+}
