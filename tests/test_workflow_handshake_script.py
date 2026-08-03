@@ -43,8 +43,8 @@ class MemoryAdapter:
 def test_catalog_matches_every_python_workflow_action() -> None:
     specs = handshake.build_workflow_specs()
 
-    assert len(specs) == 14
-    assert len(handshake.SUPPORTED_ACTIONS) == 23
+    assert len(specs) == 15
+    assert len(handshake.SUPPORTED_ACTIONS) == 28
     assert {item.workflow_id for item in specs} == {
         "szlab_magnetic_stirring_workflow",
         "szlab_photoshotting_workflow",
@@ -60,6 +60,7 @@ def test_catalog_matches_every_python_workflow_action() -> None:
         "szlab_mixer_pump_production",
         "szlab_material_s06_workflow",
         "szlab_robot_liquid_stirring_demo_workflow",
+        "s07_material_dosing",
     }
 
     workflows_dir = Path(__file__).parents[1] / "szlab_poly_studio" / "workflows"
@@ -95,6 +96,34 @@ def test_catalog_matches_every_python_workflow_action() -> None:
 
     catalog_actions = {action.split("(", maxsplit=1)[0] for spec in specs for action in spec.actions}
     assert set(handshake.SUPPORTED_ACTIONS) == actual_actions == catalog_actions
+
+
+def test_s07_material_dosing_catalogs_standard_transfers_and_material_join() -> None:
+    specs = handshake.build_workflow_specs()
+    material = next(item for item in specs if item.workflow_id == "s07_material_dosing")
+
+    assert material.actions == (
+        "szlab_mixer_robot.pick",
+        "szlab_s07_solid_addition.prepare_powder_cartridge_site",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
+        "szlab_mixer_robot.pick",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
+        "szlab_s07_solid_addition.dose_powder_with_materials",
+    )
+
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        workflow="s07_material_dosing",
+    )
+    simulator.initialize()
+
+    assert adapter.read(handshake.S03_BEAKER_SENSOR) is True
+    assert adapter.read(handshake.s071_sensor(1)) is True
+    assert adapter.read(handshake.s072_sensor(1)) is False
+    assert adapter.read(handshake.ROBOT_TOOL_PAYLOAD_SENSOR) is False
 
 
 def test_robot_liquid_stirring_demo_has_five_actions_and_empty_stations() -> None:

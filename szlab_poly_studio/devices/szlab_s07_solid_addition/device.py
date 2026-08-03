@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, TypedDict
 
-from unilabos.registry.annotations import JSONValue
+from pydantic import Field
+from unilabos.registry.annotations import AllowedResourceTemplates, JSONValue
 from unilabos.registry.decorators import action, device, not_action
+from unilabos.registry.placeholder_type import ResourceSlot
 from unilabos.utils.log import logger
 
 from szlab_poly_studio.common.action_logging import (
@@ -38,8 +40,25 @@ from szlab_poly_studio.devices.szlab_s07_solid_addition.sensors import (
     s07_powder_param_var,
     s07_qr_code_var,
 )
+from szlab_poly_studio.resources.materials import beaker_500ml, powder_container
 
 DEFAULT_POWDER_PARAMS_PATH = Path(__file__).resolve().parent / "s07_powder_params.json"
+
+
+class PowderSitePreparationStatus(TypedDict):
+    """粉桶 ResourceSlot 由同名输入端口透传。"""
+
+    success: bool
+    message: str
+    powder_site: str
+
+
+class PowderDoseWithMaterialsStatus(TypedDict):
+    """两项物料均由同名 ResourceSlot 输入端口透传。"""
+
+    success: bool
+    message: str
+    commanded_mass_g: float
 
 
 @device(
@@ -242,6 +261,18 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
             merged.update(override)
         return merged
 
+    @not_action
+    def _powder_position_from_site(self, powder_site: str | int) -> int:
+        value = str(powder_site).strip().upper()
+        if value.startswith("P"):
+            value = value[1:]
+        if not value.isdigit():
+            raise ValueError("powder_site 必须是 P01..P10 或 1..10")
+        position = int(value)
+        if position not in POSITION_RANGE:
+            raise ValueError("powder_site 必须是 P01..P10 或 1..10")
+        return position
+
     @action(description="S07 粉罐扫码盘点")
     def scan_powder_cartridges(self, timeout: float = 300.0) -> dict[str, Any]:
         self._reset_unilab_written_params(PROCESS_SCAN_CARTRIDGES)
@@ -259,6 +290,28 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
         result = self._run_s07_process(PROCESS_ROTATE_TO_FEED, timeout)
         result["position"] = position
         return result
+
+    @action(description="将指定 S07 转盘 Site 转到已验证的粉桶上下料位")
+    def prepare_powder_cartridge_site(
+        self,
+        powder_cartridge: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(powder_container),
+            Field(description="机械臂已从固体粉桶堆栈取出的注粉瓶"),
+        ],
+        powder_site: str,
+        timeout: float = 300.0,
+    ) -> PowderSitePreparationStatus:
+        try:
+            position = self._powder_position_from_site(powder_site)
+        except ValueError as exc:
+            return {"success": False, "message": str(exc), "powder_site": str(powder_site)}
+        result = self.rotate_powder_cartridge_to_feed(position=position, timeout=timeout)
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "powder_site": f"P{position:02d}",
+        }
 
     @action(description="S07 注粉")
     def dose_powder(
@@ -287,6 +340,57 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
         result["target_weight"] = target_weight
         result["recipe_name"] = recipe_name
         return result
+
+    @action(description="使用已装入 S07 的粉桶向交接位烧杯投粉（物料感知）")
+    def dose_powder_with_materials(
+        self,
+        powder_cartridge: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(powder_container),
+            Field(description="已从粉桶堆栈搬入 S07 转盘的注粉瓶"),
+        ],
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+            Field(description="已由机械臂搬到 S072 的 500 mL 烧杯"),
+        ],
+        powder_site: str,
+        target_mass_g: float,
+        recipe_name: str = "default",
+        params_json: str | None = None,
+        timeout: float = 300.0,
+    ) -> PowderDoseWithMaterialsStatus:
+        if not 0 < float(target_mass_g) <= 100:
+            return {
+                "success": False,
+                "message": "target_mass_g 必须在 (0, 100] g 范围内",
+                "commanded_mass_g": float(target_mass_g),
+            }
+        try:
+            position = self._powder_position_from_site(powder_site)
+        except ValueError as exc:
+            return {
+                "success": False,
+                "message": str(exc),
+                "commanded_mass_g": float(target_mass_g),
+            }
+        result = self.dose_powder(
+            coarse_position=position,
+            fine_position=position,
+            target_weight=float(target_mass_g),
+            timeout=timeout,
+            params_json=params_json,
+            recipe_name=recipe_name,
+        )
+        success = bool(result.get("success", False))
+        message = str(result.get("message", ""))
+        if success and not message:
+            message = "S07 固体称量流程完成；PLC 未提供实测质量"
+        return {
+            "success": success,
+            "message": message,
+            "commanded_mass_g": float(target_mass_g),
+        }
 
 
 install_action_logging(SZLabS07SolidAdditionDevice)

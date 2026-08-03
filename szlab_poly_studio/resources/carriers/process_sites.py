@@ -13,7 +13,6 @@ from collections.abc import Iterable
 from pylabrobot.resources import Coordinate, ResourceHolder
 from unilabos.resources.itemized_carrier import BottleCarrier
 
-
 SiteGeometry = tuple[str, float, float, float, float, float, float]
 
 

@@ -111,11 +111,7 @@ def test_package_shape_categories_are_self_describing_without_an_os_bridge(
                 for item in shape.get("applies_to", [])
                 if isinstance(item, dict) and item.get("category")
             }
-            tokens = {
-                normalize(str(item))
-                for item in shape.get("category_tokens", [])
-                if item
-            }
+            tokens = {normalize(str(item)) for item in shape.get("category_tokens", []) if item}
             if normalized in categories:
                 score = 1 << 40
             else:

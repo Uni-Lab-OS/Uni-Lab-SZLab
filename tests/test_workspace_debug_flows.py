@@ -15,6 +15,14 @@ from unilabos.registry.catalog_consumer import (
 )
 
 
+def _deployment_graphs(repo_root: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in (repo_root / "deployment" / "graphs").glob("szlab-*.json")
+        if " copy" not in path.name
+    )
+
+
 def test_single_device_debug_keeps_catalog_discovery_separate_from_graph_selection(
     repo_root: Path,
     package_catalog: PackageCatalog,
@@ -44,7 +52,7 @@ def test_full_workspace_debug_discovers_graph_workflows_and_assets(
     graph = json.loads((repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(encoding="utf-8"))
     resolver = PackageAssetResolver(WorkspaceSource(repo_root), package_catalog)
 
-    assert len(graph["nodes"]) == 126
+    assert len(graph["nodes"]) == 129
     assert len(package_catalog.definitions.workflows) == 13
     assert len(package_catalog.assets) == 14
     for asset in package_catalog.assets:
@@ -57,16 +65,21 @@ def test_all_declared_workflows_compile_against_fe_template_catalog(
     repo_root: Path,
     package_catalog: PackageCatalog,
 ) -> None:
-    from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
-    from unilabos.workflow.catalog import CatalogAuthority, TemplateCatalog
-    from unilabos.workflow.store import WorkflowStore
     from unilabos.registry.registry import Registry
+    from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
+    from unilabos.workflow.catalog import (
+        CatalogAuthority,
+        LocalResourceTemplateIdentityIndex,
+        TemplateCatalog,
+    )
+    from unilabos.workflow.store import WorkflowStore
 
     registry = Registry()
     registry.device_type_registry = {}
     registry.resource_type_registry = {}
     register_package_catalog(registry, package_catalog)
     resource_template_uuids = {}
+    material_template_uuids = {}
     for definition in (
         *package_catalog.definitions.devices,
         *package_catalog.definitions.resources,
@@ -76,6 +89,10 @@ def test_all_declared_workflows_compile_against_fe_template_catalog(
         resource_template_uuids[
             f"{definition.module}:{definition.symbol}"
         ] = identity
+        if definition.kind == "resource":
+            material_template_uuids[
+                f"{definition.module}:{definition.symbol}"
+            ] = identity
     imports = workflow_template_imports_from_registry_snapshot(
         copy.deepcopy(registry.device_type_registry),
         authority_id="szlab-workspace-test",
@@ -87,8 +104,20 @@ def test_all_declared_workflows_compile_against_fe_template_catalog(
         store = WorkflowStore(Path(temporary) / "workflow.db")
         try:
             templates = TemplateCatalog(store)
-            templates.replace(authority, imports)
-            engine = WorkflowAuthoringEngine(catalog=templates, authority=authority)
+            templates.replace(
+                authority,
+                imports,
+                resource_template_identities=material_template_uuids,
+            )
+            engine = WorkflowAuthoringEngine(
+                catalog=templates,
+                authority=authority,
+                resource_template_identity_index=LocalResourceTemplateIdentityIndex(
+                    store,
+                    authority,
+                    tuple(material_template_uuids),
+                ),
+            )
             for workflow in package_catalog.definitions.workflows:
                 workflow_uuid = str(workflow.details["workflow_uuid"])
                 applied_graph = {
@@ -132,7 +161,7 @@ def test_graph_selected_material_factories_receive_graph_config(
     register_package_catalog(lab_registry, package_catalog)
 
     selected: dict[str, dict] = {}
-    for graph_path in sorted((repo_root / "deployment" / "graphs").glob("szlab-*.json")):
+    for graph_path in _deployment_graphs(repo_root):
         payload = json.loads(graph_path.read_text(encoding="utf-8"))
         for node in payload["nodes"]:
             if node["type"] != "device":
@@ -142,6 +171,10 @@ def test_graph_selected_material_factories_receive_graph_config(
 
     catalog_resources = {definition.fqid for definition in package_catalog.definitions.resources}
     assert set(initialized) < catalog_resources
-    assert catalog_resources - set(initialized) == {"community.szlab_poly_studio.szlab_pipette_tip"}
+    assert catalog_resources - set(initialized) == {
+        "community.szlab_poly_studio.szlab_pipette_tip",
+        "community.szlab_poly_studio.szlab_poly_s3_unused_sample_vial_warehouse",
+        "community.szlab_poly_studio.szlab_poly_s11_used_sample_vial_warehouse",
+    }
     deck = initialized["community.szlab_poly_studio.szlab_poly_studio_deck"]
     assert len(deck[0]) == 1

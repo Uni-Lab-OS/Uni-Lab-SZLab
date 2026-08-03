@@ -169,7 +169,7 @@ def s06_process_warehouse(name: str = "S06加液工位仓"):
 @resource(
     id="szlab_s07_process_warehouse",
     category=["szlab_poly_studio", "warehouse", "device_mount", "s07_process_warehouse"],
-    description="S07 固体加料转盘的 10 个粉罐位；本轮仅用于 Inventory/展示，不开放机械臂执行。",
+    description="S07 固体加料转盘的 10 个粉罐位及 S072 交接位；Pxx 先转到上下料位后由机械臂执行。",
 )
 def s07_process_warehouse(name: str = "S07固体加料转盘仓"):
     from szlab_poly_studio.resources.carriers.process_sites import SZLab_S07ProcessCarrier

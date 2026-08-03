@@ -16,12 +16,23 @@ from szlab_poly_studio.devices.szlab_poly_plc.device import (
     S11_USED_BEAKER_SENSORS,
     S11_USED_SAMPLE_VIAL_SENSORS,
 )
-from szlab_poly_studio.devices.szlab_mixer_robot.robot_S04 import S04_SENSOR_BY_POSITION
-from szlab_poly_studio.devices.szlab_mixer_robot.robot_S07 import S072_SENSOR_BY_POSITION
-from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
-    S05_MATERIAL_SENSOR,
-    S06_MATERIAL_SENSOR,
-)
+
+# Deployment-owned copies intentionally live outside the robot package so the
+# Site resolver remains importable before the robot device/gateway is built.
+S04_SENSOR_BY_POSITION = {
+    1: "传感器状态_上位机[2].NO[10]",
+    2: "传感器状态_上位机[2].NO[11]",
+    3: "传感器状态_上位机[2].NO[12]",
+    4: "传感器状态_上位机[2].NO[13]",
+    5: "传感器状态_上位机[2].NO[14]",
+    6: "传感器状态_上位机[2].NO[15]",
+}
+S05_MATERIAL_SENSOR = "传感器状态_上位机[3].NO[0]"
+S06_MATERIAL_SENSOR = "传感器状态_上位机[3].NO[1]"
+S072_SENSOR_BY_POSITION = {
+    1: "传感器状态_上位机[3].NO[14]",
+    2: "传感器状态_上位机[3].NO[15]",
+}
 
 S1_INVENTORY_ONLY_SITE_LABELS = (
     "L1C1",
@@ -212,14 +223,15 @@ def resolve_s07_process_site(position: int | str) -> SiteControlBinding:
     number = _single_axis_position(value, count=10, station="S07")
     return SiteControlBinding(
         warehouse_instance_id="s07_process_warehouse",
-        station="S07",
+        # Pxx is the Inventory destination.  The selected carousel position is
+        # first presented by S07, then the existing robot program approaches it
+        # through the S072 position-1 hand-off point.
+        station="S072",
         site_label=f"P{number:02d}",
         sensor_key=f"S07位置{number}二维码",
-        controller_position=number,
-        presence_variable="",
-        product_type=None,
-        robot_action_ready=False,
-        blocked_reason="S07 转盘位必须先由设备侧转到已验证上下料位；本轮未实现转位协调，标准 adapter 按 fail-closed 拒绝",
+        controller_position=1,
+        presence_variable=S072_SENSOR_BY_POSITION[1],
+        product_type=1,
     )
 
 

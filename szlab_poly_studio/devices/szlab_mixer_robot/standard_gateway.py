@@ -737,6 +737,8 @@ def _payload_profile_for_site(binding: SiteControlBinding) -> str:
         return "tip_box@v1"
     if binding.station in {"S03", "S11"}:
         return "beaker_500ml@v1" if binding.product_type == 1 else "sample_vial_500ml@v1"
+    if binding.station == "S072" and binding.site_label.startswith("P"):
+        return "powder_container@v1"
     if binding.station in {"S04", "S05", "S06", "S072"}:
         return "beaker_500ml@v1"
     if binding.station == "S071":

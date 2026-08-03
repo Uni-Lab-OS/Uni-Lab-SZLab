@@ -114,3 +114,9 @@ additional_workflows:
     python_source: ../szlab_poly_studio/workflows/s06_material.py
     devices: [szlab_mixer_robot, szlab_mixer_pump]
     equivalence: resource_slot_reference_workflow
+wayfinder_targets:
+  - workflow_id: s07_material_dosing
+    python_source: ../szlab_poly_studio/workflows/s07_material_dosing.py
+    devices: [szlab_mixer_robot, szlab_s07_solid_addition, host_node]
+    equivalence: material_source_workflow_pending_host_action_catalog
+    blocker: host_node.transfer_resource is not yet published as a typed authoring Action

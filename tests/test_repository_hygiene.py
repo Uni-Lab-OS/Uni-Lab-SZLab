@@ -8,6 +8,14 @@ from jsonschema import Draft202012Validator
 from unilabos.package_manager import PackageCatalog
 
 
+def _deployment_graphs(repo_root: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in (repo_root / "deployment" / "graphs").glob("szlab-*.json")
+        if " copy" not in path.name
+    )
+
+
 def test_szlab_graphs_use_only_catalog_definitions(
     repo_root: Path,
     package_catalog: PackageCatalog,
@@ -20,7 +28,7 @@ def test_szlab_graphs_use_only_catalog_definitions(
         )
         for definition in collection
     }
-    for graph_path in sorted((repo_root / "deployment" / "graphs").glob("szlab-*.json")):
+    for graph_path in _deployment_graphs(repo_root):
         payload = json.loads(graph_path.read_text(encoding="utf-8"))
         ids = [node["id"] for node in payload["nodes"]]
         assert len(ids) == len(set(ids)), graph_path.name
@@ -68,7 +76,7 @@ def test_every_graph_config_matches_its_catalog_init_schema(
     monkeypatch.setattr(lab_registry, "resource_type_registry", {})
     register_package_catalog(lab_registry, package_catalog)
 
-    for graph_path in sorted((repo_root / "deployment" / "graphs").glob("szlab-*.json")):
+    for graph_path in _deployment_graphs(repo_root):
         payload = json.loads(graph_path.read_text(encoding="utf-8"))
         for node in payload["nodes"]:
             registry = (
