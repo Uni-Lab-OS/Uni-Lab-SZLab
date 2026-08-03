@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from szlab_poly_studio.common.site_control_bindings import (
+    resolve_s07_process_site,
+    resolve_s071_site,
+)
 from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_HOME_VARIABLE,
     ROBOT_WRITE_ALLOWED_VARIABLE,
@@ -10,8 +14,8 @@ from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
     SZLabStandardRobotGateway,
 )
 
-SOURCE_SENSOR = "source-present"
-TARGET_SENSOR = "target-present"
+SOURCE_SENSOR = resolve_s071_site("L1C1").presence_variable
+TARGET_SENSOR = resolve_s07_process_site("P01").presence_variable
 
 
 class FakeLegacyRobot:
@@ -28,20 +32,27 @@ class FakeLegacyRobot:
     def _read_variable(self, name: str, use_cache: bool = False):
         return self.variables[name]
 
-    def _run_pick_from_s071(self, position: str = "1-1"):
+    def _ensure_sensor_gate(self, sensor: str, expected: bool, message: str) -> None:
+        if bool(self.variables[sensor]) is not expected:
+            raise RuntimeError(message)
+
+    def _submit_robot_task(self, **kwargs):
         self.dispatch_count += 1
-        self.variables[SOURCE_SENSOR] = False
-        self.variables[TOOL_PAYLOAD_SENSOR_VARIABLE] = True
+        kwargs["precheck"]()
+        is_pick = kwargs["task"] == "pick"
+        sensor_key = "source_sensor_variable" if is_pick else "target_sensor_variable"
+        sensor = kwargs[sensor_key]
+        self.variables[sensor] = not is_pick
+        self.variables[TOOL_PAYLOAD_SENSOR_VARIABLE] = is_pick
         return {
             "success": True,
-            "message": "legacy pick complete",
+            "message": f"legacy {kwargs['task']} complete",
             "status": "completed",
-            "position": position,
-            "source_sensor_variable": SOURCE_SENSOR,
+            sensor_key: sensor,
             "completion_value": 1,
         }
 
-    def _run_place_to_s072(self, product_type: int = 1, position: int = 1):
+    def _run_s072_place(self, product_type: int = 1, position: int = 1):
         self.dispatch_count += 1
         self.variables[TARGET_SENSOR] = True
         self.variables[TOOL_PAYLOAD_SENSOR_VARIABLE] = False
@@ -79,13 +90,12 @@ def request(
     return StandardRobotRequest(
         kind="pick",
         command_id=command_id,
-        skill_id="pick_from_s071",
+        site="powder_container_warehouse/L1C1",
         program_version="szlab-mixer-plc@0730",
         point_set_version="szlab-mixer-points@0730",
         payload_profile="powder_container@v1",
         source_boot_id="scheduler-boot-001",
         monotonic_sequence=sequence,
-        parameters={"position": "1-1"},
         material_context={
             "resource": {"uuid": material_id},
             "source_device": "powder-stack",
@@ -132,8 +142,9 @@ def test_standard_actions_fail_closed_until_permit_semantics_are_accepted(tmp_pa
 def test_unknown_witness_is_not_automatically_redispatched(tmp_path) -> None:
     robot = FakeLegacyRobot()
 
-    def pick_without_tool_witness(position: str = "1-1"):
+    def pick_without_tool_witness(**kwargs):
         robot.dispatch_count += 1
+        kwargs["precheck"]()
         robot.variables[SOURCE_SENSOR] = False
         return {
             "success": True,
@@ -142,7 +153,7 @@ def test_unknown_witness_is_not_automatically_redispatched(tmp_path) -> None:
             "completion_value": 1,
         }
 
-    robot._run_pick_from_s071 = pick_without_tool_witness  # type: ignore[method-assign]
+    robot._submit_robot_task = pick_without_tool_witness  # type: ignore[method-assign]
     target = gateway(tmp_path, robot)
 
     first = target.execute(request())
@@ -159,18 +170,18 @@ def test_unknown_witness_is_not_automatically_redispatched(tmp_path) -> None:
 def test_reconcile_only_reobserves_unknown_witness(tmp_path) -> None:
     robot = FakeLegacyRobot()
 
-    def pick_with_late_tool_witness(position: str = "1-1"):
+    def pick_with_late_tool_witness(**kwargs):
         robot.dispatch_count += 1
+        kwargs["precheck"]()
         robot.variables[SOURCE_SENSOR] = False
         return {
             "success": True,
             "status": "completed",
-            "position": position,
             "source_sensor_variable": SOURCE_SENSOR,
             "completion_value": 1,
         }
 
-    robot._run_pick_from_s071 = pick_with_late_tool_witness  # type: ignore[method-assign]
+    robot._submit_robot_task = pick_with_late_tool_witness  # type: ignore[method-assign]
     target = gateway(tmp_path, robot)
     assert target.execute(request())["state"] == "UNKNOWN"
 
@@ -204,13 +215,12 @@ def test_pick_then_place_use_distinct_ids_and_increasing_sequence(tmp_path) -> N
         StandardRobotRequest(
             kind="place",
             command_id="place-001",
-            skill_id="place_to_s072",
+            site="s07_process_warehouse/P01",
             program_version="szlab-mixer-plc@0730",
             point_set_version="szlab-mixer-points@0730",
             payload_profile="powder_container@v1",
             source_boot_id="scheduler-boot-001",
             monotonic_sequence=2,
-            parameters={"product_type": 1, "position": 1},
             material_context={
                 "resource": {"uuid": "powder-001"},
                 "target_device": "s07",

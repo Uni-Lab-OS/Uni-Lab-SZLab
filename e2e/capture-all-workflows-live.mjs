@@ -61,9 +61,9 @@ const workflowRoot = resolve(
 const allWorkflowNames = (await readdir(workflowRoot))
   .filter((name) => name.endsWith('.py') && name !== '__init__.py')
   .sort()
-if (allWorkflowNames.length !== 12) {
+if (allWorkflowNames.length !== 13) {
   throw new Error(
-    `Expected 12 SZLab production workflows, found ${allWorkflowNames.length}`
+    `Expected 13 SZLab production workflows, found ${allWorkflowNames.length}`
   )
 }
 const workflowFilter = (process.env.UNILAB_WORKFLOW_FILTER ?? '')

@@ -56,6 +56,7 @@
     },
     {
       "id": "s3_unused_beaker",
+      "uuid": "29f43434-ff8b-5246-b924-a20cddd452fc",
       "name": "S3 未使用烧杯仓",
       "children": [],
       "parent": "szlab_poly_deck",
@@ -71,6 +72,7 @@
     },
     {
       "id": "powder_container_warehouse",
+      "uuid": "fa7b0692-2e78-5d5e-b789-9b0dfffb5dc7",
       "name": "固体粉桶仓占位",
       "children": [],
       "parent": "szlab_poly_deck",
@@ -334,6 +336,7 @@
     },
     {
       "id": "s07_process_warehouse",
+      "uuid": "b6c71c10-4b75-55c9-8789-2fdcda682361",
       "name": "S07固体加料转盘仓",
       "children": [],
       "parent": "szlab_s07_solid_addition",

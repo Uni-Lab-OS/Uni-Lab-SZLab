@@ -9,9 +9,9 @@ import pytest
 from szlab_poly_studio.common.site_control_bindings import (
     S1_INVENTORY_ONLY_SITE_LABELS,
     iter_robot_site_bindings,
+    resolve_s071_site,
     resolve_s2_site,
     resolve_s3_site,
-    resolve_s071_site,
     resolve_s10_site,
     resolve_s11_site,
 )

@@ -61,7 +61,11 @@ export PYTHONPATH="${UNILAB_OS_ROOT}:$(pwd)${PYTHONPATH:+:${PYTHONPATH}}"
   "config": {
     "url": "opc.tcp://127.0.0.1:50100/",
     "csv_path": "szlab_plc_0730.csv",
-    "auto_connect": false
+    "auto_connect": false,
+    "opcua_node_id_prefix": "ns=4;s=上位机通讯|",
+    "connection_check_interval": 5.0,
+    "reconnect_attempts": 3,
+    "reconnect_delay": 1.0
   }
 }
 ```
@@ -82,6 +86,10 @@ export PYTHONPATH="${UNILAB_OS_ROOT}:$(pwd)${PYTHONPATH:+:${PYTHONPATH}}"
 ```
 
 首次接真机前先保持 `auto_connect: false`，核验 URL、NodeId、账号、联锁、急停和恢复语义后再启用。
+`auto_connect: true` 时，主 PLC 驱动会定时读取 OPC UA `ServerStatus.State`；探测失败
+或业务 I/O 遇到超时、socket 断开、无效 Session/SecureChannel 时，它会在同一 I/O 锁内
+关闭旧会话、有限重连并重试原读写。`connection_check_interval: 0` 只关闭后台探测，
+不关闭业务 I/O 的断线恢复。
 
 ## 4. 全工作区离线调试
 
@@ -115,6 +123,25 @@ UNILAB_TEST_MODE=1 ./scripts/start-runtime-os.sh
 
 默认 OS API 地址为 `http://127.0.0.1:18003`。Workflow Authoring 与 Runtime 使用该进程内的
 同一 TemplateCatalog 和 WorkflowStore，不需要额外的调度中转进程。
+
+### 机器人加液与磁搅五节点 demo
+
+`szlab_poly_studio/workflows/robot_liquid_stirring_demo.py` 依次执行 S06 放料、加液、
+S06 取料、S04 放料和磁搅。启动对应握手场景：
+
+```bash
+"${UNILAB_PYTHON}" -u scripts/szlab_workflow_handshake.py serve \
+  --workflow szlab_robot_liquid_stirring_demo_workflow \
+  --url 'opc.tcp://opcua.ideawit.com:4855/xuse_sim' \
+  --node-prefix 'ns=4;s=上位机通讯|' \
+  --pump 1 \
+  --process-delay 5.0 \
+  --poll-interval 0.1 \
+  --max-actions 5
+```
+
+该 demo 是现场握手联调源码；只有在 `package.yaml` 登记稳定 UUID 并升级到当前
+decorator 合同后，才能当作持久 Package Workflow 发布。
 
 ## 6. 后台启动
 

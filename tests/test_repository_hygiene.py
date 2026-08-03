@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 from unilabos.package_manager import PackageCatalog
+
+
+def _deployment_graphs(repo_root: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in (repo_root / "deployment" / "graphs").glob("szlab-*.json")
+        if " copy" not in path.name
+    )
 
 
 def test_szlab_graphs_use_only_catalog_definitions(
@@ -19,7 +28,7 @@ def test_szlab_graphs_use_only_catalog_definitions(
         )
         for definition in collection
     }
-    for graph_path in sorted((repo_root / "deployment" / "graphs").glob("szlab-*.json")):
+    for graph_path in _deployment_graphs(repo_root):
         payload = json.loads(graph_path.read_text(encoding="utf-8"))
         ids = [node["id"] for node in payload["nodes"]]
         assert len(ids) == len(set(ids)), graph_path.name
@@ -67,7 +76,7 @@ def test_every_graph_config_matches_its_catalog_init_schema(
     monkeypatch.setattr(lab_registry, "resource_type_registry", {})
     register_package_catalog(lab_registry, package_catalog)
 
-    for graph_path in sorted((repo_root / "deployment" / "graphs").glob("szlab-*.json")):
+    for graph_path in _deployment_graphs(repo_root):
         payload = json.loads(graph_path.read_text(encoding="utf-8"))
         for node in payload["nodes"]:
             registry = (
@@ -93,6 +102,46 @@ def test_repository_has_no_runtime_profile_protocol(repo_root: Path) -> None:
     assert not (repo_root / "szlab_poly_studio" / "profiles").exists()
     assert not (repo_root / "schemas" / "profile-v1.schema.json").exists()
     assert not (repo_root / "schemas" / "device-template-v2.schema.json").exists()
+
+
+def test_stack_status_topic_does_not_call_logged_action(repo_root: Path) -> None:
+    device_path = (
+        repo_root
+        / "szlab_poly_studio"
+        / "devices"
+        / "szlab_poly_plc"
+        / "device.py"
+    )
+    module = ast.parse(device_path.read_text(encoding="utf-8"))
+    device_class = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.ClassDef) and node.name == "SZLabPolyPLCDevice"
+    )
+    stack_status = next(
+        node
+        for node in device_class.body
+        if isinstance(node, ast.FunctionDef) and node.name == "stack_status"
+    )
+    topic_config = next(
+        decorator
+        for decorator in stack_status.decorator_list
+        if isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Name)
+        and decorator.func.id == "topic_config"
+    )
+    period = next(
+        keyword.value
+        for keyword in topic_config.keywords
+        if keyword.arg == "period"
+    )
+    return_statement = stack_status.body[0]
+
+    assert ast.literal_eval(period) == 10.0
+    assert isinstance(return_statement, ast.Return)
+    assert isinstance(return_statement.value, ast.Call)
+    assert isinstance(return_statement.value.func, ast.Attribute)
+    assert return_statement.value.func.attr == "_build_stack_status"
 
 
 def test_szlab_source_does_not_cross_import_ai4c(repo_root: Path) -> None:

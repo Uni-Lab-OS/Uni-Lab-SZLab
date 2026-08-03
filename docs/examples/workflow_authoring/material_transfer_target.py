@@ -17,7 +17,6 @@ from unilabos.workflow.authoring import device, host_node, workflow_definition
 
 from szlab_poly_studio.devices.szlab_mixer_robot.device import SzlabMixerRobotDevice
 
-
 robot: SzlabMixerRobotDevice = device("szlab_mixer_robot")
 
 

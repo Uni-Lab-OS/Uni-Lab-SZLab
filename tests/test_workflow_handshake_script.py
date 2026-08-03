@@ -43,8 +43,8 @@ class MemoryAdapter:
 def test_catalog_matches_every_python_workflow_action() -> None:
     specs = handshake.build_workflow_specs()
 
-    assert len(specs) == 13
-    assert len(handshake.SUPPORTED_ACTIONS) == 23
+    assert len(specs) == 15
+    assert len(handshake.SUPPORTED_ACTIONS) == 28
     assert {item.workflow_id for item in specs} == {
         "szlab_magnetic_stirring_workflow",
         "szlab_photoshotting_workflow",
@@ -59,6 +59,8 @@ def test_catalog_matches_every_python_workflow_action() -> None:
         "szlab_mixer_workflow",
         "szlab_mixer_pump_production",
         "szlab_material_s06_workflow",
+        "szlab_robot_liquid_stirring_demo_workflow",
+        "s07_material_dosing",
     }
 
     workflows_dir = Path(__file__).parents[1] / "szlab_poly_studio" / "workflows"
@@ -94,6 +96,86 @@ def test_catalog_matches_every_python_workflow_action() -> None:
 
     catalog_actions = {action.split("(", maxsplit=1)[0] for spec in specs for action in spec.actions}
     assert set(handshake.SUPPORTED_ACTIONS) == actual_actions == catalog_actions
+
+
+def test_s07_material_dosing_catalogs_standard_transfers_and_material_join() -> None:
+    specs = handshake.build_workflow_specs()
+    material = next(item for item in specs if item.workflow_id == "s07_material_dosing")
+
+    assert material.actions == (
+        "szlab_mixer_robot.pick",
+        "szlab_s07_solid_addition.prepare_powder_cartridge_site",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
+        "szlab_mixer_robot.pick",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
+        "szlab_s07_solid_addition.dose_powder_with_materials",
+    )
+
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        workflow="s07_material_dosing",
+    )
+    simulator.initialize()
+
+    assert adapter.read(handshake.S03_BEAKER_SENSOR) is True
+    assert adapter.read(handshake.s071_sensor(1)) is True
+    assert adapter.read(handshake.s072_sensor(1)) is False
+    assert adapter.read(handshake.ROBOT_TOOL_PAYLOAD_SENSOR) is False
+
+
+def test_robot_liquid_stirring_demo_has_five_actions_and_empty_stations() -> None:
+    specs = handshake.build_workflow_specs()
+    demo = next(item for item in specs if item.workflow_id == "szlab_robot_liquid_stirring_demo_workflow")
+
+    assert demo.actions == (
+        "szlab_mixer_robot.submit_place_to_s06",
+        "szlab_mixer_pump.run_solvent_addition",
+        "szlab_mixer_robot.submit_pick_from_s06",
+        "szlab_mixer_robot.submit_place_to_s04",
+        "szlab_mixer_stirrer.run_stirring",
+    )
+
+    source_path = Path(__file__).parents[1] / "szlab_poly_studio" / "workflows" / "robot_liquid_stirring_demo.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    devices = {
+        node.targets[0].id: str(node.value.args[0].value)
+        for node in tree.body
+        if isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "device"
+    }
+    workflow = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "szlab_robot_liquid_stirring_demo_workflow"
+    )
+    source_actions = tuple(
+        f"{devices[statement.value.func.value.id]}.{statement.value.func.attr}"
+        for statement in workflow.body
+        if isinstance(statement, ast.Expr)
+        and isinstance(statement.value, ast.Call)
+        and isinstance(statement.value.func, ast.Attribute)
+        and isinstance(statement.value.func.value, ast.Name)
+        and statement.value.func.value.id in devices
+    )
+
+    assert source_actions == demo.actions
+
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        workflow="szlab_robot_liquid_stirring_demo_workflow",
+    )
+    simulator.initialize()
+
+    assert adapter.read(handshake.S06_BEAKER_SENSOR) is False
+    assert adapter.read(handshake.s04_sensor(1)) is False
 
 
 def test_s04_three_action_handshake_changes_sensor_and_resets() -> None:

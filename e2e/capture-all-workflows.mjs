@@ -44,8 +44,8 @@ for (const root of workflowRoots) {
     })
   }
 }
-if (workflows.length !== 12) {
-  throw new Error(`Expected 12 production workflows, found ${workflows.length}`)
+if (workflows.length !== 13) {
+  throw new Error(`Expected 13 production workflows, found ${workflows.length}`)
 }
 
 await mkdir(outputRoot, { recursive: true })
