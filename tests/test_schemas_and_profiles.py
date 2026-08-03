@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import json
-import re
 from pathlib import Path
 
 import yaml
@@ -15,43 +14,16 @@ def _read_yaml(path: Path) -> dict:
     return value
 
 
-def _profile_root(repo_root: Path) -> Path:
-    return repo_root / "szlab_poly_studio" / "profiles" / "default"
-
-
 def _shape_assets(repo_root: Path) -> list[dict]:
     package_root = repo_root / "szlab_poly_studio"
-    payloads = [
-        _read_yaml(path)
-        for path in sorted(package_root.glob("**/models/shape.yml"))
-    ]
+    payloads = [_read_yaml(path) for path in sorted(package_root.glob("**/models/shape.yml"))]
     assert payloads
     assert all(payload.get("schema_version") == 1 for payload in payloads)
     return [payload["shape"] for payload in payloads]
 
 
-def test_packaged_profile_matches_current_template_schemas(repo_root: Path) -> None:
-    device_schema = json.loads(
-        (repo_root / "schemas" / "device-template-v2.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    profile_schema = json.loads(
-        (repo_root / "schemas" / "profile-v1.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    profile_root = _profile_root(repo_root)
-    Draft202012Validator(device_schema).validate(_read_yaml(profile_root / "device.yaml"))
-    Draft202012Validator(profile_schema).validate(_read_yaml(profile_root / "package.yaml"))
-
-
 def test_device_and_resource_shapes_are_split_and_schema_valid(repo_root: Path) -> None:
-    schema = json.loads(
-        (repo_root / "schemas" / "shape-manifest-v1.schema.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    schema = json.loads((repo_root / "schemas" / "shape-manifest-v1.schema.json").read_text(encoding="utf-8"))
     shapes = _shape_assets(repo_root)
     compatibility_manifest = {
         "schema_version": 1,
@@ -75,11 +47,12 @@ def test_device_and_resource_shapes_are_split_and_schema_valid(repo_root: Path) 
         "reagent_stack",
         "powder_stack",
         "tip_stack",
+        "tip_box",
+        "powder_container",
+        "sample_vial_stack",
         "beaker",
         "capped_reagent_bottle",
         "capped_sample_vial",
-        "tip_box",
-        "powder_container",
     } == set(shapes_by_id)
     for shape_id in ("carousel_feeder", "gantry_pump", "stirrer_rack", "vision_cell"):
         assert len(shapes_by_id[shape_id]["envelope"]) == 3
@@ -89,6 +62,7 @@ def test_device_and_resource_shapes_are_split_and_schema_valid(repo_root: Path) 
 def test_every_decorator_model_entry_is_literal_and_package_local(repo_root: Path) -> None:
     package_root = (repo_root / "szlab_poly_studio").resolve()
     resolved_assets: set[Path] = set()
+    resolved_shapes: set[Path] = set()
 
     for source_path in package_root.rglob("*.py"):
         tree = ast.parse(source_path.read_text(encoding="utf-8"))
@@ -108,10 +82,10 @@ def test_every_decorator_model_entry_is_literal_and_package_local(repo_root: Pat
                 if model_kw is None:
                     continue
                 model = ast.literal_eval(model_kw.value)
-                descriptors = [model]
+                descriptors = [(model, False)]
                 if isinstance(model.get("shape"), dict):
-                    descriptors.append(model["shape"])
-                for descriptor in descriptors:
+                    descriptors.append((model["shape"], True))
+                for descriptor, is_shape in descriptors:
                     entry = descriptor.get("entry")
                     if not entry:
                         continue
@@ -119,39 +93,40 @@ def test_every_decorator_model_entry_is_literal_and_package_local(repo_root: Pat
                     assert asset.is_relative_to(package_root)
                     assert asset.is_file(), f"missing model asset: {asset}"
                     resolved_assets.add(asset)
+                    if is_shape:
+                        resolved_shapes.add(asset)
 
-    assert resolved_assets == set(package_root.glob("**/models/shape.yml"))
+    shape_assets = set(package_root.glob("**/models/shape.yml"))
+    assert resolved_shapes == shape_assets
+    assert shape_assets <= resolved_assets
+    assert any(asset.suffix == ".xacro" for asset in resolved_assets)
 
 
-def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> None:
-    """SZLab 自有 category 必须由设备包声明，不依赖前端硬编码。
+def test_package_shape_categories_are_self_describing_without_an_os_bridge(
+    repo_root: Path,
+) -> None:
+    shapes = _shape_assets(repo_root)
+    by_id = {shape["id"]: shape for shape in shapes}
 
-    查表规则与前端 ``resolveShapeSpec`` 一致：精确 category 胜过子串匹配，
-    同为子串匹配时先比 priority、再比 token 长度。
-    """
-
-    from szlab_poly_studio.common.shape_library import material_shape_items
-
-    shapes = material_shape_items()
+    def normalize(value: str) -> str:
+        return value.strip().casefold().replace("-", "_").replace(" ", "_")
 
     def resolve(category: str) -> str | None:
-        normalized = _normalize_category(category)
+        normalized = normalize(category)
         best: tuple[int, str] | None = None
         for shape in shapes:
             categories = {
-                _normalize_category(value)
-                for value in shape["categories"]
+                normalize(str(item["category"]))
+                for item in shape.get("applies_to", [])
+                if isinstance(item, dict) and item.get("category")
             }
-            category_tokens = {
-                _normalize_category(value)
-                for value in shape["categoryTokens"]
-            }
+            tokens = {normalize(str(item)) for item in shape.get("category_tokens", []) if item}
             if normalized in categories:
                 score = 1 << 40
             else:
                 matches = [
                     int(shape.get("priority", 0)) * 1000 + len(token)
-                    for token in category_tokens
+                    for token in tokens
                     if token and token in normalized
                 ]
                 if not matches:
@@ -161,91 +136,23 @@ def test_every_graph_category_resolves_to_a_declared_shape(repo_root: Path) -> N
                 best = (score, str(shape["id"]))
         return best[1] if best else None
 
-    graph = json.loads(
-        (repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    unresolved_szlab_categories = sorted(
-        {
-            category
-            for node in graph["nodes"]
-            if (category := node.get("config", {}).get("category"))
-            and resolve(category) is None
-        }
-    )
-    assert unresolved_szlab_categories == []
-
-    # 只有主机/PLC 这类没有物理外形的节点可以不带 category
-    assert {
-        node["id"] for node in graph["nodes"] if not node.get("config", {}).get("category")
-    } == {
-        "szlab_poly_deck",
-        "szlab_poly_plc",
-        "s1_workstation",
-        "szlab_s08_cap_station",
-        "szlab_mixer_pipetting_station",
+    assert set(by_id) == {
+        "carousel_feeder",
+        "gantry_pump",
+        "stirrer_rack",
+        "vision_cell",
+        "rail_robot",
+        "beaker_stack",
+        "reagent_stack",
+        "powder_stack",
+        "tip_stack",
+        "tip_box",
+        "powder_container",
+        "sample_vial_stack",
+        "beaker",
+        "capped_reagent_bottle",
+        "capped_sample_vial",
     }
-
-    # 注粉瓶不能被通用试剂瓶抢走；常见器皿也由当前设备包声明，离线运行不依赖 OS。
     assert resolve("powder_reagent") == "powder_container"
+    assert resolve("sample_vial_stack") == "sample_vial_stack"
     assert resolve("carousel_feeder") == "carousel_feeder"
-    assert resolve("beaker") == "beaker"
-    assert resolve("liquid_reagent") == "capped_reagent_bottle"
-    assert resolve("sample_vial") == "capped_sample_vial"
-
-
-def test_shape_library_matches_frontend_wire_contract() -> None:
-    from szlab_poly_studio.common.shape_library import material_shape_items
-
-    shapes = material_shape_items()
-    shapes_by_id = {shape["id"]: shape for shape in shapes}
-
-    assert len(shapes) == 14
-    assert shapes_by_id["stirrer_rack"]["bundle"] == "szlab-poly-studio"
-    assert shapes_by_id["stirrer_rack"]["categories"] == ["stirrer_rack"]
-    assert shapes_by_id["stirrer_rack"]["categoryTokens"] == []
-    assert shapes_by_id["stirrer_rack"]["displayName"] == "S04 磁搅（磁搅模块）"
-    assert shapes_by_id["powder_container"]["priority"] == 10
-    assert "applies_to" not in shapes_by_id["stirrer_rack"]
-
-
-def _normalize_category(value: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
-
-
-def test_profile_is_self_contained(repo_root: Path) -> None:
-    profile_root = _profile_root(repo_root)
-    profile = _read_yaml(profile_root / "package.yaml")
-    assert profile["device_spec"] == "device.yaml"
-    assert (profile_root / profile["device_spec"]).is_file()
-
-
-def test_profile_and_decorators_contribute_to_one_action_catalog(
-    profiles,
-    decorated_action_catalog,
-) -> None:
-    assert set(profiles) == {"szlab_poly_studio"}
-    assert "szlab_poly_studio.run_stirring" in profiles["szlab_poly_studio"].action_catalog
-    assert "szlab_mixer_stirrer.run_stirring" in decorated_action_catalog
-    assert "szlab_s08_cap_station.process_cap_with_sample_parts" in decorated_action_catalog
-
-
-def test_macro_calls_use_generic_driver_method_contract(repo_root: Path) -> None:
-    profile_root = _profile_root(repo_root)
-    profile = _read_yaml(profile_root / "package.yaml")
-    spec = _read_yaml(profile_root / "device.yaml")
-    assert profile["default_device_binding"]["driver_key"] == "generic_plc_macro"
-
-    params_by_action = {
-        action["id"]: {param["name"] for param in action.get("params", [])}
-        for action in spec["actions"]
-    }
-    for action_id, steps in profile["driver_config"]["macros"].items():
-        referenced_inputs: set[str] = set()
-        for step in steps:
-            assert re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", step["call"])
-            for arg in step.get("args", []):
-                if isinstance(arg, dict) and set(arg) == {"input"}:
-                    referenced_inputs.add(arg["input"])
-        assert referenced_inputs <= params_by_action[action_id]

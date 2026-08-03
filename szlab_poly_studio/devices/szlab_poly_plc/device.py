@@ -15,7 +15,6 @@ except ModuleNotFoundError as exc:
         raise
     BaseClient = object
     OpcUaNode = None
-from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -29,8 +28,29 @@ from szlab_poly_studio.common.stack_status import build_stack_status
 DEFAULT_CSV_NAME = "szlab_plc_0730.csv"
 OPCUA_DIRECT_IO_ATTEMPTS = 3
 OPCUA_DIRECT_IO_RETRY_DELAY = 1.0
+OPCUA_CONNECTION_CHECK_INTERVAL = 5.0
+OPCUA_RECONNECT_ATTEMPTS = 3
+OPCUA_RECONNECT_DELAY = 1.0
 PLC_WAIT_PROGRESS_LOG_INTERVAL = 10.0
 _UNSET = object()
+
+_RECONNECTABLE_OPCUA_STATUS_NAMES = (
+    "BadCommunicationError",
+    "BadConnectionClosed",
+    "BadConnectionRejected",
+    "BadNoCommunication",
+    "BadNotConnected",
+    "BadRequestInterrupted",
+    "BadRequestTimeout",
+    "BadSecureChannelClosed",
+    "BadSecureChannelIdInvalid",
+    "BadSecureChannelTokenUnknown",
+    "BadServerNotConnected",
+    "BadSessionClosed",
+    "BadSessionIdInvalid",
+    "BadSessionNotActivated",
+    "BadTimeout",
+)
 
 
 def _plc_variable_log_ref(reader: Any, variable_name: str) -> str:
@@ -349,6 +369,9 @@ class SZLabPolyPLCDevice(BaseClient):
         opcua_node_id_map: Optional[Dict[str, str]] = None,
         opcua_node_id_prefix: Optional[str] = None,
         opcua_timeout: float = 10.0,
+        connection_check_interval: float = OPCUA_CONNECTION_CHECK_INTERVAL,
+        reconnect_attempts: int = OPCUA_RECONNECT_ATTEMPTS,
+        reconnect_delay: float = OPCUA_RECONNECT_DELAY,
         ignore_opcua_token_time_drift: bool = False,
         *args,
         **kwargs,
@@ -362,6 +385,15 @@ class SZLabPolyPLCDevice(BaseClient):
         self._heartbeat_timer: Optional[threading.Timer] = None
         self._sensor_read_warning_names: set[str] = set()
         self._io_lock = threading.RLock()
+        self.connection_check_interval = max(float(connection_check_interval), 0.0)
+        self.reconnect_attempts = max(int(reconnect_attempts), 1)
+        self.reconnect_delay = max(float(reconnect_delay), 0.0)
+        self._connection_monitor_enabled = False
+        self._connection_check_timer: Optional[threading.Timer] = None
+        self._connection_healthy = False
+        self._last_connection_check_at: Optional[float] = None
+        self._last_connection_error: Optional[str] = None
+        self._reconnect_count = 0
 
         variable_names, csv_node_id_map = load_variable_definitions_from_csv(self.csv_path)
         nodes = [OpcUaNode(name=name, node_type=NodeType.VARIABLE, data_type=None) for name in variable_names]
@@ -387,16 +419,20 @@ class SZLabPolyPLCDevice(BaseClient):
             self._register_direct_node_ids(nodes)
         if auto_connect:
             self._connect()
+            self._start_connection_monitor()
 
     @not_action
     def _connect(self) -> None:
         if not self._direct_node_id_map:
-            return super()._connect()
+            super()._connect()
+            self._mark_connection_healthy()
+            return
         logger.info("try to connect client...")
         if not self.client:
             raise ValueError("client is not initialized")
         try:
             self.client.connect()
+            self._mark_connection_healthy()
             logger.info("client connected!")
             missing = sorted(set(self._variables_to_find) - set(self._node_registry))
             if missing:
@@ -404,6 +440,125 @@ class SZLabPolyPLCDevice(BaseClient):
         except Exception as exc:
             logger.error(f"client connect failed: {exc}")
             raise
+
+    @not_action
+    def _mark_connection_healthy(self) -> None:
+        self._connection_healthy = True
+        self._last_connection_check_at = time.time()
+        self._last_connection_error = None
+
+    @not_action
+    def _mark_connection_unhealthy(self, exc: BaseException) -> None:
+        self._connection_healthy = False
+        self._last_connection_check_at = time.time()
+        self._last_connection_error = f"{type(exc).__name__}: {exc}"
+
+    @not_action
+    def _probe_connection_locked(self) -> Any:
+        if not self.client:
+            raise ValueError("client is not initialized")
+        server_state = self.client.get_node(ua.ObjectIds.Server_ServerStatus_State)
+        return server_state.get_value()
+
+    @not_action
+    def _disconnect_client_quietly_locked(self) -> None:
+        if not self.client:
+            return
+        try:
+            self.client.disconnect()
+        except Exception as exc:
+            logger.debug(f"重连前关闭旧 OPC UA 会话失败（可忽略）: {type(exc).__name__}: {exc}")
+
+    @not_action
+    def _reconnect_locked(self, *, reason: str) -> None:
+        if not self.client:
+            raise ValueError("client is not initialized")
+
+        last_error: Optional[BaseException] = None
+        for attempt in range(1, self.reconnect_attempts + 1):
+            if attempt > 1:
+                time.sleep(self.reconnect_delay)
+            self._disconnect_client_quietly_locked()
+            try:
+                self._connect()
+            except Exception as exc:
+                last_error = exc
+                self._mark_connection_unhealthy(exc)
+                logger.warning(
+                    f"OPC UA 重连失败 ({attempt}/{self.reconnect_attempts}) "
+                    f"reason={reason}: {type(exc).__name__}: {exc}"
+                )
+                continue
+
+            self._reconnect_count += 1
+            logger.info(
+                f"OPC UA 重连成功 attempt={attempt}/{self.reconnect_attempts} "
+                f"reason={reason} reconnect_count={self._reconnect_count}"
+            )
+            return
+
+        raise ConnectionError(
+            f"OPC UA 重连失败，已尝试 {self.reconnect_attempts} 次: {last_error}"
+        ) from last_error
+
+    @not_action
+    def _check_connection_once(self) -> bool:
+        with self._io_lock:
+            try:
+                server_state = self._probe_connection_locked()
+            except Exception as exc:
+                self._mark_connection_unhealthy(exc)
+                logger.warning(
+                    f"OPC UA 通信检测失败，准备重连: {type(exc).__name__}: {exc}"
+                )
+                try:
+                    self._reconnect_locked(reason=f"active probe failed: {type(exc).__name__}: {exc}")
+                    server_state = self._probe_connection_locked()
+                except Exception as reconnect_exc:
+                    self._mark_connection_unhealthy(reconnect_exc)
+                    logger.error(
+                        f"OPC UA 通信恢复失败: {type(reconnect_exc).__name__}: {reconnect_exc}"
+                    )
+                    return False
+
+            self._mark_connection_healthy()
+            logger.debug(f"OPC UA 通信检测正常: server_state={server_state}")
+            return True
+
+    @not_action
+    def _start_connection_monitor(self) -> None:
+        if self.connection_check_interval <= 0 or self._connection_monitor_enabled:
+            return
+        self._connection_monitor_enabled = True
+        self._schedule_connection_check()
+
+    @not_action
+    def _stop_connection_monitor(self) -> None:
+        self._connection_monitor_enabled = False
+        timer = self._connection_check_timer
+        self._connection_check_timer = None
+        if timer:
+            timer.cancel()
+
+    @not_action
+    def _schedule_connection_check(self) -> None:
+        if not self._connection_monitor_enabled or self.connection_check_interval <= 0:
+            return
+        timer = threading.Timer(self.connection_check_interval, self._run_connection_check)
+        timer.daemon = True
+        self._connection_check_timer = timer
+        timer.start()
+
+    @not_action
+    def _run_connection_check(self) -> None:
+        self._connection_check_timer = None
+        if not self._connection_monitor_enabled:
+            return
+        try:
+            self._check_connection_once()
+        finally:
+            if self._connection_monitor_enabled:
+                self._schedule_connection_check()
 
     @not_action
     def _register_direct_node_ids(self, nodes: List[OpcUaNode]) -> None:
@@ -437,25 +592,34 @@ class SZLabPolyPLCDevice(BaseClient):
         started_at = time.monotonic()
         context = current_action_log_context()
         variable_ref = _plc_variable_log_ref(self, node_name)
-        node = self.use_node(node_name)
         is_direct = node_name in self._direct_node_id_map
         attempts = OPCUA_DIRECT_IO_ATTEMPTS if is_direct else 1
         for attempt in range(1, attempts + 1):
             try:
+                node = self.use_node(node_name)
                 value, error = node.read()
             except Exception as exc:
-                if (
-                    is_direct
-                    and self._is_retryable_direct_io_error(exc)
-                    and attempt < attempts
-                ):
+                is_retryable = is_direct and self._is_retryable_direct_io_error(exc)
+                if is_retryable and attempt < attempts:
                     logger.warning(
-                        f"读取 PLC 变量遇到临时通信错误，准备重试 "
+                        f"读取 PLC 变量遇到临时通信错误，准备重连后重试 "
                         f"({attempt}/{attempts}): {node_name}: "
                         f"{type(exc).__name__}: {exc}"
                     )
+                    self._mark_connection_unhealthy(exc)
+                    try:
+                        self._reconnect_locked(
+                            reason=f"read {node_name} failed: {type(exc).__name__}: {exc}"
+                        )
+                    except Exception as reconnect_exc:
+                        logger.warning(
+                            f"读取 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
+                            f"{type(reconnect_exc).__name__}: {reconnect_exc}"
+                        )
                     time.sleep(OPCUA_DIRECT_IO_RETRY_DELAY)
                     continue
+                if is_retryable:
+                    self._mark_connection_unhealthy(exc)
                 elapsed = time.monotonic() - started_at
                 logger.error(
                     f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
@@ -466,6 +630,7 @@ class SZLabPolyPLCDevice(BaseClient):
                     f"读取 PLC 变量失败: {node_name}: {exc}"
                 ) from exc
             if not error:
+                self._mark_connection_healthy()
                 logger.debug(
                     f"[SZLAB-PLC-READ] SUCCESS {context} variable={variable_ref} "
                     f"value={compact_log_value(value)} attempt={attempt}/{attempts} "
@@ -507,7 +672,6 @@ class SZLabPolyPLCDevice(BaseClient):
         started_at = time.monotonic()
         context = current_action_log_context()
         variable_ref = _plc_variable_log_ref(self, node_name)
-        node = self.use_node(node_name)
         is_direct = node_name in self._direct_node_id_map
         attempts = OPCUA_DIRECT_IO_ATTEMPTS if is_direct else 1
         log_method = logger.debug if node_name == getattr(self, "heartbeat_node", None) else logger.info
@@ -517,7 +681,9 @@ class SZLabPolyPLCDevice(BaseClient):
         )
         for attempt in range(1, attempts + 1):
             try:
+                node = self.use_node(node_name)
                 self._write_value_only(node, value)
+                self._mark_connection_healthy()
                 log_method(
                     f"[SZLAB-PLC-WRITE] SUCCESS {context} variable={variable_ref} "
                     f"value={compact_log_value(value)} attempt={attempt}/{attempts} "
@@ -531,12 +697,24 @@ class SZLabPolyPLCDevice(BaseClient):
                 )
                 if is_retryable and attempt < attempts:
                     logger.warning(
-                        f"写入 PLC 变量遇到临时通信错误，准备重试 "
+                        f"写入 PLC 变量遇到临时通信错误，准备重连后重试 "
                         f"({attempt}/{attempts}): {node_name}: "
                         f"{type(exc).__name__}: {exc}"
                     )
+                    self._mark_connection_unhealthy(exc)
+                    try:
+                        self._reconnect_locked(
+                            reason=f"write {node_name} failed: {type(exc).__name__}: {exc}"
+                        )
+                    except Exception as reconnect_exc:
+                        logger.warning(
+                            f"写入 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
+                            f"{type(reconnect_exc).__name__}: {reconnect_exc}"
+                        )
                     time.sleep(OPCUA_DIRECT_IO_RETRY_DELAY)
                     continue
+                if is_retryable:
+                    self._mark_connection_unhealthy(exc)
                 elapsed = time.monotonic() - started_at
                 if not is_bad_node_id or not is_retryable:
                     logger.error(
@@ -574,9 +752,12 @@ class SZLabPolyPLCDevice(BaseClient):
     def _is_retryable_direct_io_error(self, exc: Exception) -> bool:
         current: BaseException | None = exc
         while current is not None:
-            if isinstance(current, (TimeoutError, ConnectionError)):
+            if isinstance(current, (TimeoutError, ConnectionError, OSError)):
                 return True
-            if "BadNodeIdUnknown" in str(current):
+            error_text = f"{type(current).__name__}: {current}"
+            if "BadNodeIdUnknown" in error_text:
+                return True
+            if any(status_name in error_text for status_name in _RECONNECTABLE_OPCUA_STATUS_NAMES):
                 return True
             current = current.__cause__ or current.__context__
         return False
@@ -606,12 +787,17 @@ class SZLabPolyPLCDevice(BaseClient):
 
     @not_action
     def disconnect(self) -> None:
+        self._stop_connection_monitor()
         self.heartbeat_on = False
         if self._heartbeat_timer:
             self._heartbeat_timer.cancel()
             self._heartbeat_timer = None
-        if self.client:
-            self.client.disconnect()
+        with self._io_lock:
+            try:
+                if self.client:
+                    self.client.disconnect()
+            finally:
+                self._connection_healthy = False
 
     @not_action
     def read(self, node_name: str, use_cache: bool = True) -> Any:
@@ -726,21 +912,17 @@ class SZLabPolyPLCDevice(BaseClient):
 
     @not_action
     def get_variables(self, node_names: Optional[List[str]] = None, use_cache: bool = False) -> Dict[str, Any]:
-        del use_cache
         names = node_names or list(self._variables_to_find)
         result: Dict[str, Any] = {}
         for name in names:
             try:
                 node = self.use_node(name)
-                value, error = node.read()
-                if error:
-                    result[name] = {"success": False, "error": f"读取 PLC 变量失败: {name}"}
-                else:
-                    result[name] = {
-                        "success": True,
-                        "value": value,
-                        "node_id": node.node_id,
-                    }
+                value = self.read_variable(name, use_cache=use_cache)
+                result[name] = {
+                    "success": True,
+                    "value": value,
+                    "node_id": node.node_id,
+                }
             except Exception as exc:
                 result[name] = {"success": False, "error": str(exc)}
         return result
@@ -748,6 +930,13 @@ class SZLabPolyPLCDevice(BaseClient):
     @not_action
     def _read_sensor_group(self, sensors: Dict[str, str]) -> Dict[str, Optional[bool]]:
         with self._io_lock:
+            # ``auto_connect: false`` is the committed offline authoring mode
+            # for the complete local deployment graph. Publishing status in
+            # that mode must not browse/read every OPC UA node once per topic
+            # tick; report an unknown observation until a connection is
+            # explicitly established instead.
+            if not self._connection_healthy:
+                return {site_key: None for site_key in sensors}
             result: Dict[str, Optional[bool]] = {}
             for site_key, variable_name in sensors.items():
                 try:
@@ -817,6 +1006,17 @@ class SZLabPolyPLCDevice(BaseClient):
         if self.heartbeat_on:
             self._schedule_heartbeat()
 
+    @action(always_free=True, description="检测 OPC UA 通信，断线时自动重连")
+    def check_opcua_connection(self) -> Dict[str, Any]:
+        healthy = self._check_connection_once()
+        return {
+            "success": healthy,
+            "connected": self._connection_healthy,
+            "last_check_at": self._last_connection_check_at,
+            "last_error": self._last_connection_error,
+            "reconnect_count": self._reconnect_count,
+        }
+
     @action(always_free=True, description="读取指定 PLC 变量")
     def check_variable_status(self, variable_name: str) -> Dict[str, Any]:
         try:
@@ -832,8 +1032,8 @@ class SZLabPolyPLCDevice(BaseClient):
                 "error": str(exc),
             }
 
-    @action(always_free=True, description="写入指定 PLC 变量")
-    def write_variable_action(self, variable_name: str, value: str) -> Dict[str, Any]:
+    @not_action
+    def write_variable_action(self, variable_name: str, value: Any) -> Dict[str, Any]:
         try:
             self.write_variable(variable_name, value)
             return {"success": True, "variable_name": variable_name, "value": value}
@@ -855,9 +1055,13 @@ class SZLabPolyPLCDevice(BaseClient):
             "status": self._read_sensor_group(sensors),
         }
 
+    @not_action
+    def _build_stack_status(self, group_names: Optional[List[str]] = None) -> Dict[str, Any]:
+        return build_stack_status(self._read_stack_sensor_groups(group_names=group_names))
+
     @action(always_free=True, description="读取前端堆栈 JSON 状态")
     def get_stack_status(self, group_names: Optional[List[str]] = None) -> Dict[str, Any]:
-        return build_stack_status(self._read_stack_sensor_groups(group_names=group_names))
+        return self._build_stack_status(group_names=group_names)
 
     @action(always_free=True, description="写入 S01 上料过渡仓取料编号和入料产品")
     def set_s1_loading_request(self, pick_index: int, product_type: int) -> Dict[str, Any]:
@@ -908,9 +1112,9 @@ class SZLabPolyPLCDevice(BaseClient):
     def registered_variables(self) -> List[str]:
         return sorted(self._variables_to_find)
 
-    @topic_config(period=1.0)
+    @topic_config(period=10.0)
     def stack_status(self) -> Dict[str, Any]:
-        return self.get_stack_status()
+        return self._build_stack_status()
 
 
 install_action_logging(SZLabPolyPLCDevice)

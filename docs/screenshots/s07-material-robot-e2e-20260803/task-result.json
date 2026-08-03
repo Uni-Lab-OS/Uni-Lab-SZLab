@@ -1,0 +1,33 @@
+{
+  "task_uuid": "6d63e2ae-ea19-4279-8b8e-92a504f6b447",
+  "workflow_uuid": "5e7ce142-bf5a-5d30-8666-fdf5374941f1",
+  "workflow_name": "S07 粉桶与烧杯搬运后固体称量",
+  "workflow_revision": 2,
+  "status": "succeeded",
+  "started_at": "2026-08-03T06:35:43.642965Z",
+  "finished_at": "2026-08-03T06:36:13.666009Z",
+  "jobs_succeeded": 10,
+  "jobs_total": 10,
+  "source_beaker": {
+    "mount_uuid": "29f43434-ff8b-5246-b924-a20cddd452fc",
+    "material_uuid": "c6ab5682-b465-49fd-85cb-b20f360b71f4"
+  },
+  "source_powder": {
+    "mount_uuid": "fa7b0692-2e78-5d5e-b789-9b0dfffb5dc7",
+    "material_uuid": "c1b69585-e278-479c-99b3-2e36e66d8a50"
+  },
+  "dosed": {
+    "success": true,
+    "beaker_uuid": "c6ab5682-b465-49fd-85cb-b20f360b71f4",
+    "powder_cartridge_uuid": "c1b69585-e278-479c-99b3-2e36e66d8a50",
+    "commanded_mass_g": 1.0,
+    "message": "S07 固体称量流程完成；PLC 未提供实测质量"
+  },
+  "task_log_window": {
+    "file": "runtime/material-robot-e2e-sim-full-v4/logs/2026-08-03 14-33-22.log",
+    "start_line": 33739,
+    "end_line": 43343,
+    "error_matches": 0
+  },
+  "error_info": []
+}

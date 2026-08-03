@@ -5,11 +5,12 @@ from unilabos.registry.decorators import resource
 
 from szlab_poly_studio.common.stack_status import build_stack_status
 from szlab_poly_studio.resources.warehouses import (
-    beaker_warehouse,
     powder_container_placeholder_warehouse,
     s1_loading_buffer_warehouse,
     s2_tip_placeholder_warehouse,
+    s3_unused_beaker_warehouse,
     s10_liquid_reagent_placeholder_warehouse,
+    s11_used_beaker_warehouse,
 )
 
 
@@ -22,9 +23,9 @@ class SZLabPolyStudioDeck(Deck):
     def __init__(
         self,
         name: str = "SZLabPolyStudioDeck",
-        size_x: float = 3634.0,
-        size_y: float = 1674.0,
-        size_z: float = 0.0,
+        size_x: float = 3000.0,
+        size_y: float = 1800.0,
+        size_z: float = 2200.0,
         category: str = "deck",
         setup: bool = True,
     ) -> None:
@@ -36,12 +37,12 @@ class SZLabPolyStudioDeck(Deck):
 
     def setup(self) -> None:
         self.warehouses = {
-            "S3未使用烧杯仓": beaker_warehouse("S3未使用烧杯仓"),
-            "S2枪头仓占位": s2_tip_placeholder_warehouse("S2枪头仓占位"),
-            "S10液体试剂瓶仓占位": s10_liquid_reagent_placeholder_warehouse("S10液体试剂瓶仓占位"),
-            "S11使用烧杯成品仓": beaker_warehouse("S11使用烧杯成品仓"),
-            "固体粉桶仓占位": powder_container_placeholder_warehouse("固体粉桶仓占位"),
             "S1上料过渡仓": s1_loading_buffer_warehouse("S1上料过渡仓"),
+            "S2枪头仓占位": s2_tip_placeholder_warehouse("S2枪头仓占位"),
+            "S3未使用烧杯仓": s3_unused_beaker_warehouse("S3未使用烧杯仓"),
+            "S10液体试剂瓶仓占位": s10_liquid_reagent_placeholder_warehouse("S10液体试剂瓶仓占位"),
+            "S11使用烧杯成品仓": s11_used_beaker_warehouse("S11使用烧杯成品仓"),
+            "固体粉桶仓占位": powder_container_placeholder_warehouse("固体粉桶仓占位"),
         }
         self.warehouse_locations = {
             "S1上料过渡仓": Coordinate(100.0, 100.0, 0.0),

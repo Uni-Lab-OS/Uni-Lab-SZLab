@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import os
+import threading
 import time
-from typing import Any
+from typing import Annotated, Any, Literal, TypedDict
 
+from pydantic import Field
+from unilabos.registry.annotations import AllowedResourceTemplates
 from unilabos.registry.decorators import action, device, not_action
+from unilabos.registry.placeholder_type import ResourceSlot
 from unilabos.utils.log import logger
 
 from szlab_poly_studio.common.action_logging import (
@@ -31,8 +35,52 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_WRITE_ALLOWED_VARIABLE,
     ROBOT_WRITE_DONE_VARIABLE,
 )
+from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import SZLabStandardRobotGateway
+from szlab_poly_studio.resources.materials import beaker_500ml
 
 _UNSET = object()
+
+
+class StandardRobotActionStatus(TypedDict):
+    """A1 command status shared by transfer and query actions."""
+
+    command_id: str
+    state: Literal[
+        "ACCEPTED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELED",
+        "UNKNOWN",
+        "REJECTED",
+    ]
+    success: bool
+    message: str
+    boot_id: str
+
+
+class StandardRobotTransferStatus(TypedDict):
+    """Successful or failed physical transfer with explicit material passthrough."""
+
+    command_id: str
+    state: Literal[
+        "ACCEPTED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELED",
+        "UNKNOWN",
+        "REJECTED",
+    ]
+    success: bool
+    message: str
+    boot_id: str
+    resource: ResourceSlot
+
+
+class BeakerActionStatus(TypedDict):
+    success: bool
+    message: str
 
 
 @device(
@@ -77,6 +125,15 @@ class SzlabMixerRobotDevice(
         plc_gateway: Any = None,
         plc_action_timeout: float = 300.0,
         plc_server_wait_timeout: float = 10.0,
+        standard_actions_enabled: bool = False,
+        standard_journal_path: str = "runtime/szlab_robot_commands.sqlite3",
+        standard_program_version: str = "szlab-mixer-plc@0730",
+        standard_point_set_version: str = "szlab-mixer-points@0730",
+        standard_payload_profiles: list[str] | None = None,
+        standard_motion_permit_variable: str = ROBOT_WRITE_ALLOWED_VARIABLE,
+        standard_permit_asserts_remote_auto: bool = False,
+        standard_permit_asserts_safety_normal: bool = False,
+        standard_tool_payload_sensor_variable: str = "传感器状态_上位机[3].NO[6]",
         *args,
         **kwargs,
     ):
@@ -92,6 +149,39 @@ class SzlabMixerRobotDevice(
             plc_server_wait_timeout=plc_server_wait_timeout,
         )
         self._last_task: dict[str, Any] = {}
+        self._standard_gateway_config = {
+            "journal_path": standard_journal_path,
+            "program_version": standard_program_version,
+            "point_set_version": standard_point_set_version,
+            "payload_profiles": standard_payload_profiles
+            or [
+                "beaker_500ml@v1",
+                "tip_box@v1",
+                "powder_container@v1",
+                "sample_vial_250ml@v1",
+                "sample_vial_500ml@v1",
+                "liquid_reagent_bottle_100ml@v1",
+                "pipette_tip@v1",
+            ],
+            "actions_enabled": standard_actions_enabled,
+            "permit_asserts_remote_auto": standard_permit_asserts_remote_auto,
+            "permit_asserts_safety_normal": standard_permit_asserts_safety_normal,
+            "motion_permit_variable": standard_motion_permit_variable,
+            "tool_payload_sensor_variable": standard_tool_payload_sensor_variable,
+        }
+        self._standard_gateway_instance: SZLabStandardRobotGateway | None = None
+        self._standard_gateway_lock = threading.Lock()
+
+    @not_action
+    def _standard_gateway(self) -> SZLabStandardRobotGateway:
+        if self._standard_gateway_instance is None:
+            with self._standard_gateway_lock:
+                if self._standard_gateway_instance is None:
+                    self._standard_gateway_instance = SZLabStandardRobotGateway(
+                        self,
+                        **self._standard_gateway_config,
+                    )
+        return self._standard_gateway_instance
 
     @not_action
     def _write_variable(self, name: str, value: Any) -> None:
@@ -409,6 +499,93 @@ class SzlabMixerRobotDevice(
             "message": f"机器人任务已完成: {station} {task}",
             **self._last_task,
         }
+
+    @action(
+        description="标准物理取料：父 Warehouse + 局部 Site 寻址；不修改 OS 物料归属"
+    )
+    def pick(
+        self,
+        resource: ResourceSlot,
+        warehouse: ResourceSlot,
+        site: str,
+        transfer_id: str,
+    ) -> StandardRobotTransferStatus:
+        result = self._standard_gateway().execute_site(
+            kind="pick",
+            resource=resource,
+            warehouse=warehouse,
+            site=site,
+            transfer_id=transfer_id,
+        )
+        return {**result, "resource": resource}
+
+    @action(
+        description=(
+            "标准物理放料：父 Warehouse + 局部 Site 寻址；成功后调用 "
+            "host.transfer_resource(resource, target_device, warehouse, site) 记账"
+        )
+    )
+    def place(
+        self,
+        resource: ResourceSlot,
+        warehouse: ResourceSlot,
+        site: str,
+        transfer_id: str,
+    ) -> StandardRobotTransferStatus:
+        result = self._standard_gateway().execute_site(
+            kind="place",
+            resource=resource,
+            warehouse=warehouse,
+            site=site,
+            transfer_id=transfer_id,
+        )
+        return {**result, "resource": resource}
+
+    @action(always_free=True, description="查询标准机械臂命令；不会重新下发运动")
+    def get_command(self, command_id: str) -> StandardRobotActionStatus:
+        return self._standard_gateway().get_command(command_id)
+
+    @action(always_free=True, description="按 PLC 与物料传感器见证对账；不会重新下发运动")
+    def reconcile(self, command_id: str) -> StandardRobotActionStatus:
+        return self._standard_gateway().reconcile(command_id)
+
+    @action(description="从 S03 取出 500 mL 烧杯（旧工作流兼容入口）")
+    def pick_beaker_from_s03(
+        self,
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+            Field(description="当前位于 S03 的 500 mL 烧杯"),
+        ],
+        product_type: int = 1,
+        position: str = "1-1",
+    ) -> BeakerActionStatus:
+        result = self._run_s03_pick(product_type=product_type, position=position)
+        return {"success": bool(result.get("success")), "message": str(result.get("message", ""))}
+
+    @action(description="将 500 mL 烧杯放入 S06（旧工作流兼容入口）")
+    def place_beaker_to_s06(
+        self,
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+            Field(description="待放入 S06 的 500 mL 烧杯"),
+        ],
+    ) -> BeakerActionStatus:
+        result = self._run_s06_place()
+        return {"success": bool(result.get("success")), "message": str(result.get("message", ""))}
+
+    @action(description="从 S06 取回 500 mL 烧杯（旧工作流兼容入口）")
+    def pick_beaker_from_s06(
+        self,
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+            Field(description="当前位于 S06 的 500 mL 烧杯"),
+        ],
+    ) -> BeakerActionStatus:
+        result = self._run_s06_pick()
+        return {"success": bool(result.get("success")), "message": str(result.get("message", ""))}
 
     @action(description="S01 取料")
     def submit_pick_from_s01(

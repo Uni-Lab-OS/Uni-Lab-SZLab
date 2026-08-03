@@ -1,0 +1,72 @@
+[
+  {
+    "node": "source_beaker",
+    "device": "material_source",
+    "started_at": "2026-08-03T06:35:43.389986Z",
+    "finished_at": "2026-08-03T06:35:43.442056Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "source_powder",
+    "device": "material_source",
+    "started_at": "2026-08-03T06:35:43.389986Z",
+    "finished_at": "2026-08-03T06:35:43.442056Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "picked_beaker",
+    "device": "szlab_mixer_robot",
+    "started_at": "2026-08-03T06:35:43.653751Z",
+    "finished_at": "2026-08-03T06:35:47.970936Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "placed_beaker",
+    "device": "szlab_mixer_robot",
+    "started_at": "2026-08-03T06:35:48.023888Z",
+    "finished_at": "2026-08-03T06:35:51.452185Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "committed_beaker",
+    "device": "host_node",
+    "started_at": "2026-08-03T06:35:51.547615Z",
+    "finished_at": "2026-08-03T06:35:51.631148Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "picked_powder",
+    "device": "szlab_mixer_robot",
+    "started_at": "2026-08-03T06:35:51.822685Z",
+    "finished_at": "2026-08-03T06:35:55.057160Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "prepared_powder",
+    "device": "szlab_s07_solid_addition",
+    "started_at": "2026-08-03T06:35:55.186785Z",
+    "finished_at": "2026-08-03T06:35:57.420491Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "placed_powder",
+    "device": "szlab_mixer_robot",
+    "started_at": "2026-08-03T06:35:57.534071Z",
+    "finished_at": "2026-08-03T06:36:01.241615Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "committed_powder",
+    "device": "host_node",
+    "started_at": "2026-08-03T06:36:01.495242Z",
+    "finished_at": "2026-08-03T06:36:01.790053Z",
+    "status": "succeeded"
+  },
+  {
+    "node": "dosed",
+    "device": "szlab_s07_solid_addition",
+    "started_at": "2026-08-03T06:36:01.861894Z",
+    "finished_at": "2026-08-03T06:36:13.600401Z",
+    "status": "succeeded"
+  }
+]

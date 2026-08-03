@@ -79,7 +79,7 @@ def test_graphs_configure_only_the_main_plc_as_an_opc_client(
     for filename in ("szlab-local-debug.json", "szlab-ideawit-sim.json"):
         graph = json.loads((graph_root / filename).read_text(encoding="utf-8"))
         devices = {
-            node["class"]: node
+            node["id"]: node
             for node in graph["nodes"]
             if node["type"] == "device"
         }

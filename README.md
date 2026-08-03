@@ -17,7 +17,6 @@ Uni-Lab-SZLab/
 │   │   └── models/
 │   ├── resources/
 │   ├── workflows/
-│   ├── profiles/default/
 │   └── common/
 ├── deployment/
 ├── tests/
@@ -47,35 +46,41 @@ python -m pip install -e . --no-deps
 python -m pytest
 ```
 
-wheel 输出到 `dist/`。`check-package.sh` 暂时通过现有 OS 的兼容入口
-`--devices ./szlab_poly_studio` 做 AST 检查；包内 2.5D 清单采用 `shape.yml`，避免现有 OS 把
-`devices/**/shape.yaml` 误判成旧式 YAML 注册表。模型入口由装饰器显式指定，扩展名不参与发现。
-Issue #147 里的 OS package manager 和
-`--workspace .` 尚未落地前，不能把“目录已经是 workspace”误写成“当前 OS 已支持 workspace
-启动”。
+wheel 输出到 `dist/`。`check-package.sh` 先编译完整 Catalog，再用 `--workspace` 做 OS
+只读检查；`build-package.sh` 通过 package manager 构建并审计 clean wheel。设备、资源、工作流和
+模型均由 Catalog 发现，Graph 是设备实例、物料拓扑、连接参数和本次激活选择的唯一权威来源。
+仓库不再包含运行时 Profile。
+
+Workflow 新代码遵循 Core 的
+[`Workflow Python 写法规范`](https://github.com/Uni-Lab-OS/Uni-Lab-Core/blob/main/docs/guides/python-workflow-authoring-standard.md)。当前包含 13 个
+Workflow；`s06_material.py` 是 Action 级 `ResourceSlot` 线性链参考实现。
 
 ## 本地联调
 
-启动离线 authoring bridge：
+启动带 FE authoring API 的单进程测试 OS：
 
 ```bash
-./scripts/start-authoring-bridge.sh
+./scripts/start-authoring-os.sh
 ```
 
-启动 runtime bridge 与测试 Edge：
+启动真实 runtime OS，或启动固定为测试模式的 OS：
 
 ```bash
-./scripts/start-runtime-bridge.sh
+./scripts/start-runtime-os.sh
 ./scripts/start-test-os.sh
 ```
+
+OPC UA 仿真与 Edge 联调可直接使用 5 节点演示工作流
+`szlab_poly_studio/workflows/robot_liquid_stirring_demo.py`；对应握手器启动命令见
+[`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。
 
 默认图中的直连 PLC 驱动均为 `auto_connect: false`。真机接入前必须单独核验 IP、NodeId、
 账号、联锁、急停、物料占用和恢复语义。
 
-SZLab 前端 E2E 截图见 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)，12 个生产工作流
-的代码与 DAG 截图见
+SZLab 前端 E2E 截图见 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)，迁移前 12 个历史
+工作流的代码与 DAG 截图见
 [`docs/ALL_WORKFLOW_SCREENSHOTS.md`](docs/ALL_WORKFLOW_SCREENSHOTS.md)。远端 OPC UA 仿真、
-Bridge/Edge 启动和排障命令见
+FE-OS 启动和排障命令见
 [`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。全部工作流的
 真机仿真结果见
 [`docs/ALL_WORKFLOWS_LIVE_E2E_20260730.md`](docs/ALL_WORKFLOWS_LIVE_E2E_20260730.md)，动作与 PLC

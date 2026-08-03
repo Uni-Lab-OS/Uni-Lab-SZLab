@@ -7,7 +7,7 @@
 2. ``check``：只读检查远端 OPC UA 中可自动判定的先决条件。
 3. ``serve``：写入测试先决条件，并监听 PC→PLC 信号，模拟 PLC 握手。
 
-当前覆盖 ``workflows`` 目录中全部 12 个工作流、19 个唯一动作调用：
+当前覆盖 ``workflows`` 目录中全部 15 个工作流、28 个唯一动作调用：
 
 - ``szlab_mixer_robot.submit_place_to_s04``（机器人任务号 7）
 - ``szlab_mixer_stirrer.run_stirring``
@@ -28,10 +28,20 @@
 - ``szlab_mixer_pipetting_station.add_liquid``（内部工艺 5→7→8→6）
 - ``szlab_mixer_pipetting_station.release_station``
 - ``szlab_poly_plc.get_stack_status``（只读，无动态握手）
+- ``szlab_mixer_robot.pick_beaker_from_s03``（机器人任务号 6）
+- ``szlab_mixer_robot.place_beaker_to_s06``（机器人任务号 11）
+- ``szlab_mixer_pump.add_solvent_to_beaker``
+- ``szlab_mixer_robot.pick_beaker_from_s06``（机器人任务号 12）
+- ``szlab_mixer_robot.pick``（标准 Site 动作，S071/S03）
+- ``szlab_s07_solid_addition.prepare_powder_cartridge_site``（S07 工艺 2）
+- ``szlab_mixer_robot.place``（标准 Site 动作，S072）
+- ``host_node.transfer_resource``（物理动作成功后的物料系统记账）
+- ``szlab_s07_solid_addition.dose_powder_with_materials``（S07 工艺 3）
 
 建议用 ``--workflow WORKFLOW_ID`` 定向运行单个工作流；选择
-``s06_robot_workflow`` 时会让 S06 烧杯传感器从 False 开始，并由任务
-11/12 的握手周期切换；选择 ``szlab_s09_pipetting_workflow`` 时会初始化
+``s06_robot_workflow`` 或 ``szlab_robot_liquid_stirring_demo_workflow`` 时会让 S06
+烧杯传感器从 False 开始，并由任务 11/12 的握手周期切换；选择
+``szlab_s09_pipetting_workflow`` 时会初始化
 S09 工位和液体余量，并响应全部内部工艺。原有
 ``--s06-robot-workflow``、``--s09-pipetting-workflow`` 参数仍作为兼容别名保留。
 
@@ -57,7 +67,9 @@ ROBOT_WRITE_ALLOWED = "Robot_任务允许写入"
 ROBOT_WRITE_DONE = "Robot_任务写入完成"
 ROBOT_TASK_NUMBER = "任务号"
 ROBOT_TASK_COMPLETE = "Robot_任务完成"
+ROBOT_TOOL_PAYLOAD_SENSOR = "传感器状态_上位机[3].NO[6]"
 S04_ROBOT_POSITION = "S04取放料编号"
+S03_BEAKER_SENSOR = "传感器状态_上位机[0].NO[6]"
 
 S05_DONE = "S05加工完成"
 S05_RESULT = "S05拍照结果"
@@ -74,6 +86,7 @@ S06_STORAGE_BOTTLE_SENSOR = {
 }
 
 S071_ROBOT_POSITION = "S071取放料编号"
+S072_ROBOT_PRODUCT = "S072取放料产品"
 S071_SENSOR_BY_SLOT = {
     1: "传感器状态_上位机[3].NO[8]",
     2: "传感器状态_上位机[3].NO[9]",
@@ -161,6 +174,15 @@ SUPPORTED_ACTIONS = (
     "szlab_s07_solid_addition.dose_powder",
     "szlab_s08_cap_station.process_cap_with_sample_parts",
     "szlab_poly_plc.get_stack_status",
+    "szlab_mixer_robot.pick_beaker_from_s03",
+    "szlab_mixer_robot.place_beaker_to_s06",
+    "szlab_mixer_pump.add_solvent_to_beaker",
+    "szlab_mixer_robot.pick_beaker_from_s06",
+    "szlab_mixer_robot.pick",
+    "szlab_s07_solid_addition.prepare_powder_cartridge_site",
+    "szlab_mixer_robot.place",
+    "host_node.transfer_resource",
+    "szlab_s07_solid_addition.dose_powder_with_materials",
 )
 
 # 保留首版握手器导出的动作别名，避免既有测试脚本和外部调用方因扩展
@@ -178,6 +200,15 @@ S07_SOLID_ACTION_BY_PROCESS = {
     3: SUPPORTED_ACTIONS[16],
 }
 S08_CAP_ACTION = SUPPORTED_ACTIONS[17]
+MATERIAL_S03_PICK_ACTION = SUPPORTED_ACTIONS[19]
+MATERIAL_S06_PLACE_ACTION = SUPPORTED_ACTIONS[20]
+MATERIAL_S06_ADD_ACTION = SUPPORTED_ACTIONS[21]
+MATERIAL_S06_PICK_ACTION = SUPPORTED_ACTIONS[22]
+S07_MATERIAL_ROBOT_PICK_ACTION = SUPPORTED_ACTIONS[23]
+S07_MATERIAL_PREPARE_ACTION = SUPPORTED_ACTIONS[24]
+S07_MATERIAL_ROBOT_PLACE_ACTION = SUPPORTED_ACTIONS[25]
+S07_MATERIAL_COMMIT_ACTION = SUPPORTED_ACTIONS[26]
+S07_MATERIAL_DOSE_ACTION = SUPPORTED_ACTIONS[27]
 
 WORKFLOW_IDS = (
     "szlab_magnetic_stirring_workflow",
@@ -192,6 +223,9 @@ WORKFLOW_IDS = (
     "szlab_stack_s05_s06_workflow",
     "szlab_mixer_workflow",
     "szlab_mixer_pump_production",
+    "szlab_material_s06_workflow",
+    "szlab_robot_liquid_stirring_demo_workflow",
+    "s07_material_dosing",
 )
 
 WORKFLOW_COMPONENTS = {
@@ -207,17 +241,36 @@ WORKFLOW_COMPONENTS = {
     "szlab_stack_s05_s06_workflow": frozenset({"photo", "pump"}),
     "szlab_mixer_workflow": frozenset({"pump"}),
     "szlab_mixer_pump_production": frozenset({"pump"}),
+    "szlab_material_s06_workflow": frozenset({"robot_s03", "robot_s06", "pump"}),
+    "szlab_robot_liquid_stirring_demo_workflow": frozenset(
+        {"robot_s06", "pump", "robot_s04", "stirrer"}
+    ),
+    "s07_material_dosing": frozenset({"robot_s03", "robot_s07", "s07"}),
 }
 ALL_COMPONENTS = frozenset().union(*WORKFLOW_COMPONENTS.values())
 
 ROBOT_ACTION_BY_TASK = {
+    6: MATERIAL_S03_PICK_ACTION,
     7: SUPPORTED_ACTIONS[0],
     8: SUPPORTED_ACTIONS[2],
     11: SUPPORTED_ACTIONS[5],
     12: SUPPORTED_ACTIONS[6],
     13: SUPPORTED_ACTIONS[11],
+    14: S07_MATERIAL_ROBOT_PICK_ACTION,
     15: SUPPORTED_ACTIONS[12],
     16: SUPPORTED_ACTIONS[13],
+}
+
+MATERIAL_S06_ACTION_BY_TASK = {
+    6: MATERIAL_S03_PICK_ACTION,
+    11: MATERIAL_S06_PLACE_ACTION,
+    12: MATERIAL_S06_PICK_ACTION,
+}
+
+MATERIAL_S07_ACTION_BY_TASK = {
+    6: S07_MATERIAL_ROBOT_PICK_ACTION,
+    14: S07_MATERIAL_ROBOT_PICK_ACTION,
+    15: S07_MATERIAL_ROBOT_PLACE_ACTION,
 }
 
 
@@ -378,7 +431,7 @@ def _robot_common() -> tuple[Requirement, ...]:
 
 
 def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec, ...]:
-    """返回仓库当前 12 个 Python 工作流的先决条件目录。"""
+    """返回仓库当前 15 个 Python 工作流的先决条件目录。"""
 
     position = int(position)
     pump = int(pump)
@@ -450,6 +503,24 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
                 *_robot_common(),
                 _opc_eq(S06_BEAKER_SENSOR, False, note="机器人放料前 S06 加液位必须为空"),
                 *s06_common,
+                _manual("parameter", "skip_level_check", "False 时储液瓶传感器必须在位"),
+            ),
+        ),
+        WorkflowSpec(
+            "szlab_robot_liquid_stirring_demo_workflow",
+            (
+                "szlab_mixer_robot.submit_place_to_s06",
+                "szlab_mixer_pump.run_solvent_addition",
+                "szlab_mixer_robot.submit_pick_from_s06",
+                "szlab_mixer_robot.submit_place_to_s04",
+                "szlab_mixer_stirrer.run_stirring",
+            ),
+            (
+                *_robot_common(),
+                _opc_eq(S06_BEAKER_SENSOR, False, note="机器人放料前 S06 加液位必须为空"),
+                *s06_common,
+                _opc_eq(s04_sensor(position), False, note="机器人放料前 S04 搅拌位必须为空"),
+                *s04_common,
                 _manual("parameter", "skip_level_check", "False 时储液瓶传感器必须在位"),
             ),
         ),
@@ -540,6 +611,46 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
             (
                 _opc_eq(S06_BEAKER_SENSOR, True),
                 *s06_common,
+            ),
+        ),
+        WorkflowSpec(
+            "szlab_material_s06_workflow",
+            (
+                MATERIAL_S03_PICK_ACTION,
+                MATERIAL_S06_PLACE_ACTION,
+                MATERIAL_S06_ADD_ACTION,
+                MATERIAL_S06_PICK_ACTION,
+            ),
+            (
+                *_robot_common(),
+                _opc_eq(S03_BEAKER_SENSOR, True, note="S03 1-1 取料源位必须有烧杯"),
+                _opc_eq(S06_BEAKER_SENSOR, False, note="机器人放料前 S06 加液位必须为空"),
+                *s06_common,
+                _manual("parameter", "skip_level_check", "False 时储液瓶传感器必须在位"),
+            ),
+        ),
+        WorkflowSpec(
+            "s07_material_dosing",
+            (
+                S07_MATERIAL_ROBOT_PICK_ACTION,
+                S07_MATERIAL_PREPARE_ACTION,
+                S07_MATERIAL_ROBOT_PLACE_ACTION,
+                S07_MATERIAL_COMMIT_ACTION,
+                S07_MATERIAL_ROBOT_PICK_ACTION,
+                S07_MATERIAL_ROBOT_PLACE_ACTION,
+                S07_MATERIAL_COMMIT_ACTION,
+                S07_MATERIAL_DOSE_ACTION,
+            ),
+            (
+                *_robot_common(),
+                _opc_eq(S03_BEAKER_SENSOR, True, note="烧杯源 Site 必须有 500 mL 烧杯"),
+                _opc_eq(s071_sensor(1), True, note="示例粉桶源 Site 必须有粉桶"),
+                _opc_eq(s072_sensor(1), False, note="S07/S072 交接位必须为空"),
+                _opc_eq(S07_HOME, True),
+                _opc_eq(S07_ALLOW, True),
+                _opc_eq(S07_DONE, 0, note="每轮开始前完成工艺号应清零"),
+                _manual("config", "standard_actions_enabled", "必须启用标准 robot.pick/place"),
+                _manual("parameter", "transfer_id", "两次搬运分别使用稳定、非空且不同的 ID"),
             ),
         ),
     )
@@ -692,7 +803,13 @@ class WorkflowHandshakeSimulator:
         self.process_delay = max(float(process_delay), 0.0)
         self.workflow = selected_workflow
         self.s06_robot_workflow = bool(
-            s06_robot_workflow or selected_workflow == "s06_robot_workflow"
+            s06_robot_workflow
+            or selected_workflow
+            in {
+                "s06_robot_workflow",
+                "szlab_material_s06_workflow",
+                "szlab_robot_liquid_stirring_demo_workflow",
+            }
         )
         self.s09_pipetting_workflow = bool(
             s09_pipetting_workflow
@@ -719,7 +836,7 @@ class WorkflowHandshakeSimulator:
     def initialization_values(self) -> dict[str, Any]:
         components = self.enabled_components
         values: dict[str, Any] = {}
-        if components & {"robot_s04", "robot_s06", "robot_s07"}:
+        if components & {"robot_s03", "robot_s04", "robot_s06", "robot_s07"}:
             values.update(
                 {
                     ROBOT_HOME: True,
@@ -728,6 +845,8 @@ class WorkflowHandshakeSimulator:
                     ROBOT_TASK_COMPLETE: 0,
                 }
             )
+        if "robot_s03" in components:
+            values[S03_BEAKER_SENSOR] = True
         if "robot_s04" in components:
             values[s04_sensor(self.position)] = False
         if "stirrer" in components:
@@ -751,7 +870,16 @@ class WorkflowHandshakeSimulator:
             for index in ((1, 2) if self.pump == 3 else (self.pump,)):
                 values[S06_STORAGE_BOTTLE_SENSOR[index]] = True
         if "robot_s07" in components:
-            values.update({s071_sensor(1): False, s072_sensor(1): False})
+            values.update(
+                {
+                    s071_sensor(1): self.workflow == "s07_material_dosing",
+                    s072_sensor(1): False,
+                    s072_sensor(2): False,
+                    S072_ROBOT_PRODUCT: 0,
+                }
+            )
+        if self.workflow == "s07_material_dosing":
+            values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update({S07_HOME: True, S07_ALLOW: True, S07_DONE: 0})
         if "s08" in components:
@@ -781,7 +909,7 @@ class WorkflowHandshakeSimulator:
     def cleanup_values(self) -> dict[str, Any]:
         components = self.enabled_components
         values: dict[str, Any] = {}
-        if components & {"robot_s04", "robot_s06", "robot_s07"}:
+        if components & {"robot_s03", "robot_s04", "robot_s06", "robot_s07"}:
             values.update(
                 {
                     ROBOT_HOME: False,
@@ -789,6 +917,8 @@ class WorkflowHandshakeSimulator:
                     ROBOT_TASK_COMPLETE: 0,
                 }
             )
+        if "robot_s03" in components:
+            values[S03_BEAKER_SENSOR] = False
         if "robot_s04" in components:
             values[s04_sensor(self.position)] = False
         if "stirrer" in components:
@@ -812,7 +942,16 @@ class WorkflowHandshakeSimulator:
             for index in ((1, 2) if self.pump == 3 else (self.pump,)):
                 values[S06_STORAGE_BOTTLE_SENSOR[index]] = False
         if "robot_s07" in components:
-            values.update({s071_sensor(1): False, s072_sensor(1): False})
+            values.update(
+                {
+                    s071_sensor(1): False,
+                    s072_sensor(1): False,
+                    s072_sensor(2): False,
+                    S072_ROBOT_PRODUCT: 0,
+                }
+            )
+        if self.workflow == "s07_material_dosing":
+            values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update({S07_HOME: False, S07_ALLOW: False, S07_DONE: 0})
         if "s08" in components:
@@ -861,7 +1000,7 @@ class WorkflowHandshakeSimulator:
         now = time.monotonic() if now is None else float(now)
         components = self.enabled_components
         events: list[HandshakeEvent] = []
-        if components & {"robot_s04", "robot_s06", "robot_s07"}:
+        if components & {"robot_s03", "robot_s04", "robot_s06", "robot_s07"}:
             events.extend(self._step_robot(now))
         if "stirrer" in components:
             events.extend(self._step_stirrer(now))
@@ -881,7 +1020,7 @@ class WorkflowHandshakeSimulator:
 
         components = self.enabled_components
         cycles = []
-        if components & {"robot_s04", "robot_s06", "robot_s07"}:
+        if components & {"robot_s03", "robot_s04", "robot_s06", "robot_s07"}:
             cycles.append(self.robot)
         if "stirrer" in components:
             cycles.append(self.stirrer)
@@ -904,7 +1043,9 @@ class WorkflowHandshakeSimulator:
             if write_done and task in ROBOT_ACTION_BY_TASK:
                 position = 0
                 sensor = ""
-                if task in (7, 8):
+                if task == 6:
+                    sensor = S03_BEAKER_SENSOR
+                elif task in (7, 8):
                     position = int(self.adapter.read(S04_ROBOT_POSITION) or 0)
                     if position != self.position:
                         raise RuntimeError(
@@ -913,13 +1054,13 @@ class WorkflowHandshakeSimulator:
                     sensor = s04_sensor(position)
                 elif task in (11, 12):
                     sensor = S06_BEAKER_SENSOR
-                elif task == 13:
+                elif task in (13, 14):
                     position = int(self.adapter.read(S071_ROBOT_POSITION) or 0)
                     sensor = s071_sensor(position)
                 elif task in (15, 16):
-                    # 当前仓库 s07_robot_workflow 固定使用 S072 position=1；
-                    # 设备驱动只把产品类型写入 PLC，没有单独写位置变量。
-                    position = 1
+                    # S072 没有独立位置变量；产品选择器同时确定两个交接位
+                    # 之一，必须据此更新对应的 presence sensor。
+                    position = int(self.adapter.read(S072_ROBOT_PRODUCT) or 0)
                     sensor = s072_sensor(position)
                 self.adapter.write(ROBOT_WRITE_ALLOWED, False)
                 self.adapter.write(ROBOT_HOME, False)
@@ -931,7 +1072,7 @@ class WorkflowHandshakeSimulator:
                 cycle.due_at = now + self.process_delay
                 events.append(
                     HandshakeEvent(
-                        ROBOT_ACTION_BY_TASK[task],
+                        self._robot_action(task),
                         "accepted",
                         {
                             "task_number": task,
@@ -944,6 +1085,11 @@ class WorkflowHandshakeSimulator:
             occupied = cycle.process in (7, 11, 13, 15)
             if cycle.sensor:
                 self.adapter.write(cycle.sensor, occupied)
+            if self.workflow == "s07_material_dosing" and cycle.process in (6, 14, 15):
+                self.adapter.write(
+                    ROBOT_TOOL_PAYLOAD_SENSOR,
+                    cycle.process in (6, 14),
+                )
             rearmed_sensor = ""
             if cycle.process == 13:
                 self._s071_loaded_sensor = cycle.sensor
@@ -958,7 +1104,7 @@ class WorkflowHandshakeSimulator:
             cycle.phase = "await_reset"
             events.append(
                 HandshakeEvent(
-                    ROBOT_ACTION_BY_TASK[cycle.process],
+                    self._robot_action(cycle.process),
                     "completed",
                     {
                         "task_number": cycle.process,
@@ -981,7 +1127,7 @@ class WorkflowHandshakeSimulator:
                 self.adapter.write(ROBOT_HOME, True)
                 events.append(
                     HandshakeEvent(
-                        ROBOT_ACTION_BY_TASK[cycle.process],
+                        self._robot_action(cycle.process),
                         "reset",
                         {
                             "task_number": cycle.process,
@@ -994,6 +1140,13 @@ class WorkflowHandshakeSimulator:
                 cycle.position = 0
                 cycle.sensor = ""
         return events
+
+    def _robot_action(self, task: int) -> str:
+        if self.workflow == "szlab_material_s06_workflow":
+            return MATERIAL_S06_ACTION_BY_TASK[task]
+        if self.workflow == "s07_material_dosing":
+            return MATERIAL_S07_ACTION_BY_TASK[task]
+        return ROBOT_ACTION_BY_TASK[task]
 
     def _step_stirrer(self, now: float) -> list[HandshakeEvent]:
         cycle = self.stirrer
@@ -1057,7 +1210,7 @@ class WorkflowHandshakeSimulator:
                 cycle.due_at = now + self.process_delay
                 events.append(
                     HandshakeEvent(
-                        SUPPORTED_ACTIONS[4],
+                        self._pump_action(),
                         "accepted",
                         {"process": process},
                     )
@@ -1067,7 +1220,7 @@ class WorkflowHandshakeSimulator:
             cycle.phase = "await_reset"
             events.append(
                 HandshakeEvent(
-                    SUPPORTED_ACTIONS[4],
+                    self._pump_action(),
                     "completed",
                     {"process": cycle.process},
                 )
@@ -1082,7 +1235,7 @@ class WorkflowHandshakeSimulator:
                 self.adapter.write(S06_ALLOW, True)
                 events.append(
                     HandshakeEvent(
-                        SUPPORTED_ACTIONS[4],
+                        self._pump_action(),
                         "reset",
                         {
                             "process": cycle.process,
@@ -1093,6 +1246,11 @@ class WorkflowHandshakeSimulator:
                 cycle.phase = "idle"
                 cycle.process = 0
         return events
+
+    def _pump_action(self) -> str:
+        if self.workflow == "szlab_material_s06_workflow":
+            return MATERIAL_S06_ADD_ACTION
+        return S06_PUMP_ACTION
 
     def _step_s07(self, now: float) -> list[HandshakeEvent]:
         """模拟 S07 扫码、转位和注粉三个工艺的可重复握手。"""
@@ -1111,7 +1269,7 @@ class WorkflowHandshakeSimulator:
                 cycle.due_at = now + self.process_delay
                 events.append(
                     HandshakeEvent(
-                        S07_SOLID_ACTION_BY_PROCESS[process],
+                        self._s07_action(process),
                         "accepted",
                         {
                             "process": process,
@@ -1124,7 +1282,7 @@ class WorkflowHandshakeSimulator:
             cycle.phase = "await_reset"
             events.append(
                 HandshakeEvent(
-                    S07_SOLID_ACTION_BY_PROCESS[cycle.process],
+                    self._s07_action(cycle.process),
                     "completed",
                     {
                         "process": cycle.process,
@@ -1138,7 +1296,7 @@ class WorkflowHandshakeSimulator:
                 self.adapter.write(S07_ALLOW, True)
                 events.append(
                     HandshakeEvent(
-                        S07_SOLID_ACTION_BY_PROCESS[cycle.process],
+                        self._s07_action(cycle.process),
                         "reset",
                         {
                             "process": cycle.process,
@@ -1149,6 +1307,14 @@ class WorkflowHandshakeSimulator:
                 cycle.phase = "idle"
                 cycle.process = 0
         return events
+
+    def _s07_action(self, process: int) -> str:
+        if self.workflow == "s07_material_dosing":
+            if process == 2:
+                return S07_MATERIAL_PREPARE_ACTION
+            if process == 3:
+                return S07_MATERIAL_DOSE_ACTION
+        return S07_SOLID_ACTION_BY_PROCESS[process]
 
     def _step_s08(self, now: float) -> list[HandshakeEvent]:
         """模拟 S08 开/关盖工艺，并在 Edge 复位参数后清零完成码。"""

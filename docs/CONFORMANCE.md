@@ -15,6 +15,15 @@
 - 模型由同一个设备/资源装饰器绑定；
 - `deployment/`、`tests/`、`docs/`、`migration/` 不属于扫描根；
 - 静态发现不得 import 驱动、实例化设备或连接硬件。
+- Graph 是实例拓扑、连接参数与激活选择的唯一权威来源，不使用运行时 Profile。
+
+## Workflow authoring 边界
+
+- 新 Workflow 遵循 Core 的
+  [`Workflow Python 写法规范`](https://github.com/Uni-Lab-OS/Uni-Lab-Core/blob/main/docs/guides/python-workflow-authoring-standard.md)；
+- 新材料链必须从 Action 参数起使用 `ResourceSlot`，不能只靠 position/sample_id 和控制边推断；
+- `szlab_poly_studio/workflows/s06_material.py` 是当前可发布的单工作流参考实现；
+- `docs/examples/workflow_authoring/*_target.py` 只描述 C1 目标合同，不进入 `package.yaml`。
 
 ## 资产边界
 
@@ -33,6 +42,6 @@ python -m pytest
 ./scripts/build-package.sh
 ```
 
-`check-package.sh` 当前使用 OS 的旧 `--devices` 兼容入口。Issue #147 的 OS delivery 完成后，
-必须增加 `unilab package inspect --path .`、`unilab --workspace . --check_mode` 以及 workspace /
-clean-wheel Catalog 一致性检查。
+`check-package.sh` 执行 `package inspect --path .` 与 `--workspace . --check_mode`；
+`build-package.sh` 通过 package manager 构建并审计 clean wheel。自动测试同时验证 workspace /
+clean-wheel Catalog 一致性。

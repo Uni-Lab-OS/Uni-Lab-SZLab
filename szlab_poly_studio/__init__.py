@@ -21,9 +21,14 @@ __all__ = [
     "s1_loading_buffer_warehouse",
     "s2_tip_placeholder_warehouse",
     "s3_unused_beaker_warehouse",
+    "s3_unused_sample_vial_warehouse",
     "s10_liquid_reagent_placeholder_warehouse",
     "s11_used_beaker_warehouse",
-    "beaker_warehouse",
+    "s11_used_sample_vial_warehouse",
+    "s04_process_warehouse",
+    "s05_process_warehouse",
+    "s06_process_warehouse",
+    "s07_process_warehouse",
 ]
 
 if TYPE_CHECKING:
@@ -42,13 +47,18 @@ if TYPE_CHECKING:
     )
     from szlab_poly_studio.resources.decks import SZLabPolyStudioDeck
     from szlab_poly_studio.resources.warehouses import (
-        beaker_warehouse,
         powder_container_placeholder_warehouse,
+        s04_process_warehouse,
+        s05_process_warehouse,
+        s06_process_warehouse,
+        s07_process_warehouse,
         s1_loading_buffer_warehouse,
         s2_tip_placeholder_warehouse,
         s3_unused_beaker_warehouse,
+        s3_unused_sample_vial_warehouse,
         s10_liquid_reagent_placeholder_warehouse,
         s11_used_beaker_warehouse,
+        s11_used_sample_vial_warehouse,
     )
 
 
@@ -113,13 +123,18 @@ def __getattr__(name: str):
 
         return getattr(materials, name)
     if name in {
-        "beaker_warehouse",
         "powder_container_placeholder_warehouse",
         "s1_loading_buffer_warehouse",
         "s2_tip_placeholder_warehouse",
         "s3_unused_beaker_warehouse",
+        "s3_unused_sample_vial_warehouse",
         "s10_liquid_reagent_placeholder_warehouse",
         "s11_used_beaker_warehouse",
+        "s11_used_sample_vial_warehouse",
+        "s04_process_warehouse",
+        "s05_process_warehouse",
+        "s06_process_warehouse",
+        "s07_process_warehouse",
     }:
         from szlab_poly_studio.resources import warehouses
 

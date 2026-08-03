@@ -4,6 +4,10 @@ shape:
   display_name: 试剂瓶堆栈
   applies_to:
   - category: reagent_stack
+  envelope:
+  - 560.0
+  - 120.0
+  - 565.0
   sort: rear-edge
   parts:
   - type: sites

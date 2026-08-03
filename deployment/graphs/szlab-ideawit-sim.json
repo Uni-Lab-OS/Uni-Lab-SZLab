@@ -7,15 +7,13 @@
         "s1_loading_buffer",
         "s2_tip_warehouse",
         "s3_unused_beaker",
-        "s3_unused_vial",
         "powder_container_warehouse",
         "s10_liquid_reagent",
-        "s11_used_beaker",
-        "s11_used_vial"
+        "s11_used_beaker"
       ],
       "parent": null,
       "type": "deck",
-      "class": "szlab_poly_studio_deck",
+      "class": "community.szlab_poly_studio.szlab_poly_studio_deck",
       "position": {
         "x": 0,
         "y": 0,
@@ -32,7 +30,7 @@
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s1_loading_buffer_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s1_loading_buffer_warehouse",
       "position": {
         "x": 100,
         "y": 100,
@@ -47,7 +45,7 @@
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s2_tip_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s2_tip_placeholder_warehouse",
       "position": {
         "x": 100,
         "y": 450,
@@ -58,11 +56,12 @@
     },
     {
       "id": "s3_unused_beaker",
+      "uuid": "29f43434-ff8b-5246-b924-a20cddd452fc",
       "name": "S3 未使用烧杯仓",
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_beaker_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s3_unused_beaker_warehouse",
       "position": {
         "x": 500,
         "y": 100,
@@ -72,27 +71,13 @@
       "data": {}
     },
     {
-      "id": "s3_unused_vial",
-      "name": "S3 未使用样品瓶仓",
-      "children": [],
-      "parent": "szlab_poly_deck",
-      "type": "warehouse",
-      "class": "szlab_poly_s3_unused_sample_vial_warehouse",
-      "position": {
-        "x": 500,
-        "y": 600,
-        "z": 0
-      },
-      "config": {},
-      "data": {}
-    },
-    {
       "id": "powder_container_warehouse",
+      "uuid": "fa7b0692-2e78-5d5e-b789-9b0dfffb5dc7",
       "name": "固体粉桶仓占位",
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_powder_container_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_powder_container_placeholder_warehouse",
       "position": {
         "x": 1800,
         "y": 700,
@@ -107,7 +92,7 @@
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_s10_liquid_reagent_placeholder_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s10_liquid_reagent_placeholder_warehouse",
       "position": {
         "x": 1800,
         "y": 100,
@@ -122,25 +107,10 @@
       "children": [],
       "parent": "szlab_poly_deck",
       "type": "warehouse",
-      "class": "szlab_poly_beaker_warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_s11_used_beaker_warehouse",
       "position": {
         "x": 1100,
         "y": 100,
-        "z": 0
-      },
-      "config": {},
-      "data": {}
-    },
-    {
-      "id": "s11_used_vial",
-      "name": "S11 使用样品瓶成品仓",
-      "children": [],
-      "parent": "szlab_poly_deck",
-      "type": "warehouse",
-      "class": "szlab_poly_s11_used_sample_vial_warehouse",
-      "position": {
-        "x": 1100,
-        "y": 600,
         "z": 0
       },
       "config": {},
@@ -152,7 +122,7 @@
       "children": [],
       "parent": null,
       "type": "container",
-      "class": "szlab_beaker_500ml",
+      "class": "community.szlab_poly_studio.szlab_beaker_500ml",
       "position": {
         "x": 350,
         "y": 1050,
@@ -169,7 +139,7 @@
       "children": [],
       "parent": null,
       "type": "container",
-      "class": "szlab_sample_vial_250ml",
+      "class": "community.szlab_poly_studio.szlab_sample_vial_250ml",
       "position": {
         "x": 550,
         "y": 1050,
@@ -186,7 +156,7 @@
       "children": [],
       "parent": null,
       "type": "container",
-      "class": "szlab_liquid_reagent_bottle_100ml",
+      "class": "community.szlab_poly_studio.szlab_liquid_reagent_bottle_100ml",
       "position": {
         "x": 750,
         "y": 1050,
@@ -203,7 +173,7 @@
       "children": [],
       "parent": null,
       "type": "container",
-      "class": "szlab_powder_container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
       "position": {
         "x": 950,
         "y": 1050,
@@ -220,7 +190,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_poly_plc",
+      "class": "community.szlab_poly_studio.szlab_poly_plc",
       "position": {
         "x": 0,
         "y": 1500,
@@ -242,7 +212,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_robot",
+      "class": "community.szlab_poly_studio.szlab_mixer_robot",
       "position": {
         "x": 500,
         "y": 1500,
@@ -258,10 +228,10 @@
     {
       "id": "szlab_mixer_stirrer",
       "name": "S04 磁搅",
-      "children": [],
+      "children": ["s04_process_warehouse"],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_stirrer",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
       "position": {
         "x": 750,
         "y": 1500,
@@ -277,10 +247,10 @@
     {
       "id": "szlab_mixer_photoshotting",
       "name": "S05 拍照检测",
-      "children": [],
+      "children": ["s05_process_warehouse"],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_photoshotting",
+      "class": "community.szlab_poly_studio.szlab_mixer_photoshotting",
       "position": {
         "x": 1000,
         "y": 1500,
@@ -296,10 +266,10 @@
     {
       "id": "szlab_mixer_pump",
       "name": "S06 注射泵",
-      "children": [],
+      "children": ["s06_process_warehouse"],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_pump",
+      "class": "community.szlab_poly_studio.szlab_mixer_pump",
       "position": {
         "x": 1250,
         "y": 1500,
@@ -315,10 +285,10 @@
     {
       "id": "szlab_s07_solid_addition",
       "name": "S07 固体加料",
-      "children": [],
+      "children": ["s07_process_warehouse"],
       "parent": null,
       "type": "device",
-      "class": "szlab_s07_solid_addition",
+      "class": "community.szlab_poly_studio.szlab_s07_solid_addition",
       "position": {
         "x": 1500,
         "y": 1500,
@@ -332,12 +302,57 @@
       }
     },
     {
+      "id": "s04_process_warehouse",
+      "name": "S04磁搅工位仓",
+      "children": [],
+      "parent": "szlab_mixer_stirrer",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "s05_process_warehouse",
+      "name": "S05拍照工位仓",
+      "children": [],
+      "parent": "szlab_mixer_photoshotting",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s05_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "s06_process_warehouse",
+      "name": "S06加液工位仓",
+      "children": [],
+      "parent": "szlab_mixer_pump",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s06_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "s07_process_warehouse",
+      "uuid": "b6c71c10-4b75-55c9-8789-2fdcda682361",
+      "name": "S07固体加料转盘仓",
+      "children": [],
+      "parent": "szlab_s07_solid_addition",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s07_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
       "id": "szlab_s08_cap_station",
       "name": "S08 开关盖",
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_s08_cap_station",
+      "class": "community.szlab_poly_studio.szlab_s08_cap_station",
       "position": {
         "x": 1750,
         "y": 1500,
@@ -356,7 +371,7 @@
       "children": [],
       "parent": null,
       "type": "device",
-      "class": "szlab_mixer_pipetting_station",
+      "class": "community.szlab_poly_studio.szlab_mixer_pipetting_station",
       "position": {
         "x": 2000,
         "y": 1500,

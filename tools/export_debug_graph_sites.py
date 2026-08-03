@@ -165,7 +165,10 @@ STATION_PARTS = [
         "position": {"x": 1105.0, "y": 84.0, "z": 0.0},
         "category": "vision_cell",
         "model": "装配体1^DXY260502-10-00 视觉检测模块/base_link.STL",
-        "note": "占位 340×329；中心距+Y边128→相对LL (170,201)；中心(1275,285)→LL=(1105,84)；model.position Y=+36.5mm；侧臂不计占位",
+        "note": (
+            "占位 340×329；中心距+Y边128→相对LL (170,201)；"
+            "中心(1275,285)→LL=(1105,84)；model.position Y=+36.5mm；侧臂不计占位"
+        ),
     },
 ]
 
@@ -296,9 +299,7 @@ def _clean_shape_config(node: dict[str, Any]) -> dict[str, Any]:
     for key in [
         key
         for key, value in cfg.items()
-        if isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and key.startswith(LEGACY_SHAPE_KEY_PREFIXES)
+        if isinstance(value, (int, float)) and not isinstance(value, bool) and key.startswith(LEGACY_SHAPE_KEY_PREFIXES)
     ]:
         del cfg[key]
     return cfg
@@ -350,9 +351,7 @@ def _tip_rack_sites() -> list[dict[str, Any]]:
     ]
 
 
-def _tip_box_sites(
-    slot_label: str, *, rotated: bool = False
-) -> list[dict[str, Any]]:
+def _tip_box_sites(slot_label: str, *, rotated: bool = False) -> list[dict[str, Any]]:
     """TIP 盒内 4 列 × 6 行枪头孔（相对 TIP 盒左下角）。
 
     ``rotated`` 给盒子转 90° 摆放的工位用（S1 上料过渡仓），孔阵随盒体一起转。
@@ -444,10 +443,7 @@ def _drop_nodes(out: dict[str, Any], dropped: tuple[str, ...]) -> None:
     links = out.get("links")
     if links:
         out["links"] = [
-            link
-            for link in links
-            if str(link.get("source")) not in dropped
-            and str(link.get("target")) not in dropped
+            link for link in links if str(link.get("source")) not in dropped and str(link.get("target")) not in dropped
         ]
 
 
@@ -516,9 +512,7 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         )
 
     # Reagent bottle stack — SZLab_ReagentBottleStackCarrier
-    reagent_carrier = SZLab_ReagentBottleStackCarrier(
-        REAGENT_STACK["name"], fill_placeholders=False
-    )
+    reagent_carrier = SZLab_ReagentBottleStackCarrier(REAGENT_STACK["name"], fill_placeholders=False)
     reagent_node = nodes_by_id[REAGENT_STACK["node_id"]]
     reagent_node["name"] = REAGENT_STACK["name"]
     reagent_node["position"] = dict(REAGENT_STACK["position"])
@@ -537,14 +531,11 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
     reagent_cfg["num_items_y"] = int(reagent_carrier.num_items_y)
     reagent_cfg["num_items_z"] = int(reagent_carrier.num_items_z)
     reagent_cfg["layout_note"] = (
-        "origin=bottom-left; SZLab_ReagentBottleStackCarrier; "
-        "4x5 slots, first center (80,50,70) Ø56, dx=100, dz=165"
+        "origin=bottom-left; SZLab_ReagentBottleStackCarrier; 4x5 slots, first center (80,50,70) Ø56, dx=100, dz=165"
     )
 
     # Powder container stack — SZLab_PowderContainerStackCarrier
-    powder_carrier = SZLab_PowderContainerStackCarrier(
-        POWDER_STACK["name"], fill_placeholders=False
-    )
+    powder_carrier = SZLab_PowderContainerStackCarrier(POWDER_STACK["name"], fill_placeholders=False)
     powder_node = nodes_by_id[POWDER_STACK["node_id"]]
     powder_node["name"] = POWDER_STACK["name"]
     powder_node["position"] = dict(POWDER_STACK["position"])
@@ -569,9 +560,7 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
     )
 
     # S1 上料过渡仓 — SZLab_TipBoxLoaderCarrier
-    loader_carrier = SZLab_TipBoxLoaderCarrier(
-        TIP_BOX_LOADER["name"], fill_placeholders=False
-    )
+    loader_carrier = SZLab_TipBoxLoaderCarrier(TIP_BOX_LOADER["name"], fill_placeholders=False)
     loader_node = nodes_by_id[TIP_BOX_LOADER["node_id"]]
     loader_node["name"] = TIP_BOX_LOADER["name"]
     loader_node["position"] = dict(TIP_BOX_LOADER["position"])
@@ -664,9 +653,7 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         _fill_stack_slots(out, nodes_by_id, node_id)
 
     # Tip 架的 6 个工位放入 TIP 盒组件，枪头孔挂在 TIP 盒自己身上
-    _fill_stack_slots(
-        out, nodes_by_id, TIP_RACK["node_id"], inner_sites=_tip_box_sites
-    )
+    _fill_stack_slots(out, nodes_by_id, TIP_RACK["node_id"], inner_sites=_tip_box_sites)
 
     # S1 上料过渡仓同样是 6 个 TIP 盒，只是整台工装转了 90°
     _fill_stack_slots(
@@ -704,9 +691,7 @@ def _fill_stack_slots(
         if factory is None:
             continue
 
-        material_id = RESERVED_OCCUPANTS.get(
-            (node_id, label), f"{node_id}__{label}"
-        )
+        material_id = RESERVED_OCCUPANTS.get((node_id, label), f"{node_id}__{label}")
         display = MATERIAL_DISPLAY.get(str(content), str(content))
         resource = factory(name=material_id)
 
@@ -742,9 +727,7 @@ def _fill_stack_slots(
                 continue
             other_children = other.get("children") or []
             if material_id in other_children:
-                other["children"] = [
-                    child for child in other_children if child != material_id
-                ]
+                other["children"] = [child for child in other_children if child != material_id]
         filled += 1
 
     node["children"] = children
@@ -771,34 +754,14 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    tip_count = next(
-        len(n["config"]["sites"])
-        for n in enriched["nodes"]
-        if n["id"] == TIP_RACK["node_id"]
-    )
-    loader_count = next(
-        len(n["config"]["sites"])
-        for n in enriched["nodes"]
-        if n["id"] == TIP_BOX_LOADER["node_id"]
-    )
+    tip_count = next(len(n["config"]["sites"]) for n in enriched["nodes"] if n["id"] == TIP_RACK["node_id"])
+    loader_count = next(len(n["config"]["sites"]) for n in enriched["nodes"] if n["id"] == TIP_BOX_LOADER["node_id"])
     beaker_counts = {
-        s["node_id"]: next(
-            len(n["config"]["sites"])
-            for n in enriched["nodes"]
-            if n["id"] == s["node_id"]
-        )
+        s["node_id"]: next(len(n["config"]["sites"]) for n in enriched["nodes"] if n["id"] == s["node_id"])
         for s in BEAKER_STACKS
     }
-    reagent_count = next(
-        len(n["config"]["sites"])
-        for n in enriched["nodes"]
-        if n["id"] == REAGENT_STACK["node_id"]
-    )
-    powder_count = next(
-        len(n["config"]["sites"])
-        for n in enriched["nodes"]
-        if n["id"] == POWDER_STACK["node_id"]
-    )
+    reagent_count = next(len(n["config"]["sites"]) for n in enriched["nodes"] if n["id"] == REAGENT_STACK["node_id"])
+    powder_count = next(len(n["config"]["sites"]) for n in enriched["nodes"] if n["id"] == POWDER_STACK["node_id"])
     placed: dict[str, int] = {}
     tip_spots = 0
     for node in enriched["nodes"]:
@@ -816,10 +779,7 @@ def main() -> None:
         f"  beaker_sites={beaker_counts}\n"
         f"  reagent_sites={reagent_count} powder_sites={powder_count}\n"
         f"  stations={{"
-        + ", ".join(
-            f"{p['node_id']}@{p['position']['x']},{p['position']['y']}"
-            for p in (*STATION_PARTS, RAIL_ROBOT)
-        )
+        + ", ".join(f"{p['node_id']}@{p['position']['x']},{p['position']['y']}" for p in (*STATION_PARTS, RAIL_ROBOT))
         + "}\n"
         f"  placed_materials={placed}"
     )

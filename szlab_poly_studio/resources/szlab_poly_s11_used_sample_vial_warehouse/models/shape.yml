@@ -1,0 +1,14 @@
+schema_version: 1
+shape:
+  id: sample_vial_stack
+  display_name: 样品瓶堆栈
+  applies_to:
+  - category: sample_vial_stack
+  envelope:
+  - 790.0
+  - 200.0
+  - 560.0
+  sort: rear-edge
+  parts:
+  - type: sites
+    generator: open-rack

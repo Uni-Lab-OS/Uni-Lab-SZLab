@@ -1,38 +1,51 @@
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+from unilabos.package_manager import PackageCatalog
 
-def test_szlab_debug_graph_uses_only_registered_project_classes(
+
+def _deployment_graphs(repo_root: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in (repo_root / "deployment" / "graphs").glob("szlab-*.json")
+        if " copy" not in path.name
+    )
+
+
+def test_szlab_graphs_use_only_catalog_definitions(
     repo_root: Path,
-    action_catalog: dict,
+    package_catalog: PackageCatalog,
 ) -> None:
-    payload = json.loads(
-        (repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(
-            encoding="utf-8"
+    catalog_classes = {
+        definition.fqid
+        for collection in (
+            package_catalog.definitions.devices,
+            package_catalog.definitions.resources,
         )
-    )
-    ids = [node["id"] for node in payload["nodes"]]
-    assert len(ids) == len(set(ids))
-    assert payload["links"] == []
+        for definition in collection
+    }
+    for graph_path in _deployment_graphs(repo_root):
+        payload = json.loads(graph_path.read_text(encoding="utf-8"))
+        ids = [node["id"] for node in payload["nodes"]]
+        assert len(ids) == len(set(ids)), graph_path.name
+        assert set(node["class"] for node in payload["nodes"]) <= catalog_classes
+        assert all(node["class"].startswith("community.szlab_poly_studio.") for node in payload["nodes"])
 
-    device_classes = {
-        ref.split(".", 1)[0]
-        for ref in action_catalog
-        if not ref.startswith("szlab_poly_studio.")
-    }
-    graph_device_classes = {
-        node["class"] for node in payload["nodes"] if node["type"] == "device"
-    }
-    assert graph_device_classes <= device_classes
+
+def test_szlab_graph_owns_connection_configuration(repo_root: Path) -> None:
+    payload = json.loads((repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(encoding="utf-8"))
+    assert payload["links"] == []
     assert all(not node["class"].casefold().startswith("ai4c") for node in payload["nodes"])
-    assert all(
-        node.get("config", {}).get("auto_connect") is False
-        for node in payload["nodes"]
-        if node["class"] == "szlab_poly_plc"
-    )
-    unified_plc_device_classes = {
+    plc = next(node for node in payload["nodes"] if node["id"] == "szlab_poly_plc")
+    assert plc["config"]["url"] == "opc.tcp://127.0.0.1:50100/"
+    assert plc["config"]["csv_path"] == "szlab_plc_0730.csv"
+    assert plc["config"]["auto_connect"] is False
+
+    unified_plc_device_ids = {
         "szlab_mixer_robot",
         "szlab_mixer_stirrer",
         "szlab_mixer_photoshotting",
@@ -42,13 +55,36 @@ def test_szlab_debug_graph_uses_only_registered_project_classes(
         "szlab_mixer_pipetting_station",
     }
     for node in payload["nodes"]:
-        if node["class"] not in unified_plc_device_classes:
+        if node["id"] not in unified_plc_device_ids:
             continue
         config = node.get("config", {})
         assert config.get("plc_device_id") == "szlab_poly_plc"
         assert "url" not in config
         assert "csv_path" not in config
         assert "auto_connect" not in config
+
+
+def test_every_graph_config_matches_its_catalog_init_schema(
+    repo_root: Path,
+    package_catalog: PackageCatalog,
+    monkeypatch,
+) -> None:
+    from unilabos.package_manager.consumers import register_package_catalog
+    from unilabos.registry.registry import lab_registry
+
+    monkeypatch.setattr(lab_registry, "device_type_registry", {})
+    monkeypatch.setattr(lab_registry, "resource_type_registry", {})
+    register_package_catalog(lab_registry, package_catalog)
+
+    for graph_path in _deployment_graphs(repo_root):
+        payload = json.loads(graph_path.read_text(encoding="utf-8"))
+        for node in payload["nodes"]:
+            registry = (
+                lab_registry.device_type_registry if node["type"] == "device" else lab_registry.resource_type_registry
+            )
+            schema = (registry[node["class"]].get("init_param_schema") or {}).get("config")
+            if schema is not None:
+                Draft202012Validator(schema).validate(node.get("config") or {})
 
 
 def test_repository_is_one_distribution_with_one_import_package(repo_root: Path) -> None:
@@ -60,6 +96,52 @@ def test_repository_is_one_distribution_with_one_import_package(repo_root: Path)
     assert 'name = "szlab-poly-studio"' in pyproject
     assert 'include = ["szlab_poly_studio*"]' in pyproject
     assert "unilabos.model_bundles" not in pyproject
+
+
+def test_repository_has_no_runtime_profile_protocol(repo_root: Path) -> None:
+    assert not (repo_root / "szlab_poly_studio" / "profiles").exists()
+    assert not (repo_root / "schemas" / "profile-v1.schema.json").exists()
+    assert not (repo_root / "schemas" / "device-template-v2.schema.json").exists()
+
+
+def test_stack_status_topic_does_not_call_logged_action(repo_root: Path) -> None:
+    device_path = (
+        repo_root
+        / "szlab_poly_studio"
+        / "devices"
+        / "szlab_poly_plc"
+        / "device.py"
+    )
+    module = ast.parse(device_path.read_text(encoding="utf-8"))
+    device_class = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.ClassDef) and node.name == "SZLabPolyPLCDevice"
+    )
+    stack_status = next(
+        node
+        for node in device_class.body
+        if isinstance(node, ast.FunctionDef) and node.name == "stack_status"
+    )
+    topic_config = next(
+        decorator
+        for decorator in stack_status.decorator_list
+        if isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Name)
+        and decorator.func.id == "topic_config"
+    )
+    period = next(
+        keyword.value
+        for keyword in topic_config.keywords
+        if keyword.arg == "period"
+    )
+    return_statement = stack_status.body[0]
+
+    assert ast.literal_eval(period) == 10.0
+    assert isinstance(return_statement, ast.Return)
+    assert isinstance(return_statement.value, ast.Call)
+    assert isinstance(return_statement.value.func, ast.Attribute)
+    assert return_statement.value.func.attr == "_build_stack_status"
 
 
 def test_szlab_source_does_not_cross_import_ai4c(repo_root: Path) -> None:

@@ -150,7 +150,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
     @action(description="执行 S04 磁搅加工")
     def run_stirring(
         self,
-        position: int = 1,
+        position: int,
         mode: int = 3,
         speed: int = 300,
         temperature: int = 25,
