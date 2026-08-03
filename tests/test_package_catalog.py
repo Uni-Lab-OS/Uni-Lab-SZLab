@@ -20,7 +20,7 @@ def test_repository_compiles_as_the_szlab_domain_package(repo_root: Path) -> Non
     assert (repo_root / "package.yaml").is_file()
     assert len(catalog.definitions.devices) == 9
     assert len(catalog.definitions.resources) == 20
-    assert len(catalog.definitions.workflows) == 13
+    assert len(catalog.definitions.workflows) == 14
     assert sum(len(device.details["actions"]) for device in catalog.definitions.devices) == 81
     assert len(catalog.assets) == 14
     assert all(

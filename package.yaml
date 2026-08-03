@@ -28,3 +28,5 @@ workflows:
     source: szlab_poly_studio/workflows/szlab_mixer.py
   - workflow_uuid: 127cf68e-43b3-58ab-932f-984f2b57019e
     source: szlab_poly_studio/workflows/szlab_mixer_pump_production.py
+  - workflow_uuid: 5e7ce142-bf5a-5d30-8666-fdf5374941f1
+    source: szlab_poly_studio/workflows/s07_material_dosing.py

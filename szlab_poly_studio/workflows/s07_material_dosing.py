@@ -1,4 +1,4 @@
-# Wayfinder 目标：粉桶堆栈、烧杯堆栈到 S07 的物料感知固体称量流程。
+# Wayfinder 目标：粉桶、烧杯搬运与 S07 物料感知固体称量流程。
 # host_node.transfer_resource 进入 typed Action Catalog 后再登记 package.yaml。
 
 from typing import Annotated, TypedDict
