@@ -3,15 +3,10 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from uuid import NAMESPACE_URL, uuid5
 
 from unilabos.package_manager import PackageAssetResolver, PackageCatalog, WorkspaceSource
 from unilabos.package_manager.consumers import (
     register_package_catalog,
-)
-from unilabos.registry.catalog_consumer import (
-    workflow_template_imports_from_registry_snapshot,
 )
 
 
@@ -53,7 +48,7 @@ def test_full_workspace_debug_discovers_graph_workflows_and_assets(
     resolver = PackageAssetResolver(WorkspaceSource(repo_root), package_catalog)
 
     assert len(graph["nodes"]) == 129
-    assert len(package_catalog.definitions.workflows) == 13
+    assert len(package_catalog.definitions.workflows) == 14
     assert len(package_catalog.assets) == 14
     for asset in package_catalog.assets:
         with resolver.open_binary(asset.logical_path) as stream:
@@ -64,88 +59,34 @@ def test_full_workspace_debug_discovers_graph_workflows_and_assets(
 def test_all_declared_workflows_compile_against_fe_template_catalog(
     repo_root: Path,
     package_catalog: PackageCatalog,
+    production_authoring_compiler,
 ) -> None:
-    from unilabos.registry.registry import Registry
-    from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
-    from unilabos.workflow.catalog import (
-        CatalogAuthority,
-        LocalResourceTemplateIdentityIndex,
-        TemplateCatalog,
-    )
-    from unilabos.workflow.store import WorkflowStore
-
-    registry = Registry()
-    registry.device_type_registry = {}
-    registry.resource_type_registry = {}
-    register_package_catalog(registry, package_catalog)
-    resource_template_uuids = {}
-    material_template_uuids = {}
-    for definition in (
-        *package_catalog.definitions.devices,
-        *package_catalog.definitions.resources,
-    ):
-        identity = str(uuid5(NAMESPACE_URL, definition.fqid))
-        resource_template_uuids[definition.fqid] = identity
-        resource_template_uuids[
-            f"{definition.module}:{definition.symbol}"
-        ] = identity
-        if definition.kind == "resource":
-            material_template_uuids[
-                f"{definition.module}:{definition.symbol}"
-            ] = identity
-    imports = workflow_template_imports_from_registry_snapshot(
-        copy.deepcopy(registry.device_type_registry),
-        authority_id="szlab-workspace-test",
-        resource_template_identity_resolver=resource_template_uuids.__getitem__,
-    )
-    authority = CatalogAuthority("szlab-workspace-test", "local")
-
-    with TemporaryDirectory() as temporary:
-        store = WorkflowStore(Path(temporary) / "workflow.db")
-        try:
-            templates = TemplateCatalog(store)
-            templates.replace(
-                authority,
-                imports,
-                resource_template_identities=material_template_uuids,
-            )
-            engine = WorkflowAuthoringEngine(
-                catalog=templates,
-                authority=authority,
-                resource_template_identity_index=LocalResourceTemplateIdentityIndex(
-                    store,
-                    authority,
-                    tuple(material_template_uuids),
-                ),
-            )
-            for workflow in package_catalog.definitions.workflows:
-                workflow_uuid = str(workflow.details["workflow_uuid"])
-                applied_graph = {
-                    "workflow": {
-                        "uuid": workflow_uuid,
-                        "revision": 1,
-                        "name": workflow.id,
-                        "description": "",
-                        "tags": [],
-                        "meta_data": {},
-                        "create_time": "2026-08-01T00:00:00Z",
-                        "update_time": "2026-08-01T00:00:00Z",
-                    },
-                    "nodes": [],
-                    "edges": [],
-                    "node_templates": [],
-                    "handle_templates": [],
-                }
-                result = engine.compile(
-                    workflow_uuid=workflow_uuid,
-                    workflow_revision=1,
-                    python_source=(repo_root / workflow.declaring_file).read_text(encoding="utf-8"),
-                    source_uri=str(workflow.details["source_uri"]),
-                    applied_graph=applied_graph,
-                )
-                assert result.valid, (workflow.id, result.diagnostics)
-        finally:
-            store.close()
+    for workflow in package_catalog.definitions.workflows:
+        workflow_uuid = str(workflow.details["workflow_uuid"])
+        applied_graph = {
+            "workflow": {
+                "uuid": workflow_uuid,
+                "revision": 1,
+                "name": workflow.id,
+                "description": "",
+                "tags": [],
+                "meta_data": {},
+                "create_time": "2026-08-01T00:00:00Z",
+                "update_time": "2026-08-01T00:00:00Z",
+            },
+            "nodes": [],
+            "edges": [],
+            "node_templates": [],
+            "handle_templates": [],
+        }
+        result = production_authoring_compiler.compile(
+            workflow_uuid=workflow_uuid,
+            workflow_revision=1,
+            python_source=(repo_root / workflow.declaring_file).read_text(encoding="utf-8"),
+            source_uri=str(workflow.details["source_uri"]),
+            applied_graph=applied_graph,
+        )
+        assert result.valid, (workflow.id, result.diagnostics)
 
 
 def test_graph_selected_material_factories_receive_graph_config(

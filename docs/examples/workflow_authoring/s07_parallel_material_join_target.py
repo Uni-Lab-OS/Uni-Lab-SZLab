@@ -1,9 +1,8 @@
 """Wayfinder 目标入口。
 
-粉桶的 MaterialSource 位于独立粉桶堆栈，不是预置在 S07；目标定义见
-``szlab_poly_studio.workflows.s07_material_dosing``。当前 OS Catalog 尚未把
-``host_node.transfer_resource`` 发布成可编排 Action，因此该目标暂不登记到
-``package.yaml``；物理 pick/place 和 Host 记账顺序已冻结，不以跳过记账降级。
+粉桶的 MaterialSource 位于独立粉桶堆栈，不是预置在 S07；正式定义见
+``szlab_poly_studio.workflows.s07_material_dosing``。两个搬运分支并行就绪，
+共享机械臂由 OS 设备锁串行执行，最后由固体称量节点汇合两条物料边。
 """
 
 from szlab_poly_studio.workflows.s07_material_dosing import s07_material_dosing

@@ -42,7 +42,7 @@ _UNSET = object()
 
 
 class StandardRobotActionStatus(TypedDict):
-    """A1 status record; ResourceSlot material output is projected by the input port."""
+    """A1 command status shared by transfer and query actions."""
 
     command_id: str
     state: Literal[
@@ -57,6 +57,25 @@ class StandardRobotActionStatus(TypedDict):
     success: bool
     message: str
     boot_id: str
+
+
+class StandardRobotTransferStatus(TypedDict):
+    """Successful or failed physical transfer with explicit material passthrough."""
+
+    command_id: str
+    state: Literal[
+        "ACCEPTED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELED",
+        "UNKNOWN",
+        "REJECTED",
+    ]
+    success: bool
+    message: str
+    boot_id: str
+    resource: ResourceSlot
 
 
 class BeakerActionStatus(TypedDict):
@@ -485,14 +504,15 @@ class SzlabMixerRobotDevice(
         warehouse: ResourceSlot,
         site: str,
         transfer_id: str,
-    ) -> StandardRobotActionStatus:
-        return self._standard_gateway().execute_site(
+    ) -> StandardRobotTransferStatus:
+        result = self._standard_gateway().execute_site(
             kind="pick",
             resource=resource,
             warehouse=warehouse,
             site=site,
             transfer_id=transfer_id,
         )
+        return {**result, "resource": resource}
 
     @action(
         description=(
@@ -506,14 +526,15 @@ class SzlabMixerRobotDevice(
         warehouse: ResourceSlot,
         site: str,
         transfer_id: str,
-    ) -> StandardRobotActionStatus:
-        return self._standard_gateway().execute_site(
+    ) -> StandardRobotTransferStatus:
+        result = self._standard_gateway().execute_site(
             kind="place",
             resource=resource,
             warehouse=warehouse,
             site=site,
             transfer_id=transfer_id,
         )
+        return {**result, "resource": resource}
 
     @action(always_free=True, description="查询标准机械臂命令；不会重新下发运动")
     def get_command(self, command_id: str) -> StandardRobotActionStatus:

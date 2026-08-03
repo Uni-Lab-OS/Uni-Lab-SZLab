@@ -86,6 +86,7 @@ S06_STORAGE_BOTTLE_SENSOR = {
 }
 
 S071_ROBOT_POSITION = "S071取放料编号"
+S072_ROBOT_PRODUCT = "S072取放料产品"
 S071_SENSOR_BY_SLOT = {
     1: "传感器状态_上位机[3].NO[8]",
     2: "传感器状态_上位机[3].NO[9]",
@@ -873,6 +874,8 @@ class WorkflowHandshakeSimulator:
                 {
                     s071_sensor(1): self.workflow == "s07_material_dosing",
                     s072_sensor(1): False,
+                    s072_sensor(2): False,
+                    S072_ROBOT_PRODUCT: 0,
                 }
             )
         if self.workflow == "s07_material_dosing":
@@ -939,7 +942,14 @@ class WorkflowHandshakeSimulator:
             for index in ((1, 2) if self.pump == 3 else (self.pump,)):
                 values[S06_STORAGE_BOTTLE_SENSOR[index]] = False
         if "robot_s07" in components:
-            values.update({s071_sensor(1): False, s072_sensor(1): False})
+            values.update(
+                {
+                    s071_sensor(1): False,
+                    s072_sensor(1): False,
+                    s072_sensor(2): False,
+                    S072_ROBOT_PRODUCT: 0,
+                }
+            )
         if self.workflow == "s07_material_dosing":
             values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
@@ -1048,9 +1058,9 @@ class WorkflowHandshakeSimulator:
                     position = int(self.adapter.read(S071_ROBOT_POSITION) or 0)
                     sensor = s071_sensor(position)
                 elif task in (15, 16):
-                    # 当前仓库 s07_robot_workflow 固定使用 S072 position=1；
-                    # 设备驱动只把产品类型写入 PLC，没有单独写位置变量。
-                    position = 1
+                    # S072 没有独立位置变量；产品选择器同时确定两个交接位
+                    # 之一，必须据此更新对应的 presence sensor。
+                    position = int(self.adapter.read(S072_ROBOT_PRODUCT) or 0)
                     sensor = s072_sensor(position)
                 self.adapter.write(ROBOT_WRITE_ALLOWED, False)
                 self.adapter.write(ROBOT_HOME, False)

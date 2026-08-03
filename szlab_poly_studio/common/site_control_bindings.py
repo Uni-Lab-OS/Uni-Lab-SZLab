@@ -247,7 +247,11 @@ def resolve_s072_site(position: int | str) -> SiteControlBinding:
         sensor_key=str(number),
         controller_position=number,
         presence_variable=S072_SENSOR_BY_POSITION[number],
-        product_type=1,
+        # S072 has no separate position register: the PLC selects one of its
+        # two hand-off products with ``S072取放料产品``.  Keep that selector in
+        # lock-step with the Site/sensor number so S0721 and S0722 are truly
+        # independent physical targets.
+        product_type=number,
     )
 
 

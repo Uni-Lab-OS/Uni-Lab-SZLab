@@ -10,6 +10,7 @@ from szlab_poly_studio.common.site_control_bindings import (
     S1_INVENTORY_ONLY_SITE_LABELS,
     iter_robot_site_bindings,
     resolve_s071_site,
+    resolve_s072_site,
     resolve_s2_site,
     resolve_s3_site,
     resolve_s10_site,
@@ -69,6 +70,16 @@ def test_s071_second_layer_is_compact_controller_position_four(position: int | s
     assert binding.site_label == "L2C1"
     assert binding.controller_position == 4
     assert binding.presence_variable == "传感器状态_上位机[3].NO[11]"
+
+
+def test_s072_site_number_selects_the_matching_plc_product_and_sensor() -> None:
+    first = resolve_s072_site("S0721")
+    second = resolve_s072_site("S0722")
+
+    assert (first.product_type, first.controller_position) == (1, 1)
+    assert (second.product_type, second.controller_position) == (2, 2)
+    assert first.presence_variable == "传感器状态_上位机[3].NO[14]"
+    assert second.presence_variable == "传感器状态_上位机[3].NO[15]"
 
 
 def test_s3_and_s11_bind_product_type_to_physical_ab_row() -> None:

@@ -123,6 +123,7 @@ def test_s07_material_dosing_catalogs_standard_transfers_and_material_join() -> 
     assert adapter.read(handshake.S03_BEAKER_SENSOR) is True
     assert adapter.read(handshake.s071_sensor(1)) is True
     assert adapter.read(handshake.s072_sensor(1)) is False
+    assert adapter.read(handshake.s072_sensor(2)) is False
     assert adapter.read(handshake.ROBOT_TOOL_PAYLOAD_SENSOR) is False
 
 
@@ -384,6 +385,8 @@ def test_s07_robot_workflow_runs_three_tasks_and_rearms_next_cycle() -> None:
         adapter.write(handshake.ROBOT_WRITE_DONE, True)
         if task_number == 13:
             adapter.write(handshake.S071_ROBOT_POSITION, position)
+        elif task_number in (15, 16):
+            adapter.write(handshake.S072_ROBOT_PRODUCT, 1)
 
         accepted = simulator.step(now=clock)
         completed = simulator.step(now=clock + 0.5)
@@ -400,6 +403,32 @@ def test_s07_robot_workflow_runs_three_tasks_and_rearms_next_cycle() -> None:
     assert adapter.read(handshake.s072_sensor(1)) is False
     assert simulator.completed_actions == 3
     assert simulator.all_cycles_idle() is True
+
+
+def test_s072_product_selector_updates_two_independent_handoff_sensors() -> None:
+    adapter = MemoryAdapter()
+    simulator = handshake.WorkflowHandshakeSimulator(
+        adapter,
+        process_delay=0.5,
+        workflow="s07_material_dosing",
+    )
+    simulator.initialize()
+
+    clock = 0.0
+    for product in (2, 1):
+        adapter.write(handshake.S072_ROBOT_PRODUCT, product)
+        adapter.write(handshake.ROBOT_TASK_NUMBER, 15)
+        adapter.write(handshake.ROBOT_WRITE_DONE, True)
+        simulator.step(now=clock)
+        simulator.step(now=clock + 0.5)
+        assert adapter.read(handshake.s072_sensor(product)) is True
+        adapter.write(handshake.ROBOT_WRITE_DONE, False)
+        adapter.write(handshake.ROBOT_TASK_NUMBER, 0)
+        simulator.step(now=clock + 0.6)
+        clock += 1.0
+
+    assert adapter.read(handshake.s072_sensor(1)) is True
+    assert adapter.read(handshake.s072_sensor(2)) is True
 
 
 def test_s07_solid_handshake_supports_two_complete_cycles() -> None:

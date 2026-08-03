@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from szlab_poly_studio.common.site_control_bindings import (
     resolve_s07_process_site,
     resolve_s071_site,
@@ -12,6 +14,7 @@ from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
     TOOL_PAYLOAD_SENSOR_VARIABLE,
     StandardRobotRequest,
     SZLabStandardRobotGateway,
+    _payload_profile_for_resource,
 )
 
 SOURCE_SENSOR = resolve_s071_site("L1C1").presence_variable
@@ -102,6 +105,17 @@ def request(
             "target_device": "s07",
         },
     )
+
+
+def test_payload_profile_uses_unilabos_resource_class_when_plr_category_is_generic() -> None:
+    resource = SimpleNamespace(
+        category="container",
+        unilabos_extra={
+            "unilabos_resource_class": "community.szlab_poly_studio.szlab_beaker_500ml",
+        },
+    )
+
+    assert _payload_profile_for_resource(resource) == "beaker_500ml@v1"
 
 
 def test_standard_pick_reuses_legacy_plc_handshake_and_is_idempotent(tmp_path) -> None:

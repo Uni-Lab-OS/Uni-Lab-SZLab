@@ -930,6 +930,13 @@ class SZLabPolyPLCDevice(BaseClient):
     @not_action
     def _read_sensor_group(self, sensors: Dict[str, str]) -> Dict[str, Optional[bool]]:
         with self._io_lock:
+            # ``auto_connect: false`` is the committed offline authoring mode
+            # for the complete local deployment graph. Publishing status in
+            # that mode must not browse/read every OPC UA node once per topic
+            # tick; report an unknown observation until a connection is
+            # explicitly established instead.
+            if not self._connection_healthy:
+                return {site_key: None for site_key in sensors}
             result: Dict[str, Optional[bool]] = {}
             for site_key, variable_name in sensors.items():
                 try:

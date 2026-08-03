@@ -7,7 +7,6 @@ import time
 from pathlib import Path
 from typing import Annotated, Any, TypedDict
 
-from pydantic import Field
 from unilabos.registry.annotations import AllowedResourceTemplates, JSONValue
 from unilabos.registry.decorators import action, device, not_action
 from unilabos.registry.placeholder_type import ResourceSlot
@@ -46,19 +45,31 @@ DEFAULT_POWDER_PARAMS_PATH = Path(__file__).resolve().parent / "s07_powder_param
 
 
 class PowderSitePreparationStatus(TypedDict):
-    """粉桶 ResourceSlot 由同名输入端口透传。"""
+    """粉桶上下料位准备结果，并显式透传物料。"""
 
     success: bool
     message: str
     powder_site: str
+    powder_cartridge: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(powder_container),
+    ]
 
 
 class PowderDoseWithMaterialsStatus(TypedDict):
-    """两项物料均由同名 ResourceSlot 输入端口透传。"""
+    """固体称量结果，并显式透传两项输入物料。"""
 
     success: bool
     message: str
     commanded_mass_g: float
+    powder_cartridge: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(powder_container),
+    ]
+    beaker: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(beaker_500ml),
+    ]
 
 
 @device(
@@ -294,23 +305,25 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
     @action(description="将指定 S07 转盘 Site 转到已验证的粉桶上下料位")
     def prepare_powder_cartridge_site(
         self,
-        powder_cartridge: Annotated[
-            ResourceSlot,
-            AllowedResourceTemplates(powder_container),
-            Field(description="机械臂已从固体粉桶堆栈取出的注粉瓶"),
-        ],
+        powder_cartridge: ResourceSlot,
         powder_site: str,
         timeout: float = 300.0,
     ) -> PowderSitePreparationStatus:
         try:
             position = self._powder_position_from_site(powder_site)
         except ValueError as exc:
-            return {"success": False, "message": str(exc), "powder_site": str(powder_site)}
+            return {
+                "success": False,
+                "message": str(exc),
+                "powder_site": str(powder_site),
+                "powder_cartridge": powder_cartridge,
+            }
         result = self.rotate_powder_cartridge_to_feed(position=position, timeout=timeout)
         return {
             "success": bool(result.get("success", False)),
             "message": str(result.get("message", "")),
             "powder_site": f"P{position:02d}",
+            "powder_cartridge": powder_cartridge,
         }
 
     @action(description="S07 注粉")
@@ -344,16 +357,8 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
     @action(description="使用已装入 S07 的粉桶向交接位烧杯投粉（物料感知）")
     def dose_powder_with_materials(
         self,
-        powder_cartridge: Annotated[
-            ResourceSlot,
-            AllowedResourceTemplates(powder_container),
-            Field(description="已从粉桶堆栈搬入 S07 转盘的注粉瓶"),
-        ],
-        beaker: Annotated[
-            ResourceSlot,
-            AllowedResourceTemplates(beaker_500ml),
-            Field(description="已由机械臂搬到 S072 的 500 mL 烧杯"),
-        ],
+        powder_cartridge: ResourceSlot,
+        beaker: ResourceSlot,
         powder_site: str,
         target_mass_g: float,
         recipe_name: str = "default",
@@ -365,6 +370,8 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
                 "success": False,
                 "message": "target_mass_g 必须在 (0, 100] g 范围内",
                 "commanded_mass_g": float(target_mass_g),
+                "powder_cartridge": powder_cartridge,
+                "beaker": beaker,
             }
         try:
             position = self._powder_position_from_site(powder_site)
@@ -373,6 +380,8 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
                 "success": False,
                 "message": str(exc),
                 "commanded_mass_g": float(target_mass_g),
+                "powder_cartridge": powder_cartridge,
+                "beaker": beaker,
             }
         result = self.dose_powder(
             coarse_position=position,
@@ -390,6 +399,8 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
             "success": success,
             "message": message,
             "commanded_mass_g": float(target_mass_g),
+            "powder_cartridge": powder_cartridge,
+            "beaker": beaker,
         }
 
 

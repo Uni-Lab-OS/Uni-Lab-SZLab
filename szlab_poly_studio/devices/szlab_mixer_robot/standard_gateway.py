@@ -749,25 +749,44 @@ def _payload_profile_for_site(binding: SiteControlBinding) -> str:
 
 
 def _payload_profile_for_resource(resource: Any) -> str:
-    category = str(getattr(resource, "category", "") or "").strip().lower()
-    if not category and isinstance(resource, Mapping):
-        category = str(resource.get("category") or resource.get("class") or "").strip().lower()
-    if category == "beaker" or "beaker_500ml" in category:
+    discriminators: list[str] = []
+
+    def add(value: Any) -> None:
+        normalized = str(value or "").strip().lower()
+        if normalized and normalized not in discriminators:
+            discriminators.append(normalized)
+
+    if isinstance(resource, Mapping):
+        for key in ("category", "class", "klass", "type"):
+            add(resource.get(key))
+        extra = resource.get("unilabos_extra") or resource.get("extra")
+    else:
+        for attribute in ("category", "klass", "type"):
+            add(getattr(resource, attribute, None))
+        extra = getattr(resource, "unilabos_extra", None) or getattr(resource, "extra", None)
+
+    if isinstance(extra, Mapping):
+        for key in ("unilabos_resource_class", "class", "klass", "category"):
+            add(extra.get(key))
+
+    identity = " ".join(discriminators)
+    if "beaker_500ml" in identity or "szlab_beaker_500ml" in identity or "beaker" in discriminators:
         return "beaker_500ml@v1"
-    if category == "sample_vial" or "sample_vial_500ml" in category:
+    if "sample_vial_500ml" in identity or "sample_vial" in discriminators:
         max_volume = getattr(resource, "max_volume", None)
         if max_volume not in (None, 500_000, 500_000.0):
             raise ValueError("当前标准 Site 仅支持 500 mL 样品瓶")
         return "sample_vial_500ml@v1"
-    if category == "liquid_reagent" or "liquid_reagent_bottle_100ml" in category:
+    if "liquid_reagent_bottle_100ml" in identity or "liquid_reagent" in discriminators:
         return "liquid_reagent_bottle_100ml@v1"
-    if category == "powder_reagent" or "powder_container" in category:
+    if "powder_container" in identity or "powder_reagent" in discriminators:
         return "powder_container@v1"
-    if category == "tip_box" or "szlab_tip_box" in category:
+    if "szlab_tip_box" in identity or "tip_box" in discriminators:
         return "tip_box@v1"
-    if category in {"tip", "pipette_tip"}:
+    if any(value in {"tip", "pipette_tip"} for value in discriminators):
         return "pipette_tip@v1"
-    raise ValueError(f"无法从 ResourceSlot 推断机械臂负载配置: category={category or '-'}")
+    category = discriminators[0] if discriminators else "-"
+    raise ValueError(f"无法从 ResourceSlot 推断机械臂负载配置: category={category}")
 
 
 def _resource_reference(resource: Any, *, field_name: str) -> str:

@@ -72,6 +72,19 @@ def test_direct_read_retries_a_transient_node_error(monkeypatch) -> None:
     assert delays == [plc.OPCUA_DIRECT_IO_RETRY_DELAY]
 
 
+def test_offline_sensor_topic_does_not_attempt_opcua_io() -> None:
+    device = _bare_plc(FakeReadNode([]))
+    device._connection_healthy = False
+    device.read_variable = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+        AssertionError("offline topic must not read OPC UA")
+    )
+
+    assert device._read_sensor_group({"L1": "A", "L2": "B"}) == {
+        "L1": None,
+        "L2": None,
+    }
+
+
 def test_direct_read_still_fails_after_retry_budget(monkeypatch) -> None:
     node = FakeReadNode([(None, True)] * plc.OPCUA_DIRECT_IO_ATTEMPTS)
     device = _bare_plc(node)

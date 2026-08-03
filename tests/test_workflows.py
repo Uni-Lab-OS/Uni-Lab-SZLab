@@ -3,22 +3,9 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
-from uuid import NAMESPACE_URL, uuid5
 
 import yaml
 from unilabos.package_manager import PackageCatalog
-from unilabos.package_manager.consumers import register_package_catalog
-from unilabos.registry.catalog_consumer import (
-    workflow_template_imports_from_registry_snapshot,
-)
-from unilabos.registry.registry import Registry
-from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
-from unilabos.workflow.catalog import (
-    CatalogAuthority,
-    LocalResourceTemplateIdentityIndex,
-    TemplateCatalog,
-)
-from unilabos.workflow.store import WorkflowStore
 
 
 def _manifest_entries(manifest: dict) -> list[dict]:
@@ -104,18 +91,27 @@ def test_all_migrated_python_workflows_compile_to_canonical_v2(
     repo_root: Path,
     package_catalog: PackageCatalog,
     action_catalog: dict,
+    production_registry,
 ) -> None:
     migration_root = repo_root / "migration"
     manifest = yaml.safe_load((migration_root / "manifest.yaml").read_text(encoding="utf-8"))
     catalog_by_id = _workflow_by_id(package_catalog)
     declared_ids: set[str] = set()
+    host_actions = {
+        f"host_node.{name}"
+        for name in production_registry.device_type_registry["host_node"]["class"][
+            "action_value_mappings"
+        ]
+    }
 
     for entry in _manifest_entries(manifest):
         source_path = (migration_root / entry["python_source"]).resolve()
         workflow = catalog_by_id[entry["workflow_id"]]
         actions = _action_sequence(source_path.read_text(encoding="utf-8"))
         assert actions
-        assert all(action in action_catalog for action in actions)
+        assert all(
+            action in action_catalog or action in host_actions for action in actions
+        )
         assert (repo_root / workflow.declaring_file).resolve() == source_path
         declared_ids.add(workflow.id)
 
@@ -206,87 +202,41 @@ def test_s06_material_actions_define_the_resource_slot_at_the_action_boundary(
 def test_all_package_workflows_satisfy_authoring_candidate_contract(
     repo_root: Path,
     package_catalog: PackageCatalog,
-    tmp_path: Path,
+    production_authoring_compiler,
 ) -> None:
-    registry = Registry()
-    registry.device_type_registry = {}
-    registry.resource_type_registry = {}
-    register_package_catalog(registry, package_catalog)
+    timestamp = "2026-08-02T00:00:00Z"
 
-    authority = CatalogAuthority(authority_id="szlab-test", kind="local")
-    resource_template_uuids: dict[str, str] = {}
-    material_template_uuids: dict[str, str] = {}
-    for definition in (
-        *package_catalog.definitions.devices,
-        *package_catalog.definitions.resources,
-    ):
-        identity = str(uuid5(NAMESPACE_URL, definition.fqid))
-        resource_template_uuids[definition.fqid] = identity
-        resource_template_uuids[
-            f"{definition.module}:{definition.symbol}"
-        ] = identity
-        if definition.kind == "resource":
-            material_template_uuids[
-                f"{definition.module}:{definition.symbol}"
-            ] = identity
-    imports = workflow_template_imports_from_registry_snapshot(
-        registry.device_type_registry,
-        authority_id=authority.authority_id,
-        resource_template_identity_resolver=resource_template_uuids.__getitem__,
-    )
-
-    store = WorkflowStore(tmp_path / "workflow.db")
-    try:
-        template_catalog = TemplateCatalog(store)
-        template_catalog.replace(
-            authority,
-            imports,
-            resource_template_identities=material_template_uuids,
-        )
-        compiler = WorkflowAuthoringEngine(
-            catalog=template_catalog,
-            authority=authority,
-            resource_template_identity_index=LocalResourceTemplateIdentityIndex(
-                store,
-                authority,
-                tuple(material_template_uuids),
+    for workflow in package_catalog.definitions.workflows:
+        details = dict(workflow.details)
+        workflow_uuid = details["workflow_uuid"]
+        result = production_authoring_compiler.compile(
+            workflow_uuid=workflow_uuid,
+            workflow_revision=1,
+            python_source=(repo_root / workflow.declaring_file).read_text(
+                encoding="utf-8"
             ),
-        )
-        timestamp = "2026-08-02T00:00:00Z"
-
-        for workflow in package_catalog.definitions.workflows:
-            details = dict(workflow.details)
-            workflow_uuid = details["workflow_uuid"]
-            result = compiler.compile(
-                workflow_uuid=workflow_uuid,
-                workflow_revision=1,
-                python_source=(repo_root / workflow.declaring_file).read_text(
-                    encoding="utf-8"
-                ),
-                source_uri=details["source_uri"],
-                applied_graph={
-                    "workflow": {
-                        "uuid": workflow_uuid,
-                        "create_time": timestamp,
-                        "update_time": timestamp,
-                        "meta_data": {},
-                        "name": workflow.displayname,
-                        "tags": [],
-                        "revision": 1,
-                    },
-                    "nodes": [],
-                    "edges": [],
-                    "node_templates": [],
-                    "handle_templates": [],
+            source_uri=details["source_uri"],
+            applied_graph={
+                "workflow": {
+                    "uuid": workflow_uuid,
+                    "create_time": timestamp,
+                    "update_time": timestamp,
+                    "meta_data": {},
+                    "name": workflow.displayname,
+                    "tags": [],
+                    "revision": 1,
                 },
-            )
+                "nodes": [],
+                "edges": [],
+                "node_templates": [],
+                "handle_templates": [],
+            },
+        )
 
-            assert result.valid, (
-                workflow.id,
-                [diagnostic["code"] for diagnostic in result.diagnostics],
-            )
-    finally:
-        store.close()
+        assert result.valid, (
+            workflow.id,
+            [diagnostic["code"] for diagnostic in result.diagnostics],
+        )
 
 
 def test_legacy_json_action_sequences_are_preserved(
