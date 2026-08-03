@@ -2480,31 +2480,6 @@
       }
     },
     {
-      "id": "s1_workstation",
-      "name": "S1 连续流工作站",
-      "children": [],
-      "parent": null,
-      "type": "device",
-      "class": "community.szlab_poly_studio.s1_workstation",
-      "position": {
-        "x": 250,
-        "y": 1500,
-        "z": 0
-      },
-      "config": {
-        "host": "127.0.0.1",
-        "port": 18055,
-        "test_mode": true,
-        "allow_hardware_action": false,
-        "size_x": 400,
-        "size_y": 300,
-        "size_z": 400
-      },
-      "data": {
-        "status": "Idle"
-      }
-    },
-    {
       "id": "szlab_mixer_robot",
       "name": "SZLab 机械臂",
       "children": [],

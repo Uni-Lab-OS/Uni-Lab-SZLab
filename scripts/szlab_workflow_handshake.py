@@ -7,7 +7,7 @@
 2. ``check``：只读检查远端 OPC UA 中可自动判定的先决条件。
 3. ``serve``：写入测试先决条件，并监听 PC→PLC 信号，模拟 PLC 握手。
 
-当前覆盖 ``workflows`` 目录中全部 13 个工作流、23 个唯一动作调用：
+当前覆盖 ``workflows`` 目录中全部 14 个工作流、23 个唯一动作调用：
 
 - ``szlab_mixer_robot.submit_place_to_s04``（机器人任务号 7）
 - ``szlab_mixer_stirrer.run_stirring``
@@ -34,8 +34,9 @@
 - ``szlab_mixer_robot.pick_beaker_from_s06``（机器人任务号 12）
 
 建议用 ``--workflow WORKFLOW_ID`` 定向运行单个工作流；选择
-``s06_robot_workflow`` 时会让 S06 烧杯传感器从 False 开始，并由任务
-11/12 的握手周期切换；选择 ``szlab_s09_pipetting_workflow`` 时会初始化
+``s06_robot_workflow`` 或 ``szlab_robot_liquid_stirring_demo_workflow`` 时会让 S06
+烧杯传感器从 False 开始，并由任务 11/12 的握手周期切换；选择
+``szlab_s09_pipetting_workflow`` 时会初始化
 S09 工位和液体余量，并响应全部内部工艺。原有
 ``--s06-robot-workflow``、``--s09-pipetting-workflow`` 参数仍作为兼容别名保留。
 
@@ -206,6 +207,7 @@ WORKFLOW_IDS = (
     "szlab_mixer_workflow",
     "szlab_mixer_pump_production",
     "szlab_material_s06_workflow",
+    "szlab_robot_liquid_stirring_demo_workflow",
 )
 
 WORKFLOW_COMPONENTS = {
@@ -222,6 +224,9 @@ WORKFLOW_COMPONENTS = {
     "szlab_mixer_workflow": frozenset({"pump"}),
     "szlab_mixer_pump_production": frozenset({"pump"}),
     "szlab_material_s06_workflow": frozenset({"robot_s03", "robot_s06", "pump"}),
+    "szlab_robot_liquid_stirring_demo_workflow": frozenset(
+        {"robot_s06", "pump", "robot_s04", "stirrer"}
+    ),
 }
 ALL_COMPONENTS = frozenset().union(*WORKFLOW_COMPONENTS.values())
 
@@ -472,6 +477,24 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
                 *_robot_common(),
                 _opc_eq(S06_BEAKER_SENSOR, False, note="机器人放料前 S06 加液位必须为空"),
                 *s06_common,
+                _manual("parameter", "skip_level_check", "False 时储液瓶传感器必须在位"),
+            ),
+        ),
+        WorkflowSpec(
+            "szlab_robot_liquid_stirring_demo_workflow",
+            (
+                "szlab_mixer_robot.submit_place_to_s06",
+                "szlab_mixer_pump.run_solvent_addition",
+                "szlab_mixer_robot.submit_pick_from_s06",
+                "szlab_mixer_robot.submit_place_to_s04",
+                "szlab_mixer_stirrer.run_stirring",
+            ),
+            (
+                *_robot_common(),
+                _opc_eq(S06_BEAKER_SENSOR, False, note="机器人放料前 S06 加液位必须为空"),
+                *s06_common,
+                _opc_eq(s04_sensor(position), False, note="机器人放料前 S04 搅拌位必须为空"),
+                *s04_common,
                 _manual("parameter", "skip_level_check", "False 时储液瓶传感器必须在位"),
             ),
         ),
@@ -731,7 +754,12 @@ class WorkflowHandshakeSimulator:
         self.workflow = selected_workflow
         self.s06_robot_workflow = bool(
             s06_robot_workflow
-            or selected_workflow in {"s06_robot_workflow", "szlab_material_s06_workflow"}
+            or selected_workflow
+            in (
+                "s06_robot_workflow",
+                "szlab_material_s06_workflow",
+                "szlab_robot_liquid_stirring_demo_workflow",
+            )
         )
         self.s09_pipetting_workflow = bool(
             s09_pipetting_workflow
