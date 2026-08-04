@@ -198,7 +198,7 @@
       },
       "config": {
         "url": "opc.tcp://opcua.ideawit.com:4855/xuse_sim",
-        "csv_path": "szlab_plc_0730.csv",
+        "csv_path": "szlab_plc_0731.csv",
         "auto_connect": true,
         "opcua_node_id_prefix": "ns=4;s=上位机通讯|"
       },

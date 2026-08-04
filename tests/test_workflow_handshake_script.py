@@ -636,12 +636,7 @@ def test_selected_workflow_only_initializes_and_polls_its_components() -> None:
     simulator.step(now=0.0)
 
 
-def test_every_handshake_variable_exists_in_plc_0730_csv() -> None:
-    csv_path = Path(__file__).parents[1] / "szlab_poly_studio" / "devices" / "szlab_poly_plc" / "szlab_plc_0730.csv"
-    with csv_path.open(encoding="utf-16", newline="") as file:
-        rows = csv.reader(file, delimiter="\t")
-        csv_variables = {row[1].strip() for row in rows if len(row) > 1 and row[1].strip()}
-
+def test_every_handshake_variable_exists_in_deployment_plc_csvs() -> None:
     variables = {
         handshake.ROBOT_TASK_NUMBER,
         handshake.S04_ROBOT_POSITION,
@@ -667,7 +662,22 @@ def test_every_handshake_variable_exists_in_plc_0730_csv() -> None:
         variables.update(simulator.initialization_values())
         variables.update(simulator.cleanup_values())
 
-    assert variables <= csv_variables
+    plc_root = (
+        Path(__file__).parents[1]
+        / "szlab_poly_studio"
+        / "devices"
+        / "szlab_poly_plc"
+    )
+    for csv_name in ("szlab_plc_0730.csv", "szlab_plc_0731.csv"):
+        with (plc_root / csv_name).open(encoding="utf-16", newline="") as file:
+            rows = csv.reader(file, delimiter="\t")
+            csv_variables = {
+                row[1].strip()
+                for row in rows
+                if len(row) > 1 and row[1].strip()
+            }
+
+        assert variables <= csv_variables, csv_name
 
 
 def test_cleanup_only_resets_simulator_owned_outputs() -> None:
