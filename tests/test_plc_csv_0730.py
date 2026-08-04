@@ -147,6 +147,7 @@ def test_graphs_configure_only_the_main_plc_as_an_opc_client(
     expected_csv_by_graph = {
         "szlab-local-debug.json": "szlab_plc_0730.csv",
         "szlab-ideawit-sim.json": "szlab_plc_0731.csv",
+        "szlab-plc-sim-local.json": "szlab_plc_0731.csv",
     }
     for filename, expected_csv in expected_csv_by_graph.items():
         graph = json.loads((graph_root / filename).read_text(encoding="utf-8"))
@@ -162,3 +163,18 @@ def test_graphs_configure_only_the_main_plc_as_an_opc_client(
             assert "url" not in config
             assert "csv_path" not in config
             assert "auto_connect" not in config
+
+
+def test_plc_sim_graph_targets_the_local_szlab_server(repo_root: Path) -> None:
+    graph_path = (
+        repo_root / "deployment" / "graphs" / "szlab-plc-sim-local.json"
+    )
+    graph = json.loads(graph_path.read_text(encoding="utf-8"))
+    plc = next(node for node in graph["nodes"] if node["id"] == "szlab_poly_plc")
+
+    assert plc["config"] == {
+        "url": "opc.tcp://127.0.0.1:4855/xuse_sim/",
+        "csv_path": "szlab_plc_0731.csv",
+        "auto_connect": True,
+        "opcua_node_id_prefix": "ns=4;s=上位机通讯|",
+    }
