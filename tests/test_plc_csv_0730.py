@@ -65,10 +65,18 @@ def test_0730_csv_is_a_strict_superset_of_0702_and_station_csvs(
 
     assert len(new_names) == len(set(new_names))
     assert station_names <= set(new_names)
+    expected_s07_additions = {
+        f"S07位置{position}二维码[{index}]"
+        for position in range(1, 11)
+        for index in range(30, 100)
+    }
     assert set(new_names) - old_names == {
         "S03_1取料编号",
         "S03_1放料编号",
         "PLC_R任务号",
+        "S07天平读数",
+        "S07数据清空",
+        *expected_s07_additions,
     }
 
 
