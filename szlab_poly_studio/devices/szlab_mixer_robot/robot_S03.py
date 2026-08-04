@@ -16,6 +16,7 @@ class SzlabRobotS03Mixin:
                 "place_to_s03", S03取放料产品=product_type, S03取放料编号=self._slot_number(position)
             ),
             reset_variables={"S03取放料产品": 0, "S03取放料编号": 0, "任务号": 0},
+            verify_reset=True,
             precheck=lambda: self._ensure_sensor_gate(sensor, False, "S03 放料目标位必须为空"),
             product_type=int(product_type),
             position=str(position),
@@ -32,6 +33,7 @@ class SzlabRobotS03Mixin:
                 "pick_from_s03", S03取放料产品=product_type, S03取放料编号=self._slot_number(position)
             ),
             reset_variables={"S03取放料产品": 0, "S03取放料编号": 0, "任务号": 0},
+            verify_reset=True,
             precheck=lambda: self._ensure_sensor_gate(sensor, True, "S03 取料源位必须有物料"),
             product_type=int(product_type),
             position=str(position),

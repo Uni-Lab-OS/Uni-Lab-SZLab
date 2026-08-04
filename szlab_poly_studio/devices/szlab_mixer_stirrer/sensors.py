@@ -16,6 +16,10 @@ def s04_allow_var(position: int) -> str:
     return f"{s04_station_prefix(position)}允许加工"
 
 
+def s04_status_var(position: int) -> str:
+    return f"{s04_station_prefix(position)}磁搅状态"
+
+
 def s04_process_var(position: int) -> str:
     return f"{s04_station_prefix(position)}磁搅工艺选择"
 
@@ -48,12 +52,20 @@ def s04_safe_temperature_var(position: int) -> str:
     return f"磁搅安全温度设置_上位机[{int(position) - 1}]"
 
 
+def s04_material_sensor_var(position: int) -> str:
+    position = int(position)
+    if position not in S04_POSITION_RANGE:
+        raise ValueError("磁搅位置必须在 1-6 范围内")
+    return f"传感器状态_上位机[2].NO[{position + 9}]"
+
+
 def s04_public_variables() -> list[str]:
     variables: list[str] = []
     for position in S04_POSITION_RANGE:
         variables.extend(
             [
                 s04_allow_var(position),
+                s04_status_var(position),
                 s04_process_var(position),
                 s04_params_written_var(position),
                 s04_done_var(position),

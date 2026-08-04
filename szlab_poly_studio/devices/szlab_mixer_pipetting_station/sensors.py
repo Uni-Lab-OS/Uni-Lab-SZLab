@@ -56,6 +56,13 @@ S09_TIP_BOX_RANGE = range(1, 3)
 S09_TIP_RANGE = range(1, 97)
 S09_LIQUID_BOTTLE_RANGE = range(1, 6)
 S09_STATION_RANGE = range(1, 6)
+S09_TIP_BOX_SENSORS: dict[int, str] = {
+    1: "传感器状态_上位机[4].NO[5]",
+    2: "传感器状态_上位机[4].NO[6]",
+}
+S09_STATION_SENSORS: dict[int, str] = {
+    position: f"传感器状态_上位机[4].NO[{position + 6}]" for position in S09_STATION_RANGE
+}
 
 
 def s09_remaining_volume_var(bottle: int) -> str:

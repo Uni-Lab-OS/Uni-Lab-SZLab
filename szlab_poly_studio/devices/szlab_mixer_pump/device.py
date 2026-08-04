@@ -45,8 +45,6 @@ from szlab_poly_studio.common.action_logging import (
 from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
 from szlab_poly_studio.devices.szlab_mixer_pump.sensors import (
     ADDITION_BEAKER_SENSOR,
-    ROBOT_BEAKER_PICK_VAR,
-    ROBOT_BEAKER_PLACE_VAR,
     S06_ALLOW_PROCESS_VAR,
     S06_DONE_VAR,
     S06_PARAM_WRITTEN_VAR,
@@ -121,8 +119,6 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         timeout: float = 300.0,
         pipeline_routes: dict[tuple[int, S06PipelineKind], S06PipelineRoute] | None = None,
         pipeline_route_specs: list[dict[str, Any]] | None = None,
-        robot_addition_position: int = 0,
-        robot_stirrer_position: int = 0,
         opcua_client: Any | None = None,
         opcua_browse_depth: int = 8,
         opcua_browse_limit: int = 5000,
@@ -139,8 +135,6 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         del opcua_node_id_map, opcua_allow_recursive_browse, auto_connect
         self.url = url
         self.timeout = timeout
-        self._robot_addition_position = int(robot_addition_position)
-        self._robot_stirrer_position = int(robot_stirrer_position)
         self._configure_plc_gateway(
             plc_device_id=plc_device_id,
             plc_gateway=plc_gateway if plc_gateway is not None else opcua_client,
@@ -157,6 +151,13 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         return self._status
 
     @not_action
+    def _opc_client(self):
+        client = self._plc_gateway or self._client
+        if client is None:
+            raise RuntimeError("S06 泵未绑定统一 PLC gateway")
+        return client
+
+    @not_action
     def disconnect(self) -> None:
         self._client.disconnect()
 
@@ -170,7 +171,7 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
 
     @not_action
     def _read_bool(self, name: str) -> bool:
-        return bool(self._client.read(name))
+        return bool(self._opc_client().read(name))
 
     @not_action
     def _wait_variable_equal(
@@ -187,9 +188,10 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             f"variable={name} expected={compact_log_value(expected)} "
             f"timeout={float(self.timeout):.3f}s"
         )
-        waiter = getattr(self._client, "wait_variable_equal", None)
+        client = self._opc_client()
+        waiter = getattr(client, "wait_variable_equal", None)
         if not callable(waiter):
-            waiter = getattr(self._client, "wait_equal", None)
+            waiter = getattr(client, "wait_equal", None)
         if callable(waiter):
             completed = bool(
                 waiter(
@@ -203,12 +205,12 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             deadline = time.monotonic() + self.timeout
             completed = False
             while time.monotonic() <= deadline:
-                if self._client.read(name) == expected:
+                if client.read(name) == expected:
                     completed = True
                     break
                 time.sleep(interval)
         try:
-            actual = self._client.read(name)
+            actual = client.read(name)
         except Exception as exc:
             actual = f"<read failed: {type(exc).__name__}: {exc}>"
         if completed:
@@ -247,6 +249,48 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         return {"success": False, "message": "等待 S06 允许加工超时"}
 
     @not_action
+    def _wait_ready(self) -> dict[str, Any] | None:
+        if self._wait_variable_equal(S06_READY_VAR, True, description="等待 S06 准备信号"):
+            return None
+        return {"success": False, "message": "等待 S06 准备信号超时"}
+
+    @not_action
+    def _wait_material_sensors(self, process: int, phase: str) -> dict[str, Any]:
+        del process
+        conditions = {ADDITION_BEAKER_SENSOR: True}
+        client = self._opc_client()
+        waiter = getattr(client, "wait_sensor_conditions", None)
+        if callable(waiter):
+            wait_result = waiter(
+                conditions,
+                timeout=self.timeout,
+                interval=0.2,
+                context=f"S06 加液{phase}传感器检查",
+            )
+            if isinstance(wait_result, dict):
+                success, values = bool(wait_result.get("success")), dict(wait_result.get("values") or {})
+            else:
+                success, values = wait_result
+        else:
+            success = self._wait_variable_equal(
+                ADDITION_BEAKER_SENSOR,
+                True,
+                description=f"S06 加液{phase}烧杯在位检查",
+            )
+            values = {ADDITION_BEAKER_SENSOR: self._read_bool(ADDITION_BEAKER_SENSOR)}
+        return {
+            "success": bool(success),
+            "phase": phase,
+            "conditions": conditions,
+            "values": values,
+            "mismatches": {
+                name: {"expected": expected, "actual": values.get(name)}
+                for name, expected in conditions.items()
+                if values.get(name) != expected
+            },
+        }
+
+    @not_action
     def _ensure_storage_bottle_present(self, pump: int) -> dict[str, Any] | None:
         """确认储液瓶在位；液量是否足够由 PLC 通过 S06允许加工 反馈。"""
         pumps = (1, 2) if pump == 3 else (pump,)
@@ -267,8 +311,8 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
     @not_action
     def _apply_pipeline_route(self, pump: int, pipeline: S06PipelineKind) -> None:
         route = self._pipeline_routes[(pump, pipeline)]
-        self._client.write(s06_pump_valve_var(pump), int(route.control_valve))
-        self._client.write(s06_pump_position_var(pump), int(route.absolute_position))
+        self._opc_client().write(s06_pump_valve_var(pump), int(route.control_valve))
+        self._opc_client().write(s06_pump_position_var(pump), int(route.absolute_position))
 
     @not_action
     def _s06_amount_vars_for_process(self, process: int) -> list[str]:
@@ -303,7 +347,7 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             *((amount_var, 0) for amount_var in self._s06_amount_vars_for_process(process)),
         ):
             try:
-                self._client.write(name, value)
+                self._opc_client().write(name, value)
             except Exception as exc:
                 # 清理阶段尽量执行，不用二次异常覆盖真正的执行错误。
                 logger.warning(
@@ -316,19 +360,18 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
     @not_action
     def _execute_s06_addition(
         self,
-        pump: int,
-        volume: int,
+        process: int,
         *,
         require_allow: bool = True,
         volume_pump_1: int = 0,
         volume_pump_2: int = 0,
     ) -> dict[str, Any]:
         """按最新 PLC 接口执行 S06 加液：工艺选择 + 溶液添加量 + 参数写入。"""
-        if pump not in (1, 2, 3):
+        if process not in (1, 2, 3):
             return {"success": False, "message": "S06 工艺选择必须为 1、2 或 3"}
         amount_values = self._s06_amount_values_for_process(
-            pump,
-            volume,
+            process,
+            0,
             volume_pump_1=volume_pump_1,
             volume_pump_2=volume_pump_2,
         )
@@ -336,51 +379,81 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         if invalid_amounts:
             return {"success": False, "message": f"{', '.join(invalid_amounts)} 的体积必须大于 0"}
 
-        if require_allow and not self._read_bool(S06_ALLOW_PROCESS_VAR):
-            return {"success": False, "message": "S06 不允许加工"}
+        try:
+            sensor_precheck = self._wait_material_sensors(process, phase="pre")
+        except Exception as exc:
+            self._status = "Error"
+            return {"success": False, "message": f"S06 前置物料传感器读取失败: {exc}"}
+        if not sensor_precheck["success"]:
+            self._status = "Error"
+            return {"success": False, "message": "S06 等待加液烧杯在位超时", "sensor_precheck": sensor_precheck}
+
+        if require_allow:
+            err = self._wait_allow_process() or self._wait_ready()
+            if err:
+                return err
 
         for amount_var in amount_values:
-            accessible, detail = self._client.check_variable_accessible(amount_var)
+            accessible, detail = self._opc_client().check_variable_accessible(amount_var)
             if not accessible:
                 self._status = "Error"
                 return {
                     "success": False,
-                    "message": f"{amount_var} 的 OPC UA NodeId 无效，无法执行工艺 {pump}: {detail}",
+                    "message": f"{amount_var} 的 OPC UA NodeId 无效，无法执行工艺 {process}: {detail}",
                 }
 
         self._status = "Running"
         try:
-            self._client.write(S06_PROCESS_SELECT_VAR, int(pump))
+            self._opc_client().write(S06_PROCESS_SELECT_VAR, int(process))
             for amount_var, amount in amount_values.items():
-                self._client.write(amount_var, amount)
-            self._client.write(S06_PARAM_WRITTEN_VAR, True)
+                self._opc_client().write(amount_var, amount)
+            self._opc_client().write(S06_PARAM_WRITTEN_VAR, True)
         except Exception as exc:
             self._status = "Error"
-            self._clear_s06_written_params(pump)
+            self._clear_s06_written_params(process)
             return {"success": False, "message": str(exc)}
         try:
-            if not self._client.wait_new_cycle_done(S06_DONE_VAR, timeout=self.timeout):
+            if not self._opc_client().wait_new_cycle_done(S06_DONE_VAR, timeout=self.timeout):
                 self._status = "Error"
                 return {"success": False, "message": "S06 加工完成等待超时"}
         finally:
-            self._clear_s06_written_params(pump)
+            self._clear_s06_written_params(process)
+        try:
+            sensor_postcheck = self._wait_material_sensors(process, phase="post")
+        except Exception as exc:
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "verification_failed",
+                "message": f"S06 加液已完成，但物料传感器读取失败: {exc}",
+            }
+        if not sensor_postcheck["success"]:
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "verification_failed",
+                "message": "S06 加液已完成，但烧杯在位验证失败",
+                "sensor_precheck": sensor_precheck,
+                "sensor_postcheck": sensor_postcheck,
+            }
         self._status = "Idle"
         return {
             "success": True,
-            "message": f"S06 工艺 {pump} 溶液添加完成",
+            "message": f"S06 工艺 {process} 溶液添加完成",
             "data": {
-                "process": pump,
-                "volume": volume,
+                "process": process,
                 "volume_pump_1": volume_pump_1,
                 "volume_pump_2": volume_pump_2,
                 "amount_values": amount_values,
+                "sensor_precheck": sensor_precheck,
+                "sensor_postcheck": sensor_postcheck,
             },
         }
 
     @not_action
     def _execute_s06_step(
         self,
-        pump: int,
+        process: int,
         pipeline: S06PipelineKind,
         volume: int,
         direction: Literal["aspirate", "dispense"],
@@ -388,38 +461,30 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         require_allow: bool = True,
     ) -> dict[str, Any]:
         del pipeline, direction
-        if pump not in (1, 2, 3):
+        if process not in (1, 2, 3):
             return {"success": False, "message": "S06 工艺选择必须为 1、2 或 3"}
-        return self._execute_s06_addition(pump, volume, require_allow=require_allow)
-
-    @not_action
-    def _transport_beaker_to_stirrer(self, skip_robot: bool) -> dict[str, Any]:
-        if skip_robot:
-            return {"success": True, "message": "已跳过机械臂搬运", "skipped": True}
-        if self._robot_addition_position <= 0 or self._robot_stirrer_position <= 0:
-            return {"success": False, "message": "机械臂加液位/磁搅位编号待定义"}
-        pick = self._robot_addition_position
-        place = self._robot_stirrer_position
-        self._client.write(ROBOT_BEAKER_PICK_VAR, pick)
-        self._client.write(ROBOT_BEAKER_PLACE_VAR, place)
-        return {
-            "success": True,
-            "message": "已下发机械臂烧杯搬运位号（取放完成等待由机器人模块负责）",
-            "data": {"pick_position": pick, "place_position": place},
-        }
+        return self._execute_s06_addition(
+            process,
+            require_allow=require_allow,
+            volume_pump_1=volume,
+            volume_pump_2=volume,
+        )
 
     @action(
         description="执行 S06 单步转液（选泵 + 管路 + 抽液或排液）",
     )
     def transfer_liquid(
         self,
-        pump: int = 1,
+        process: int = 1,
         volume: int = 1,
         direction: Literal["aspirate", "dispense"] = "aspirate",
         pipeline: Literal["aspirate", "dispense", "air"] = "aspirate",
+        pump: int | None = None,
     ) -> dict[str, Any]:
+        if pump is not None:
+            process = pump
         return self._execute_s06_step(
-            pump,
+            process,
             pipeline=pipeline,
             volume=volume,
             direction=direction,
@@ -428,44 +493,33 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
     @not_action
     def _run_solvent_addition(
         self,
-        pump: int = 1,
-        volume: int = 1,
-        volume_pump_1: int = 0,
-        volume_pump_2: int = 0,
+        process: int = 1,
+        volume_pump_1: int = 1,
+        volume_pump_2: int = 1,
         skip_level_check: bool = False,
         skip_robot: bool = True,
         beaker_true_means_present: bool = True,
+        pump: int | None = None,
+        volume: int | None = None,
     ) -> dict[str, Any]:
-        if pump not in (1, 2, 3):
+        if pump is not None:
+            process = pump
+        if volume is not None:
+            if process in {1, 3}:
+                volume_pump_1 = volume
+            if process in {2, 3}:
+                volume_pump_2 = volume
+        if process not in (1, 2, 3):
             return {"success": False, "message": "S06 工艺选择必须为 1、2 或 3"}
 
         self._status = "Running"
         steps: list[dict[str, Any]] = []
 
-        if not self._read_bool(S06_READY_VAR):
-            self._status = "Error"
-            return {"success": False, "message": "S06 未就绪（准备信号为 false）"}
-
-        err = self._wait_beaker_present(beaker_true_means_present)
-        if err:
-            self._status = "Error"
-            return err
-
-        if not skip_level_check:
-            err = self._ensure_storage_bottle_present(pump)
-            if err:
-                self._status = "Error"
-                return err
-
-        err = self._wait_allow_process()
-        if err:
-            self._status = "Error"
-            return err
+        del skip_level_check, skip_robot, beaker_true_means_present
 
         result = self._execute_s06_addition(
-            pump,
-            volume,
-            require_allow=False,
+            process,
+            require_allow=True,
             volume_pump_1=volume_pump_1,
             volume_pump_2=volume_pump_2,
         )
@@ -474,19 +528,12 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             self._status = "Error"
             return {**result, "steps": steps}
 
-        robot_result = self._transport_beaker_to_stirrer(skip_robot)
-        steps.append({"step": "机械臂至磁搅", **robot_result})
-        if not robot_result["success"]:
-            self._status = "Error"
-            return {**robot_result, "steps": steps}
-
         self._status = "Idle"
         return {
             "success": True,
-            "message": f"S06 泵 {pump} 加液流程完成",
+            "message": f"S06 工艺 {process} 加液流程完成",
             "data": {
-                "pump": pump,
-                "volume": volume,
+                "process": process,
                 "volume_pump_1": volume_pump_1,
                 "volume_pump_2": volume_pump_2,
             },
@@ -498,22 +545,24 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
     )
     def run_solvent_addition(
         self,
-        pump: int = 1,
-        volume: int = 1,
-        volume_pump_1: int = 0,
-        volume_pump_2: int = 0,
+        process: int = 1,
+        volume_pump_1: int = 1,
+        volume_pump_2: int = 1,
         skip_level_check: bool = False,
         skip_robot: bool = True,
         beaker_true_means_present: bool = True,
+        pump: int | None = None,
+        volume: int | None = None,
     ) -> dict[str, Any]:
         return self._run_solvent_addition(
-            pump=pump,
-            volume=volume,
+            process=process,
             volume_pump_1=volume_pump_1,
             volume_pump_2=volume_pump_2,
             skip_level_check=skip_level_check,
             skip_robot=skip_robot,
             beaker_true_means_present=beaker_true_means_present,
+            pump=pump,
+            volume=volume,
         )
 
     @action(description="向 S06 中的 500 mL 烧杯加溶剂（物料感知）")
@@ -532,13 +581,13 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         beaker_true_means_present: bool = True,
     ) -> BeakerAdditionStatus:
         result = self._run_solvent_addition(
-            pump=pump,
-            volume=volume,
+            process=pump,
             volume_pump_1=volume_pump_1,
             volume_pump_2=volume_pump_2,
             skip_level_check=skip_level_check,
             skip_robot=True,
             beaker_true_means_present=beaker_true_means_present,
+            volume=volume,
         )
         return {
             "success": bool(result.get("success", False)),

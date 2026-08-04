@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated, Any, TypedDict
@@ -16,6 +17,7 @@ from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
 from szlab_poly_studio.devices.szlab_mixer_photoshotting.sensors import (
     PHOTO_RESULT_LABELS,
     S05_DONE,
+    S05_MATERIAL_SENSOR,
     S05_RESULT,
 )
 from szlab_poly_studio.devices.szlab_poly_plc.device import wait_variable_true
@@ -252,6 +254,26 @@ class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
         reader = self._plc_gateway if self._plc_gateway is not None else self._client
         return wait_variable_true(reader, S05_DONE, timeout=self.timeout, interval=1.0)
 
+    @not_action
+    def _wait_material_present(self) -> bool:
+        waiter = getattr(self._plc_gateway, "wait_variable_true", None) if self._plc_gateway is not None else None
+        if callable(waiter):
+            return waiter(S05_MATERIAL_SENSOR, timeout=self.timeout, interval=1.0)
+        reader = self._plc_gateway if self._plc_gateway is not None else self._client
+        return wait_variable_true(reader, S05_MATERIAL_SENSOR, timeout=self.timeout, interval=1.0)
+
+    @not_action
+    def _wait_photo_result_code(self) -> tuple[Any, str]:
+        deadline = time.monotonic() + self.timeout
+        last_code: Any = 0
+        while time.monotonic() <= deadline:
+            last_code = self._read_variable(S05_RESULT, use_cache=False)
+            result_label = self._result_label(last_code)
+            if result_label != "UNKNOWN":
+                return last_code, result_label
+            time.sleep(1.0)
+        return last_code, "UNKNOWN"
+
     @action(description="执行烧杯姿势拍照检测")
     def take_photo(
         self,
@@ -265,16 +287,32 @@ class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
             sample_id[样品ID]: 用于生成照片文件名和结果记录的样品标识。
             photo_path[照片路径]: 保留参数；相机照片链接接口接入后由设备侧获取。
             inspection_result[算法结果]: 保留参数；S05 当前按 PLC 拍照结果判断。
-            require_material[要求有料]: 兼容旧工作流参数；S05 最新变量表不再提供物料检测，当前不使用。
+            require_material[要求有料]: 兼容旧工作流参数；实机动作始终要求拍照位置有料。
         """
         del inspection_result, require_material
         self._status = "Running"
+        if not self._wait_material_present():
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "rejected",
+                "message": "S05 等待拍照位置有料超时",
+                "data": {"sensor_variable": S05_MATERIAL_SENSOR},
+            }
         if not self._wait_photo_done():
             self._status = "Error"
             return {"success": False, "message": "S05 拍照完成等待超时"}
 
-        result_code = self._read_variable(S05_RESULT, use_cache=False)
-        result_label = self._result_label(result_code)
+        if not self._wait_material_present():
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "verification_failed",
+                "message": "S05 拍照已完成，但物料在位验证失败",
+                "data": {"sensor_variable": S05_MATERIAL_SENSOR},
+            }
+
+        result_code, result_label = self._wait_photo_result_code()
         photo_url = self._fetch_photo_url(sample_id) if result_label == "OK" else ""
         self._status = "Idle"
         self._last_photo_path = photo_path
@@ -286,6 +324,13 @@ class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
             "result_code": result_code,
             "result": result_label,
         }
+        if result_label == "UNKNOWN":
+            self._status = "Error"
+            return {
+                "success": False,
+                "message": f"S05 拍照结果等待超时（last_value={result_code}）",
+                "data": data,
+            }
         if result_label != "OK":
             self._status = "Error"
             return {

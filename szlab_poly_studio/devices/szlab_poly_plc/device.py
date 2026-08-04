@@ -15,6 +15,7 @@ except ModuleNotFoundError as exc:
         raise
     BaseClient = object
     OpcUaNode = None
+from unilabos.registry.annotations import JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
 from unilabos.utils.log import logger
 
@@ -32,6 +33,8 @@ OPCUA_CONNECTION_CHECK_INTERVAL = 5.0
 OPCUA_RECONNECT_ATTEMPTS = 3
 OPCUA_RECONNECT_DELAY = 1.0
 PLC_WAIT_PROGRESS_LOG_INTERVAL = 10.0
+SENSOR_ARRAY_COUNT = 10
+SENSOR_BITS_PER_ARRAY = 16
 _UNSET = object()
 
 _RECONNECTABLE_OPCUA_STATUS_NAMES = (
@@ -131,6 +134,34 @@ def wait_variable_true(
     interval: float = 1.0,
 ) -> bool:
     return wait_variable_equal(reader, variable_name, True, timeout=timeout, interval=interval)
+
+
+def wait_sensor_conditions(
+    reader: Any,
+    conditions: Dict[str, bool],
+    *,
+    timeout: float = 300.0,
+    interval: float = 0.2,
+    context: str | None = None,
+) -> tuple[bool, Dict[str, Any]]:
+    """在同一个有界等待中校验一组传感器状态。"""
+    if not conditions:
+        return True, {}
+    started_at = time.monotonic()
+    last_values: Dict[str, Any] = {}
+    while True:
+        last_values = {
+            variable_name: reader.read_variable(variable_name, use_cache=False) for variable_name in conditions
+        }
+        if all(last_values[name] == expected for name, expected in conditions.items()):
+            return True, last_values
+        if time.monotonic() - started_at >= float(timeout):
+            logger.error(
+                f"[SZLAB-PLC-SENSOR-WAIT] TIMEOUT context={context or '-'} "
+                f"conditions={compact_log_value(conditions)} values={compact_log_value(last_values)}"
+            )
+            return False, last_values
+        time.sleep(max(float(interval), 0.0))
 
 
 S3_UNUSED_BEAKER_SENSORS: Dict[str, str] = {
@@ -320,6 +351,31 @@ def load_variable_names_from_csv(csv_path: str) -> List[str]:
     return names
 
 
+def load_sensor_bit_metadata_from_csv(csv_path: str) -> Dict[str, Dict[str, str]]:
+    """读取传感器位在 PLC 表中的标签、地址和 NodeId。"""
+    for encoding in ("utf-8-sig", "utf-16", "utf-16-le", "gb18030", "gbk"):
+        for delimiter in (",", "\t"):
+            try:
+                with open(csv_path, newline="", encoding=encoding) as csv_file:
+                    reader = csv.DictReader(csv_file, delimiter=delimiter)
+                    if "变量名" not in (reader.fieldnames or []):
+                        continue
+                    metadata: Dict[str, Dict[str, str]] = {}
+                    for row in reader:
+                        name = (row.get("变量名") or "").strip()
+                        if not name.startswith("传感器状态_上位机[") or "].NO[" not in name:
+                            continue
+                        metadata[name] = {
+                            "label": (row.get("注释") or "").strip(),
+                            "address": (row.get("软元件地址") or "").strip(),
+                            "node_id": (row.get("node_id") or row.get("nodeid") or "").strip(),
+                        }
+                    return metadata
+            except UnicodeDecodeError:
+                break
+    return {}
+
+
 def _patch_opcua_token_time_drift_check() -> None:
     """兼容 PLC/OPC UA Server 时间严重漂移导致的 security token 超时。"""
     from opcua.common.connection import SecureConnection
@@ -396,6 +452,7 @@ class SZLabPolyPLCDevice(BaseClient):
         self._reconnect_count = 0
 
         variable_names, csv_node_id_map = load_variable_definitions_from_csv(self.csv_path)
+        self._sensor_bit_metadata = load_sensor_bit_metadata_from_csv(self.csv_path)
         nodes = [OpcUaNode(name=name, node_type=NodeType.VARIABLE, data_type=None) for name in variable_names]
         prefix_node_id_map = (
             {name: f"{opcua_node_id_prefix}{name}" for name in variable_names} if opcua_node_id_prefix else {}
@@ -497,9 +554,7 @@ class SZLabPolyPLCDevice(BaseClient):
             )
             return
 
-        raise ConnectionError(
-            f"OPC UA 重连失败，已尝试 {self.reconnect_attempts} 次: {last_error}"
-        ) from last_error
+        raise ConnectionError(f"OPC UA 重连失败，已尝试 {self.reconnect_attempts} 次: {last_error}") from last_error
 
     @not_action
     def _check_connection_once(self) -> bool:
@@ -508,17 +563,13 @@ class SZLabPolyPLCDevice(BaseClient):
                 server_state = self._probe_connection_locked()
             except Exception as exc:
                 self._mark_connection_unhealthy(exc)
-                logger.warning(
-                    f"OPC UA 通信检测失败，准备重连: {type(exc).__name__}: {exc}"
-                )
+                logger.warning(f"OPC UA 通信检测失败，准备重连: {type(exc).__name__}: {exc}")
                 try:
                     self._reconnect_locked(reason=f"active probe failed: {type(exc).__name__}: {exc}")
                     server_state = self._probe_connection_locked()
                 except Exception as reconnect_exc:
                     self._mark_connection_unhealthy(reconnect_exc)
-                    logger.error(
-                        f"OPC UA 通信恢复失败: {type(reconnect_exc).__name__}: {reconnect_exc}"
-                    )
+                    logger.error(f"OPC UA 通信恢复失败: {type(reconnect_exc).__name__}: {reconnect_exc}")
                     return False
 
             self._mark_connection_healthy()
@@ -608,9 +659,7 @@ class SZLabPolyPLCDevice(BaseClient):
                     )
                     self._mark_connection_unhealthy(exc)
                     try:
-                        self._reconnect_locked(
-                            reason=f"read {node_name} failed: {type(exc).__name__}: {exc}"
-                        )
+                        self._reconnect_locked(reason=f"read {node_name} failed: {type(exc).__name__}: {exc}")
                     except Exception as reconnect_exc:
                         logger.warning(
                             f"读取 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
@@ -626,9 +675,7 @@ class SZLabPolyPLCDevice(BaseClient):
                     f"attempt={attempt}/{attempts} elapsed={elapsed:.3f}s "
                     f"cause={type(exc).__name__}: {exc}"
                 )
-                raise RuntimeError(
-                    f"读取 PLC 变量失败: {node_name}: {exc}"
-                ) from exc
+                raise RuntimeError(f"读取 PLC 变量失败: {node_name}: {exc}") from exc
             if not error:
                 self._mark_connection_healthy()
                 logger.debug(
@@ -638,10 +685,7 @@ class SZLabPolyPLCDevice(BaseClient):
                 )
                 return value
             if attempt < attempts:
-                logger.warning(
-                    f"读取 PLC 变量暂时失败，准备重试 "
-                    f"({attempt}/{attempts}): {node_name}"
-                )
+                logger.warning(f"读取 PLC 变量暂时失败，准备重试 ({attempt}/{attempts}): {node_name}")
                 time.sleep(OPCUA_DIRECT_IO_RETRY_DELAY)
         elapsed = time.monotonic() - started_at
         if is_direct:
@@ -652,8 +696,7 @@ class SZLabPolyPLCDevice(BaseClient):
                 f"cause=direct read returned an error"
             )
             raise RuntimeError(
-                f"读取 PLC 变量失败: {node_name}: 直连读取未成功: "
-                f"{direct_node_id}（已重试 {attempts} 次）"
+                f"读取 PLC 变量失败: {node_name}: 直连读取未成功: {direct_node_id}（已重试 {attempts} 次）"
             )
         logger.error(
             f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
@@ -692,9 +735,7 @@ class SZLabPolyPLCDevice(BaseClient):
                 return True
             except Exception as exc:
                 is_bad_node_id = self._is_bad_node_id_unknown(exc)
-                is_retryable = (
-                    is_direct and self._is_retryable_direct_io_error(exc)
-                )
+                is_retryable = is_direct and self._is_retryable_direct_io_error(exc)
                 if is_retryable and attempt < attempts:
                     logger.warning(
                         f"写入 PLC 变量遇到临时通信错误，准备重连后重试 "
@@ -703,9 +744,7 @@ class SZLabPolyPLCDevice(BaseClient):
                     )
                     self._mark_connection_unhealthy(exc)
                     try:
-                        self._reconnect_locked(
-                            reason=f"write {node_name} failed: {type(exc).__name__}: {exc}"
-                        )
+                        self._reconnect_locked(reason=f"write {node_name} failed: {type(exc).__name__}: {exc}")
                     except Exception as reconnect_exc:
                         logger.warning(
                             f"写入 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
@@ -734,8 +773,7 @@ class SZLabPolyPLCDevice(BaseClient):
                     f"elapsed={elapsed:.3f}s cause=BadNodeIdUnknown"
                 )
                 raise RuntimeError(
-                    f"写入 PLC 变量失败: {node_name}: 直连 NodeId 无效"
-                    f"{direct_node_detail}（已重试 {attempts} 次）"
+                    f"写入 PLC 变量失败: {node_name}: 直连 NodeId 无效{direct_node_detail}（已重试 {attempts} 次）"
                 ) from exc
         raise AssertionError("unreachable")
 
@@ -893,6 +931,23 @@ class SZLabPolyPLCDevice(BaseClient):
             )
         return completed
 
+    @action(always_free=True, description="等待一组 PLC 传感器达到指定状态")
+    def wait_sensor_conditions(
+        self,
+        conditions: Dict[str, JSONValue],
+        timeout: float = 300.0,
+        interval: float = 0.2,
+        context: str | None = None,
+    ) -> Dict[str, JSONValue]:
+        success, values = wait_sensor_conditions(
+            self,
+            conditions,
+            timeout=timeout,
+            interval=interval,
+            context=context,
+        )
+        return {"success": success, "values": values}
+
     @not_action
     def get_opc_variable_metadata(self, node_name: str) -> tuple[str, str | None]:
         try:
@@ -1017,6 +1072,19 @@ class SZLabPolyPLCDevice(BaseClient):
             "reconnect_count": self._reconnect_count,
         }
 
+    @action(always_free=True, description="重新建立 PLC OPC UA 会话")
+    def reconnect(self) -> Dict[str, Any]:
+        try:
+            with self._io_lock:
+                self._reconnect_locked(reason="用户请求手动重连")
+        except Exception as exc:
+            return {"success": False, "message": str(exc)}
+        return {
+            "success": True,
+            "message": "PLC OPC UA 会话重连成功",
+            "reconnect_count": self._reconnect_count,
+        }
+
     @action(always_free=True, description="读取指定 PLC 变量")
     def check_variable_status(self, variable_name: str) -> Dict[str, Any]:
         try:
@@ -1032,8 +1100,8 @@ class SZLabPolyPLCDevice(BaseClient):
                 "error": str(exc),
             }
 
-    @not_action
-    def write_variable_action(self, variable_name: str, value: Any) -> Dict[str, Any]:
+    @action(always_free=True, description="写入指定 PLC 变量")
+    def write_variable_action(self, variable_name: str, value: str) -> Dict[str, Any]:
         try:
             self.write_variable(variable_name, value)
             return {"success": True, "variable_name": variable_name, "value": value}
@@ -1062,6 +1130,53 @@ class SZLabPolyPLCDevice(BaseClient):
     @action(always_free=True, description="读取前端堆栈 JSON 状态")
     def get_stack_status(self, group_names: Optional[List[str]] = None) -> Dict[str, Any]:
         return self._build_stack_status(group_names=group_names)
+
+    @action(always_free=True, description="读取全部实机传感器数组")
+    def get_sensor_arrays(self) -> Dict[str, Any]:
+        groups: List[Dict[str, Any]] = []
+        successful_groups = 0
+        for group_index in range(SENSOR_ARRAY_COUNT):
+            array_name = f"传感器状态_上位机[{group_index}].NO"
+            values: list[Optional[bool]] = []
+            errors: list[str] = []
+            bits: list[Dict[str, Any]] = []
+            for bit_index in range(SENSOR_BITS_PER_ARRAY):
+                bit_name = f"{array_name}[{bit_index}]"
+                try:
+                    value: Optional[bool] = bool(self.read_variable(bit_name, use_cache=False))
+                except Exception as exc:
+                    value = None
+                    errors.append(f"{bit_name}: {exc}")
+                values.append(value)
+                metadata = self._sensor_bit_metadata.get(bit_name, {})
+                bits.append(
+                    {
+                        "index": bit_index,
+                        "name": bit_name,
+                        "value": value,
+                        "label": metadata.get("label") or "",
+                        "address": metadata.get("address") or "",
+                        "node_id": metadata.get("node_id") or self._direct_node_id_map.get(bit_name),
+                    }
+                )
+            if any(value is not None for value in values):
+                successful_groups += 1
+            groups.append(
+                {
+                    "index": group_index,
+                    "name": array_name,
+                    "node_id": self._direct_node_id_map.get(array_name),
+                    "values": values,
+                    "bits": bits,
+                    "error": "; ".join(errors) if errors and not any(value is not None for value in values) else None,
+                }
+            )
+        return {
+            "success": successful_groups == SENSOR_ARRAY_COUNT,
+            "partial": 0 < successful_groups < SENSOR_ARRAY_COUNT,
+            "schema": "szlab_poly_studio.sensor_arrays.v1",
+            "groups": groups,
+        }
 
     @action(always_free=True, description="写入 S01 上料过渡仓取料编号和入料产品")
     def set_s1_loading_request(self, pick_index: int, product_type: int) -> Dict[str, Any]:

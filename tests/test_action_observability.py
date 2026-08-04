@@ -66,7 +66,7 @@ def test_every_szlab_action_is_wrapped_for_observability() -> None:
         if callable(value) and hasattr(value, "_action_registry_meta")
     ]
 
-    assert len(actions) == 91
+    assert len(actions) == 98
     assert all(getattr(value, "__szlab_action_traced__", False) for value in actions)
 
 
@@ -91,10 +91,7 @@ def test_action_logging_reports_start_success_failure_and_redacts_secrets(
 
     assert any("[SZLAB-ACTION] START" in message and "value" in message for message in infos)
     assert any("[SZLAB-ACTION] SUCCESS" in message and "value=7" in message for message in infos)
-    assert any(
-        "[SZLAB-ACTION] FAIL" in message and "station not ready" in message
-        for message in errors
-    )
+    assert any("[SZLAB-ACTION] FAIL" in message and "station not ready" in message for message in errors)
     assert all("do-not-log" not in message for message in [*infos, *errors])
     assert any("'password': '***'" in message for message in infos)
 
@@ -108,9 +105,7 @@ def test_action_logging_reports_exception_and_preserves_action_metadata(
         _ObservableDevice().crash()
 
     assert any(
-        "[SZLAB-ACTION] FAIL" in message
-        and "TimeoutError: PLC response timeout" in message
-        for message in errors
+        "[SZLAB-ACTION] FAIL" in message and "TimeoutError: PLC response timeout" in message for message in errors
     )
     assert hasattr(_ObservableDevice.succeed, "_action_registry_meta")
     assert list(inspect.signature(_ObservableDevice.succeed).parameters) == [
@@ -157,15 +152,9 @@ def test_wait_logging_reports_observed_values_success_and_timeout(
     )
 
     assert any("[SZLAB-PLC-WAIT] START" in message for message in infos)
-    assert any(
-        "[SZLAB-PLC-WAIT] OBSERVED" in message and "actual=False" in message
-        for message in infos
-    )
+    assert any("[SZLAB-PLC-WAIT] OBSERVED" in message and "actual=False" in message for message in infos)
     assert any("[SZLAB-PLC-WAIT] SUCCESS" in message for message in infos)
-    assert any(
-        "[SZLAB-PLC-WAIT] TIMEOUT" in message and "last_actual=False" in message
-        for message in errors
-    )
+    assert any("[SZLAB-PLC-WAIT] TIMEOUT" in message and "last_actual=False" in message for message in errors)
 
 
 class _FakeRosNode:
@@ -193,9 +182,7 @@ def test_plc_gateway_logs_operation_arguments_and_failure_reason(
         failing_gateway.write_variable("S06参数写入完成", True)
 
     assert any(
-        "[SZLAB-PLC-CALL] START" in message
-        and "write_variable" in message
-        and "S06工艺选择" in message
+        "[SZLAB-PLC-CALL] START" in message and "write_variable" in message and "S06工艺选择" in message
         for message in infos
     )
     assert any(

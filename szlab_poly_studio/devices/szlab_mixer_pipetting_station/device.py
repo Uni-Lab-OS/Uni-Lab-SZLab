@@ -28,7 +28,9 @@ from szlab_poly_studio.devices.szlab_mixer_pipetting_station.sensors import (
     S09_PROCESS_DONE_VAR,
     S09_PROCESS_LABELS,
     S09_PROCESS_SELECT_VAR,
+    S09_STATION_SENSORS,
     S09_STATION_STATUS_VAR,
+    S09_TIP_BOX_SENSORS,
     S09_TIP_BOX_VAR,
     S09_TIP_VAR,
     s09_remaining_volume_var,
@@ -201,6 +203,64 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
         return self._wait_equal(S09_ALLOW_PROCESS_VAR, True)
 
     @not_action
+    def _material_conditions_for_process(
+        self,
+        process: int,
+        *,
+        tip_box_index: int,
+        liquid_bottle_index: int,
+        station: int,
+    ) -> dict[str, bool]:
+        if process in {5, 6}:
+            return {S09_TIP_BOX_SENSORS[validate_tip_box(tip_box_index)]: True}
+        if process in {7, 9}:
+            return {S09_STATION_SENSORS[validate_liquid_bottle(liquid_bottle_index)]: True}
+        if process in {8, 10}:
+            return {S09_STATION_SENSORS[validate_station(station)]: True}
+        return {}
+
+    @not_action
+    def _wait_material_conditions(
+        self,
+        conditions: dict[str, bool],
+        *,
+        phase: str,
+    ) -> dict[str, Any]:
+        target = self._target()
+        waiter = getattr(target, "wait_sensor_conditions", None)
+        if callable(waiter):
+            wait_result = waiter(
+                conditions,
+                timeout=self.timeout,
+                interval=0.2,
+                context=f"S09 加液{phase}传感器检查",
+            )
+            if isinstance(wait_result, dict):
+                success, values = bool(wait_result.get("success")), dict(wait_result.get("values") or {})
+            else:
+                success, values = wait_result
+        else:
+            deadline = time.monotonic() + self.timeout
+            values: dict[str, Any] = {}
+            while True:
+                values = {name: self._read_variable(name, use_cache=False) for name in conditions}
+                success = all(values.get(name) == expected for name, expected in conditions.items())
+                if success or time.monotonic() >= deadline:
+                    break
+                time.sleep(0.2)
+        return {
+            "success": bool(success),
+            "phase": phase,
+            "conditions": conditions,
+            "values": values,
+            "mismatches": {
+                name: {"expected": expected, "actual": values.get(name)}
+                for name, expected in conditions.items()
+                if values.get(name) != expected
+            },
+        }
+
+    @not_action
     def _append_log(
         self,
         logs: list[dict[str, Any]],
@@ -298,6 +358,24 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "deducted_volume_ml": deduct_ml,
             "remaining_volume": new_volume,
         }
+
+    @not_action
+    def _write_configured_remaining_volumes(
+        self,
+        remaining_volumes: dict[int, float | None],
+    ) -> dict[str, float]:
+        written: dict[str, float] = {}
+        for bottle, remaining_volume in remaining_volumes.items():
+            if remaining_volume is None:
+                continue
+            bottle = validate_liquid_bottle(bottle)
+            value = float(remaining_volume)
+            if value < 0:
+                raise ValueError("S09 液体瓶剩余液量不能为负数")
+            variable = s09_remaining_volume_var(bottle)
+            self._write_variable(variable, value)
+            written[variable] = value
+        return written
 
     @not_action
     def _split_raw_volume(self, raw_volume: int) -> list[int]:
@@ -488,6 +566,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
         require_allow: bool = False,
         skip_level_check: bool = False,
         reset_delay: float = 0.1,
+        read_balance_after_done: bool | None = None,
     ) -> dict[str, Any]:
         logs: list[dict[str, Any]] = []
         try:
@@ -511,6 +590,24 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             )
         except ValueError as exc:
             return {"success": False, "message": str(exc)}
+
+        material_conditions = self._material_conditions_for_process(
+            process,
+            tip_box_index=tip_box_index,
+            liquid_bottle_index=liquid_bottle_index,
+            station=station,
+        )
+        try:
+            sensor_precheck = self._wait_material_conditions(material_conditions, phase="pre")
+        except Exception as exc:
+            return {"success": False, "message": f"S09 工艺 {process} 前置物料传感器读取失败: {exc}"}
+        if not sensor_precheck["success"]:
+            return {
+                "success": False,
+                "status": "rejected",
+                "message": f"S09 工艺 {process} 等待所需物料在位超时",
+                "sensor_precheck": sensor_precheck,
+            }
 
         if require_allow:
             try:
@@ -559,11 +656,11 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
                 f"S09 工艺 {process} 参数写入完成",
                 {"process": process, "written_variables": process_params},
             )
-            self._pulse_variable(S09_PARAM_WRITTEN_VAR, True, False, reset_delay=reset_delay)
+            self._write_variable(S09_PARAM_WRITTEN_VAR, True)
             self._append_log(
                 logs,
-                "S09 参数写入完成信号已触发",
-                {"variable": S09_PARAM_WRITTEN_VAR, "value": True, "reset_value": False},
+                "S09 参数写入完成信号已置位，将保持至工艺结束",
+                {"variable": S09_PARAM_WRITTEN_VAR, "value": True, "reset_delay": reset_delay},
             )
         except Exception as exc:
             self._status = "Error"
@@ -581,6 +678,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "volume_unit": "raw",
             "aspirate_volume_ul": self._raw_volume_to_ul(aspirate_volume),
             "dispense_volume_ul": self._raw_volume_to_ul(dispense_volume),
+            "sensor_precheck": sensor_precheck,
             "logs": logs,
         }
         try:
@@ -589,6 +687,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
                 f"等待 S09 工艺 {process} 完成",
                 {"variable": S09_PROCESS_DONE_VAR, "expected": process},
             )
+
             if not self._wait_process_done(process):
                 self._status = "Error"
                 return {"success": False, "message": f"S09 工艺 {process} 完成等待超时", "data": data, "logs": logs}
@@ -597,6 +696,28 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
                 f"S09 工艺 {process} 完成信号已确认",
                 {"variable": S09_PROCESS_DONE_VAR, "expected": process},
             )
+
+            try:
+                sensor_postcheck = self._wait_material_conditions(material_conditions, phase="post")
+            except Exception as exc:
+                self._status = "Error"
+                return {
+                    "success": False,
+                    "status": "verification_failed",
+                    "message": f"S09 工艺 {process} 已完成，但物料传感器读取失败: {exc}",
+                    "data": data,
+                    "logs": logs,
+                }
+            data["sensor_postcheck"] = sensor_postcheck
+            if not sensor_postcheck["success"]:
+                self._status = "Error"
+                return {
+                    "success": False,
+                    "status": "verification_failed",
+                    "message": f"S09 工艺 {process} 已完成，但所需物料在位验证失败",
+                    "data": data,
+                    "logs": logs,
+                }
 
             if process in {7, 9} and aspirate_volume > 0:
                 try:
@@ -615,9 +736,15 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
                     self._status = "Error"
                     return {"success": False, "message": str(exc), "data": data, "logs": logs}
 
-            if process in {9, 10}:
-                self._append_log(logs, "读取 S09 天平读数", {"process": process})
-                balance = self.read_balance(require_stable=False)
+            should_read_balance = (
+                process in {9, 10} if read_balance_after_done is None else bool(read_balance_after_done)
+            )
+            if should_read_balance:
+                self._append_log(logs, "等待并读取 S09 稳定天平读数", {"process": process})
+                if not self._wait_equal(S09_BALANCE_STABLE_VAR, True):
+                    self._status = "Error"
+                    return {"success": False, "message": "S09 天平稳定信号等待超时", "data": data, "logs": logs}
+                balance = self.read_balance(require_stable=True)
                 if not balance.get("success", False):
                     self._status = "Error"
                     return {
@@ -649,7 +776,8 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
     @action(description="执行 S09 单次业务加液流程")
     def add_liquid(
         self,
-        tip_box_index: int = 1,
+        take_tip_box_index: int = 1,
+        release_tip_box_index: int = 2,
         tip_index: int = 1,
         liquid_bottle_index: int = 1,
         station: int = 1,
@@ -657,6 +785,12 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
         dispense_volume: int = 1,
         volume_unit: str = "raw",
         skip_level_check: bool = False,
+        S09液体瓶1剩余液量: float | None = None,
+        S09液体瓶2剩余液量: float | None = None,
+        S09液体瓶3剩余液量: float | None = None,
+        S09液体瓶4剩余液量: float | None = None,
+        S09液体瓶5剩余液量: float | None = None,
+        tip_box_index: int | None = None,
     ) -> dict[str, Any]:
         steps: list[dict[str, Any]] = []
         logs: list[dict[str, Any]] = []
@@ -670,29 +804,73 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
         if aspirate_raw != dispense_raw and max(aspirate_raw, dispense_raw) > S09_VOLUME_RAW_MAX:
             return {"success": False, "message": "S09 自动拆分加液时要求抽液量和放液量一致"}
 
+        if tip_box_index is not None:
+            take_tip_box_index = release_tip_box_index = tip_box_index
+        try:
+            take_tip_box_index = validate_tip_box(take_tip_box_index)
+            release_tip_box_index = validate_tip_box(release_tip_box_index)
+            workflow_sensor_conditions = {
+                S09_TIP_BOX_SENSORS[take_tip_box_index]: True,
+                S09_TIP_BOX_SENSORS[release_tip_box_index]: True,
+                S09_STATION_SENSORS[validate_liquid_bottle(liquid_bottle_index)]: True,
+                S09_STATION_SENSORS[validate_station(station)]: True,
+            }
+            workflow_sensor_precheck = self._wait_material_conditions(
+                workflow_sensor_conditions,
+                phase="workflow_pre",
+            )
+        except (KeyError, ValueError) as exc:
+            return {"success": False, "message": str(exc)}
+        except Exception as exc:
+            return {"success": False, "message": f"S09 加液流程物料传感器读取失败: {exc}"}
+        if not workflow_sensor_precheck["success"]:
+            return {
+                "success": False,
+                "status": "rejected",
+                "message": "S09 加液流程等待 TIP盒、液体瓶和加液工位物料在位超时",
+                "sensor_precheck": workflow_sensor_precheck,
+            }
+
+        try:
+            configured_remaining_volumes = self._write_configured_remaining_volumes(
+                {
+                    1: S09液体瓶1剩余液量,
+                    2: S09液体瓶2剩余液量,
+                    3: S09液体瓶3剩余液量,
+                    4: S09液体瓶4剩余液量,
+                    5: S09液体瓶5剩余液量,
+                }
+            )
+        except (TypeError, ValueError) as exc:
+            return {"success": False, "message": str(exc)}
+
         if aspirate_raw == dispense_raw:
             transfer_chunks = [(chunk, chunk) for chunk in self._split_raw_volume(aspirate_raw)]
         else:
             transfer_chunks = [(aspirate_raw, dispense_raw)]
 
-        plan: list[tuple[int, str, int, int]] = [(5, "取 TIP", 0, 0)]
+        plan: list[tuple[int, str, int, int, int, bool]] = [
+            (5, f"从 TIP盒{take_tip_box_index} 取 TIP", take_tip_box_index, 0, 0, False)
+        ]
         for index, (aspirate_chunk, dispense_chunk) in enumerate(transfer_chunks, start=1):
             suffix = f" {index}/{len(transfer_chunks)}" if len(transfer_chunks) > 1 else ""
-            plan.append((7, f"液体瓶取液{suffix}", aspirate_chunk, 0))
-            plan.append((8, f"烧杯放液{suffix}", 0, dispense_chunk))
-        plan.append((6, "放 TIP", 0, 0))
+            plan.append((7, f"液体瓶取液{suffix}", take_tip_box_index, aspirate_chunk, 0, False))
+            plan.append((8, f"烧杯放液{suffix}", take_tip_box_index, 0, dispense_chunk, index == len(transfer_chunks)))
+        plan.append((6, f"向 TIP盒{release_tip_box_index} 放 TIP", release_tip_box_index, 0, 0, False))
 
-        for process, step_name, aspirate_chunk, dispense_chunk in plan:
+        for process, step_name, process_tip_box, aspirate_chunk, dispense_chunk, read_balance_after_done in plan:
             result = self.run_process(
                 process=process,
-                tip_box_index=tip_box_index,
+                tip_box_index=process_tip_box,
                 tip_index=tip_index,
                 liquid_bottle_index=liquid_bottle_index,
                 station=station,
                 aspirate_volume=aspirate_chunk,
                 dispense_volume=dispense_chunk,
                 volume_unit="raw",
+                require_allow=process in {5, 6, 7, 8},
                 skip_level_check=skip_level_check,
+                read_balance_after_done=read_balance_after_done,
             )
             steps.append({"step": step_name, **result})
             logs.extend(result.get("logs") or [])
@@ -707,7 +885,8 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "success": True,
             "message": "S09 单次加液完成",
             "data": {
-                "tip_box_index": tip_box_index,
+                "take_tip_box_index": take_tip_box_index,
+                "release_tip_box_index": release_tip_box_index,
                 "tip_index": tip_index,
                 "liquid_bottle_index": liquid_bottle_index,
                 "station": station,
@@ -716,6 +895,8 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
                 "volume_unit": "raw",
                 "aspirate_volume_ul": self._raw_volume_to_ul(aspirate_raw),
                 "dispense_volume_ul": self._raw_volume_to_ul(dispense_raw),
+                "configured_remaining_volumes": configured_remaining_volumes,
+                "sensor_precheck": workflow_sensor_precheck,
                 "split_count": len(transfer_chunks),
                 "transfer_chunks": [
                     {
@@ -766,6 +947,50 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "reagent_bottle": reagent_bottle,
             "tip": tip,
         }
+
+    @action(description="执行 S09 烧杯加液：取 TIP、液体瓶取液、烧杯放液、放 TIP")
+    def add_liquid_to_beaker(
+        self,
+        take_tip_box_index: int = 1,
+        release_tip_box_index: int = 2,
+        tip_index: int = 1,
+        liquid_bottle_index: int = 1,
+        station: int = 1,
+        aspirate_volume: int = 1,
+        dispense_volume: int = 1,
+        volume_unit: str = "raw",
+        skip_level_check: bool = False,
+        S09液体瓶1剩余液量: float | None = None,
+        S09液体瓶2剩余液量: float | None = None,
+        S09液体瓶3剩余液量: float | None = None,
+        S09液体瓶4剩余液量: float | None = None,
+        S09液体瓶5剩余液量: float | None = None,
+    ) -> dict[str, Any]:
+        result = self.add_liquid(
+            take_tip_box_index=take_tip_box_index,
+            release_tip_box_index=release_tip_box_index,
+            tip_index=tip_index,
+            liquid_bottle_index=liquid_bottle_index,
+            station=station,
+            aspirate_volume=aspirate_volume,
+            dispense_volume=dispense_volume,
+            volume_unit=volume_unit,
+            skip_level_check=skip_level_check,
+            S09液体瓶1剩余液量=S09液体瓶1剩余液量,
+            S09液体瓶2剩余液量=S09液体瓶2剩余液量,
+            S09液体瓶3剩余液量=S09液体瓶3剩余液量,
+            S09液体瓶4剩余液量=S09液体瓶4剩余液量,
+            S09液体瓶5剩余液量=S09液体瓶5剩余液量,
+        )
+        if result.get("success", False):
+            data = dict(result.get("data") or {})
+            data["process_sequence"] = [
+                step["data"]["process"]
+                for step in result.get("steps", [])
+                if isinstance(step.get("data"), dict) and "process" in step["data"]
+            ]
+            return {**result, "message": "S09 烧杯加液完成", "data": data}
+        return result
 
     @action(description="执行 S09 多步加液工作流")
     def run_liquid_workflow(

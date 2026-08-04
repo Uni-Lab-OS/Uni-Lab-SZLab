@@ -127,6 +127,9 @@ VIAL_PROCESS_TYPES: dict[str, tuple[S08ProcessType, S08ProcessType]] = {
     "sample_250ml": (S08ProcessType.OPEN_SAMPLE_VIAL_250ML, S08ProcessType.CLOSE_SAMPLE_VIAL_250ML),
     "liquid_100ml": (S08ProcessType.OPEN_LIQUID_VIAL_100ML, S08ProcessType.CLOSE_LIQUID_VIAL_100ML),
 }
+PROCESS_TYPE_TO_VIAL_TYPE: dict[S08ProcessType, str] = {
+    process_type: vial_type for vial_type, process_types in VIAL_PROCESS_TYPES.items() for process_type in process_types
+}
 
 # 示意图 S08开关盖：工位1=500/250ml 样品瓶，工位2=100ml 液体瓶
 VIAL_TYPE_TO_CAP_STATION: dict[str, int] = {
@@ -228,6 +231,13 @@ def _resolve_process_type(operation: str, vial_type: str) -> S08ProcessType:
     normalized_vial_type = _normalize_vial_type(vial_type)
     open_type, close_type = VIAL_PROCESS_TYPES[normalized_vial_type]
     return open_type if normalized_operation == "open" else close_type
+
+
+def _resolve_process_type_by_id(process_id: int) -> S08ProcessType:
+    try:
+        return S08ProcessType(int(process_id))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("工艺选择必须是 1-6：1/3/5=开盖，2/4/6=关盖") from exc
 
 
 DEFAULT_UPLINK_COMM_PREFIX = "ns=4;s=上位机通讯"
@@ -554,6 +564,62 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         return bool(self._read_variable(CAP_STORAGE_SLOT_SENSORS[slot]))
 
     @not_action
+    def _cap_sensor_conditions(
+        self,
+        process_type: S08ProcessType,
+        cap_storage_slot: int,
+    ) -> tuple[dict[str, bool], dict[str, bool]]:
+        vial_type = PROCESS_TYPE_TO_VIAL_TYPE[process_type]
+        station_sensor = SENSOR_CAP_STATION[VIAL_TYPE_TO_CAP_STATION[vial_type]]
+        slot_sensor = CAP_STORAGE_SLOT_SENSORS[cap_storage_slot]
+        is_open = process_type in OPEN_PROCESS_IDS
+        return (
+            {station_sensor: True, slot_sensor: not is_open},
+            {station_sensor: True, slot_sensor: is_open},
+        )
+
+    @not_action
+    def _wait_cap_sensor_conditions(
+        self,
+        conditions: dict[str, bool],
+        *,
+        phase: str,
+        timeout: float,
+    ) -> dict[str, Any]:
+        waiter = getattr(self._plc_gateway, "wait_sensor_conditions", None)
+        if callable(waiter):
+            wait_result = waiter(
+                conditions,
+                timeout=timeout,
+                interval=self.poll_interval,
+                context=f"S08 开关盖{phase}传感器检查",
+            )
+            if isinstance(wait_result, dict):
+                success, values = bool(wait_result.get("success")), dict(wait_result.get("values") or {})
+            else:
+                success, values = wait_result
+        else:
+            deadline = time.monotonic() + timeout
+            values: dict[str, Any] = {}
+            while True:
+                values = {name: self._read_variable(name) for name in conditions}
+                success = all(values.get(name) == expected for name, expected in conditions.items())
+                if success or time.monotonic() >= deadline:
+                    break
+                time.sleep(self.poll_interval)
+        return {
+            "success": bool(success),
+            "phase": phase,
+            "conditions": conditions,
+            "values": values,
+            "mismatches": {
+                name: {"expected": expected, "actual": values.get(name)}
+                for name, expected in conditions.items()
+                if values.get(name) != expected
+            },
+        }
+
+    @not_action
     def _find_free_cap_slot(self) -> Optional[int]:
         for slot in CAP_STORAGE_SLOTS:
             cached = self._try_read_sample_id_from_plc(slot)
@@ -612,7 +678,19 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             )
 
     @not_action
-    def _resolve_open_cap_storage_slot(self, sample_id: Sequence[int]) -> int:
+    def _resolve_open_cap_storage_slot(
+        self,
+        sample_id: Sequence[int],
+        cap_storage_slot: int | None = None,
+    ) -> int:
+        if cap_storage_slot is not None:
+            _validate_cap_storage_slot(cap_storage_slot)
+            if self.validate_cap_constraints:
+                cached = self._try_read_sample_id_from_plc(cap_storage_slot)
+                if cached is not None and not _sample_id_is_empty(cached):
+                    raise ValueError(f"瓶盖暂存位{cap_storage_slot}已登记样品 ID，不能用于本次开盖")
+                self._validate_cap_storage_slot_empty(cap_storage_slot)
+            return cap_storage_slot
         if not self.validate_cap_constraints:
             existing_slot = self._find_cap_slot_by_sample_id(sample_id)
             if existing_slot is not None:
@@ -635,7 +713,16 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         return free_slot
 
     @not_action
-    def _resolve_close_cap_storage_slot(self, sample_id: Sequence[int]) -> int:
+    def _resolve_close_cap_storage_slot(
+        self,
+        sample_id: Sequence[int],
+        cap_storage_slot: int | None = None,
+    ) -> int:
+        if cap_storage_slot is not None:
+            _validate_cap_storage_slot(cap_storage_slot)
+            if self.validate_cap_constraints:
+                self._validate_cap_storage_slot_has_cap(cap_storage_slot)
+            return cap_storage_slot
         slot = self._find_cap_slot_by_sample_id(sample_id)
         if slot is None:
             if not self.validate_cap_constraints:
@@ -688,11 +775,31 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         is_open = process_type in OPEN_PROCESS_IDS
         task_label = "开瓶盖" if is_open else "关瓶盖"
         normalized_sample_id = _normalize_sample_id(sample_id)
+        pre_sensor_conditions, post_sensor_conditions = self._cap_sensor_conditions(
+            process_type,
+            cap_storage_slot,
+        )
 
         logger.info(
             f"S08 {task_label}: process={process_id}, cap_storage_slot={cap_storage_slot}, "
             f"sample_id={normalized_sample_id[:8]}..."
         )
+
+        try:
+            sensor_precheck = self._wait_cap_sensor_conditions(
+                pre_sensor_conditions,
+                phase="前置",
+                timeout=timeout,
+            )
+        except Exception as exc:
+            return {"success": False, "message": f"S08 {task_label}前传感器读取失败: {_format_driver_error(exc)}"}
+        if not sensor_precheck["success"]:
+            return {
+                "success": False,
+                "status": "rejected",
+                "message": f"S08 {task_label}前等待瓶体与瓶盖暂存位状态超时",
+                "sensor_precheck": sensor_precheck,
+            }
 
         if self.require_station_ready:
             if not self._wait_plc_bool(NODE_HOME, True, timeout=timeout, description="S08 原点信号（机械臂安全位）"):
@@ -740,6 +847,28 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
                 }
             handshake_teardown_done = True
 
+            try:
+                sensor_postcheck = self._wait_cap_sensor_conditions(
+                    post_sensor_conditions,
+                    phase="后置",
+                    timeout=timeout,
+                )
+            except Exception as exc:
+                return {
+                    "success": False,
+                    "status": "verification_failed",
+                    "message": f"S08 {task_label}已完成，但传感器读取失败: {_format_driver_error(exc)}",
+                    "sensor_precheck": sensor_precheck,
+                }
+            if not sensor_postcheck["success"]:
+                return {
+                    "success": False,
+                    "status": "verification_failed",
+                    "message": f"S08 {task_label}已完成，但瓶体或瓶盖暂存位状态验证失败",
+                    "sensor_precheck": sensor_precheck,
+                    "sensor_postcheck": sensor_postcheck,
+                }
+
             if clear_cache_on_complete:
                 self._clear_slot_cache(cap_storage_slot)
             status = self._read_s08_status()
@@ -749,6 +878,8 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
                 "process_type": process_id,
                 "cap_storage_slot": cap_storage_slot,
                 "sample_id": normalized_sample_id,
+                "sensor_precheck": sensor_precheck,
+                "sensor_postcheck": sensor_postcheck,
                 "status": status,
             }
         except Exception as exc:
@@ -766,11 +897,12 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         self,
         process_type: S08ProcessType,
         sample_id: Sequence[int],
+        cap_storage_slot: int | None = None,
         timeout: float = 300.0,
     ) -> dict[str, Any]:
         try:
             normalized = self._require_sample_id(sample_id)
-            slot = self._resolve_open_cap_storage_slot(normalized)
+            slot = self._resolve_open_cap_storage_slot(normalized, cap_storage_slot)
         except ValueError as exc:
             return {"success": False, "message": str(exc)}
         return self._run_cap_process(
@@ -785,11 +917,12 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         self,
         process_type: S08ProcessType,
         sample_id: Sequence[int],
+        cap_storage_slot: int | None = None,
         timeout: float = 300.0,
     ) -> dict[str, Any]:
         try:
             normalized = _normalize_sample_id(sample_id)
-            slot = self._resolve_close_cap_storage_slot(normalized)
+            slot = self._resolve_close_cap_storage_slot(normalized, cap_storage_slot)
         except ValueError as exc:
             return {"success": False, "message": str(exc)}
         return self._run_cap_process(
@@ -801,26 +934,27 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         )
 
     @action(
-        description=(
-            "S08 开/关盖工艺；operation=open|close，"
-            "vial_type=sample_500ml|sample_250ml|liquid_100ml；"
-            "开盖/关盖均须传入机械臂扫描的 sample_id"
-        ),
+        description=("S08 开/关盖工艺；兼容工艺号及 operation/vial_type 两种入口"),
     )
     def process_cap(
         self,
-        operation: str,
-        vial_type: str,
-        sample_id: list[int],
+        工艺选择: int = 5,
+        样品ID: list[int] | None = None,
+        瓶盖暂存位: int = 1,
+        operation: str = "",
+        vial_type: str = "",
+        sample_id: list[int] | None = None,
         timeout: float = 300.0,
     ) -> dict[str, Any]:
         try:
-            process_type = _resolve_process_type(operation, vial_type)
-            normalized_sample_id = self._require_sample_id(sample_id)
+            legacy_entry = not operation and not vial_type
+            if legacy_entry:
+                process_type = _resolve_process_type_by_id(工艺选择)
+            else:
+                process_type = _resolve_process_type(operation, vial_type)
+            normalized_sample_id = self._require_sample_id(sample_id if sample_id is not None else 样品ID)
             if self.require_station_status:
                 self._validate_s08_station_status_ready()
-            if self.validate_cap_constraints:
-                self._validate_cap_station_has_bottle(vial_type, operation)
         except ValueError as exc:
             return {"success": False, "message": str(exc)}
 
@@ -828,11 +962,13 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             return self._open_cap(
                 process_type=process_type,
                 sample_id=normalized_sample_id,
+                cap_storage_slot=瓶盖暂存位 if legacy_entry else None,
                 timeout=timeout,
             )
         return self._close_cap(
             process_type=process_type,
             sample_id=normalized_sample_id,
+            cap_storage_slot=瓶盖暂存位 if legacy_entry else None,
             timeout=timeout,
         )
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from typing import Annotated, Any, TypedDict
 
 from unilabos.registry.annotations import AllowedResourceTemplates
@@ -15,11 +16,13 @@ from szlab_poly_studio.devices.szlab_mixer_stirrer.sensors import (
     s04_allow_var,
     s04_done_var,
     s04_duration_var,
+    s04_material_sensor_var,
     s04_params_written_var,
     s04_process_var,
     s04_safe_temperature_var,
     s04_speed_var,
     s04_station_prefix,
+    s04_status_var,
     s04_temperature_var,
 )
 from szlab_poly_studio.devices.szlab_poly_plc.device import wait_variable_true
@@ -146,7 +149,28 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
     @not_action
     def _wait_done(self, position: int) -> bool:
         variable = s04_done_var(position)
+        waiter = getattr(self._plc_gateway, "wait_new_cycle_done", None)
+        if callable(waiter):
+            return waiter(variable, timeout=self.timeout, interval=0.2)
+        try:
+            current = bool(self._read_variable(variable, use_cache=False))
+        except Exception:
+            current = False
+        if current and not self._wait_variable_equal(variable, False):
+            return False
         return self._wait_variable_true(variable)
+
+    @not_action
+    def _wait_variable_equal(self, variable: str, expected: Any) -> bool:
+        waiter = getattr(self._plc_gateway, "wait_equal", None) if self._plc_gateway is not None else None
+        if callable(waiter):
+            return waiter(variable, expected, timeout=self.timeout, interval=0.2)
+        started_at = time.monotonic()
+        while time.monotonic() - started_at <= self.timeout:
+            if self._read_variable(variable, use_cache=False) == expected:
+                return True
+            time.sleep(0.2)
+        return False
 
     @not_action
     def _wait_variable_true(self, variable: str) -> bool:
@@ -159,7 +183,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
     @action(description="执行 S04 磁搅加工")
     def run_stirring(
         self,
-        position: int,
+        position: int = 1,
         mode: int = 3,
         speed: int = 300,
         temperature: int = 25,
@@ -188,6 +212,18 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
         if reset:
             return self._reset_pc_to_plc_defaults(position)
 
+        material_sensor = s04_material_sensor_var(position)
+        if not self._wait_variable_true(material_sensor):
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "rejected",
+                "message": f"{station} 等待搅拌位置物料在位超时",
+                "data": {"station": station, "sensor_variable": material_sensor},
+            }
+        if not self._wait_variable_equal(s04_status_var(position), 1):
+            self._status = "Error"
+            return {"success": False, "message": f"{station} 空闲状态等待超时", "data": {"station": station}}
         if not self._wait_allow_processing(position):
             self._status = "Error"
             return {"success": False, "message": f"{station} 允许加工等待超时", "data": {"station": station}}
@@ -205,16 +241,35 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             self._write_variable(s04_safe_temperature_var(position), int(safe_temperature))
             self._write_variable(s04_params_written_var(position), True)
         except Exception as exc:
+            self._reset_pc_to_plc_defaults(position)
             self._status = "Error"
             return {"success": False, "message": str(exc), "data": {"station": station}}
 
-        if not self._wait_done(position):
+        done = False
+        wait_error: Exception | None = None
+        try:
+            done = self._wait_done(position)
+        except Exception as exc:
+            wait_error = exc
+        finally:
+            reset_result = self._reset_pc_to_plc_defaults(position)
+        if wait_error is not None:
+            self._status = "Error"
+            return {"success": False, "message": str(wait_error), "data": {"station": station}}
+        if not done:
             self._status = "Error"
             return {"success": False, "message": f"{station} 加工完成等待超时", "data": {"station": station}}
-
-        reset_result = self._reset_pc_to_plc_defaults(position)
         if not reset_result.get("success", False):
             return reset_result
+
+        if not self._wait_variable_true(material_sensor):
+            self._status = "Error"
+            return {
+                "success": False,
+                "status": "verification_failed",
+                "message": f"{station} 加工已完成，但搅拌位置物料在位验证失败",
+                "data": {"station": station, "sensor_variable": material_sensor},
+            }
 
         self._status = "Idle"
         self._last_position = position
@@ -271,7 +326,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             self._write_variable(s04_process_var(position), 0)
             self._write_variable(s04_speed_var(position), 0)
             self._write_variable(s04_temperature_var(position), 0)
-            self._write_variable(s04_duration_var(position), 30000)
+            self._write_variable(s04_duration_var(position), 0)
             self._write_variable(s04_safe_temperature_var(position), 0)
             if include_params_written:
                 self._write_variable(s04_params_written_var(position), False)

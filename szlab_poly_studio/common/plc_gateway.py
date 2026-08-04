@@ -193,6 +193,33 @@ class PLCActionGateway:
             )
         )
 
+    def wait_sensor_conditions(
+        self,
+        conditions: dict[str, bool],
+        timeout: float = 300.0,
+        interval: float = 0.2,
+        context: str | None = None,
+    ) -> tuple[bool, dict[str, Any]]:
+        """由唯一 PLC 设备轮询一组传感器，避免业务驱动自行建立连接。"""
+        result = self._call(
+            "wait_sensor_conditions",
+            {
+                "conditions": conditions,
+                "timeout": timeout,
+                "interval": interval,
+                "context": context,
+            },
+            timeout=max(self.command_timeout, float(timeout) + 5.0),
+        )
+        if isinstance(result, (list, tuple)) and len(result) == 2:
+            return bool(result[0]), dict(result[1] or {})
+        if isinstance(result, dict):
+            return bool(result.get("success")), dict(result.get("values") or {})
+        return bool(result), {}
+
+    def get_sensor_arrays(self) -> dict[str, Any]:
+        return dict(self._call("get_sensor_arrays", {}) or {})
+
     def get_variables(
         self,
         node_names: list[str] | None = None,
