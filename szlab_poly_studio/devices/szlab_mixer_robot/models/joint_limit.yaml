@@ -6,39 +6,40 @@ joint_limits:
     lower: 0
     upper: 2.25
 
-  # ECO65-6FB (radians, from vendor URDF)
-  eco65_joint_1:
-    effort: 60
+  # Dobot CR7 (radians). lower/upper come from dobot_rviz/urdf/cr7_robot.urdf;
+  # that URDF leaves effort/velocity at 0, so they follow the CR7 spec (180 deg/s).
+  cr7_joint_1:
+    effort: 150
     velocity: 3.14
-    lower: -3.106
-    upper: 3.106
+    lower: -6.27
+    upper: 6.27
 
-  eco65_joint_2:
-    effort: 60
+  cr7_joint_2:
+    effort: 150
     velocity: 3.14
-    lower: -3.106
-    upper: 2.356
+    lower: -6.27
+    upper: 6.27
 
-  eco65_joint_3:
+  cr7_joint_3:
+    effort: 150
+    velocity: 3.14
+    lower: -2.79
+    upper: 2.79
+
+  cr7_joint_4:
     effort: 30
     velocity: 3.14
-    lower: -2.792
-    upper: 2.53
+    lower: -6.27
+    upper: 6.27
 
-  eco65_joint_4:
-    effort: 10
+  cr7_joint_5:
+    effort: 30
     velocity: 3.14
-    lower: -3.106
-    upper: 3.106
+    lower: -6.27
+    upper: 6.27
 
-  eco65_joint_5:
-    effort: 10
+  cr7_joint_6:
+    effort: 30
     velocity: 3.14
-    lower: -3.106
-    upper: 3.106
-
-  eco65_joint_6:
-    effort: 10
-    velocity: 3.14
-    lower: -6.28
-    upper: 6.28
+    lower: -6.27
+    upper: 6.27

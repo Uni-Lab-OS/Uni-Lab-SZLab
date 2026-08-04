@@ -3,14 +3,14 @@
     {
         "joint_names": [
             "arm_base_joint",
-            "eco65_joint_1",
-            "eco65_joint_2",
-            "eco65_joint_3",
-            "eco65_joint_4",
-            "eco65_joint_5",
-            "eco65_joint_6"
+            "cr7_joint_1",
+            "cr7_joint_2",
+            "cr7_joint_3",
+            "cr7_joint_4",
+            "cr7_joint_5",
+            "cr7_joint_6"
             ],
         "base_link_name": "device_link",
-        "end_effector_name": "eco65_link_6"
+        "end_effector_name": "cr7_link_6"
     }
 }

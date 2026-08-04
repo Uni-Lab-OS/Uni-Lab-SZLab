@@ -5,12 +5,12 @@
     <xacro:property name="joint_limit_parameters" value="${xacro.load_yaml(mesh_path + '/joint_limit.yaml')}"/>
     <xacro:property name="sec_limits" value="${joint_limit_parameters['joint_limits']}"/>
     <xacro:property name="limit_arm_base_joint" value="${sec_limits['arm_base_joint']}"/>
-    <xacro:property name="limit_eco65_joint_1" value="${sec_limits['eco65_joint_1']}"/>
-    <xacro:property name="limit_eco65_joint_2" value="${sec_limits['eco65_joint_2']}"/>
-    <xacro:property name="limit_eco65_joint_3" value="${sec_limits['eco65_joint_3']}"/>
-    <xacro:property name="limit_eco65_joint_4" value="${sec_limits['eco65_joint_4']}"/>
-    <xacro:property name="limit_eco65_joint_5" value="${sec_limits['eco65_joint_5']}"/>
-    <xacro:property name="limit_eco65_joint_6" value="${sec_limits['eco65_joint_6']}"/>
+    <xacro:property name="limit_cr7_joint_1" value="${sec_limits['cr7_joint_1']}"/>
+    <xacro:property name="limit_cr7_joint_2" value="${sec_limits['cr7_joint_2']}"/>
+    <xacro:property name="limit_cr7_joint_3" value="${sec_limits['cr7_joint_3']}"/>
+    <xacro:property name="limit_cr7_joint_4" value="${sec_limits['cr7_joint_4']}"/>
+    <xacro:property name="limit_cr7_joint_5" value="${sec_limits['cr7_joint_5']}"/>
+    <xacro:property name="limit_cr7_joint_6" value="${sec_limits['cr7_joint_6']}"/>
 
     <joint name="${station_name}${device_name}base_link_joint" type="fixed">
       <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${r}"/>
@@ -52,11 +52,11 @@
       </collision>
     </link>
 
-    <!-- Prismatic slide: ECO65 base rides on the rail (arm_base removed) -->
+    <!-- Prismatic slide: CR7 base rides on the rail (arm_base removed) -->
     <joint name="${station_name}${device_name}arm_base_joint" type="prismatic">
       <origin rpy="0 0 0" xyz="0.4605 0 0.1225"/>
       <parent link="${station_name}${device_name}arm_slideway"/>
-      <child link="${station_name}${device_name}eco65_base"/>
+      <child link="${station_name}${device_name}cr7_base"/>
       <axis xyz="1 0 0"/>
       <limit
         effort="${limit_arm_base_joint['effort']}"
@@ -65,231 +65,232 @@
         velocity="${limit_arm_base_joint['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_base">
+    <!-- Dobot CR7 (dobot_rviz/urdf/cr7_robot.urdf; dummy_link dropped) -->
+    <link name="${station_name}${device_name}cr7_base">
       <inertial>
-        <origin xyz="0.0004101 -8.4575E-05 0.050471" rpy="0 0 0"/>
-        <mass value="2"/>
-        <inertia ixx="0.0011075" ixy="-3.3776E-06" ixz="2.5165E-05" iyy="0.001109" iyz="-1.7082E-06" izz="0.00075402"/>
+        <origin xyz="-7.75881826404344E-06 0.00191109737802069 0.0289949710713939" rpy="0 0 0"/>
+        <mass value="0.908795453638862"/>
+        <inertia ixx="0.00145446136430631" ixy="4.10411509661615E-08" ixz="-1.83603068187756E-07" iyy="0.00134497445765809" iyz="-6.24662501711042E-06" izz="0.00215495523232905"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/base_link.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/base_link0.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/base_link.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/base_link0.STL"/>
         </geometry>
       </collision>
     </link>
 
-    <link name="${station_name}${device_name}eco65_link_1">
+    <link name="${station_name}${device_name}cr7_link_1">
       <inertial>
-        <origin xyz="-1.105E-02 2.736E-05 -3.347E-02" rpy="0 0 0"/>
-        <mass value="1.507"/>
-        <inertia ixx="1.958E-03" ixy="-2.333E-05" ixz="5.324E-04" iyy="3.101E-03" iyz="9.135E-06" izz="2.427E-03"/>
+        <origin xyz="2.42083892138974E-07 -0.00325669708857515 -0.00767435596457115" rpy="0 0 0"/>
+        <mass value="1.6123155679073"/>
+        <inertia ixx="0.00291211377650885" ixy="-7.47419584239082E-09" ixz="1.94780650217368E-08" iyy="0.00281918869862419" iyz="0.000440963272842605" izz="0.00328358201221721"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_1.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J1.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_1.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J1.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_1" type="revolute">
-      <origin xyz="0 0 0.1625" rpy="0 0 0"/>
-      <parent link="${station_name}${device_name}eco65_base"/>
-      <child link="${station_name}${device_name}eco65_link_1"/>
+    <joint name="${station_name}${device_name}cr7_joint_1" type="revolute">
+      <origin xyz="0 0 0.147" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}cr7_base"/>
+      <child link="${station_name}${device_name}cr7_link_1"/>
       <axis xyz="0 0 1"/>
       <limit
-        effort="${limit_eco65_joint_1['effort']}"
-        lower="${limit_eco65_joint_1['lower']}"
-        upper="${limit_eco65_joint_1['upper']}"
-        velocity="${limit_eco65_joint_1['velocity']}"/>
+        effort="${limit_cr7_joint_1['effort']}"
+        lower="${limit_cr7_joint_1['lower']}"
+        upper="${limit_cr7_joint_1['upper']}"
+        velocity="${limit_cr7_joint_1['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_link_2">
+    <link name="${station_name}${device_name}cr7_link_2">
       <inertial>
-        <origin xyz="5.818E-02 -1.163E-05 -5.236E-02" rpy="0 0 0"/>
-        <mass value="2.0227"/>
-        <inertia ixx="2.274E-03" ixy="-6.214E-06" ixz="1.441559E-03" iyy="1.731147E-02" iyz="-2.9598E-06" izz="1.7225523E-02"/>
+        <origin xyz="-0.188500103625708 -7.46110088887752E-07 0.142319304936727" rpy="0 0 0"/>
+        <mass value="5.28764336862191"/>
+        <inertia ixx="0.00860086052884714" ixy="3.30521626209469E-09" ixz="-4.99788929762243E-09" iyy="0.0181761454963347" iyz="-1.56481985512198E-08" izz="0.0189188799857172"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_2.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J2.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_2.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J2.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_2" type="revolute">
-      <origin xyz="-0.086 0 0" rpy="0 -1.5708 -1.5708"/>
-      <parent link="${station_name}${device_name}eco65_link_1"/>
-      <child link="${station_name}${device_name}eco65_link_2"/>
+    <joint name="${station_name}${device_name}cr7_joint_2" type="revolute">
+      <origin xyz="0 0 0" rpy="-1.57080420997483 1.57079631189374 -3.14158502419526"/>
+      <parent link="${station_name}${device_name}cr7_link_1"/>
+      <child link="${station_name}${device_name}cr7_link_2"/>
       <axis xyz="0 0 1"/>
       <limit
-        effort="${limit_eco65_joint_2['effort']}"
-        lower="${limit_eco65_joint_2['lower']}"
-        upper="${limit_eco65_joint_2['upper']}"
-        velocity="${limit_eco65_joint_2['velocity']}"/>
+        effort="${limit_cr7_joint_2['effort']}"
+        lower="${limit_cr7_joint_2['lower']}"
+        upper="${limit_cr7_joint_2['upper']}"
+        velocity="${limit_cr7_joint_2['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_link_3">
+    <link name="${station_name}${device_name}cr7_link_3">
       <inertial>
-        <origin xyz="9.2768E-02 -9.3866E-05 1.81E-03" rpy="0 0 0"/>
-        <mass value="1.8858"/>
-        <inertia ixx="1.9164989E-03" ixy="-3.27E-06" ixz="-1.6941203E-03" iyy="2.2483104E-02" iyz="4.50616E-06" izz="2.1892837E-02"/>
+        <origin xyz="-0.129084033261017 0.000409825982416691 -0.0024891265183234" rpy="0 0 0"/>
+        <mass value="2.64536322797469"/>
+        <inertia ixx="0.00313429310657436" ixy="8.58567214179718E-06" ixz="0.0001236219933347" iyy="0.00583755221707048" iyz="-3.84538201491329E-07" izz="0.00609610718076456"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_3.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J3.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_3.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J3.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_3" type="revolute">
-      <origin xyz="0.26 0 0" rpy="0 0 0"/>
-      <parent link="${station_name}${device_name}eco65_link_2"/>
-      <child link="${station_name}${device_name}eco65_link_3"/>
+    <joint name="${station_name}${device_name}cr7_joint_3" type="revolute">
+      <origin xyz="-0.377 0 0.025" rpy="0 0 0"/>
+      <parent link="${station_name}${device_name}cr7_link_2"/>
+      <child link="${station_name}${device_name}cr7_link_3"/>
       <axis xyz="0 0 1"/>
       <limit
-        effort="${limit_eco65_joint_3['effort']}"
-        lower="${limit_eco65_joint_3['lower']}"
-        upper="${limit_eco65_joint_3['upper']}"
-        velocity="${limit_eco65_joint_3['velocity']}"/>
+        effort="${limit_cr7_joint_3['effort']}"
+        lower="${limit_cr7_joint_3['lower']}"
+        upper="${limit_cr7_joint_3['upper']}"
+        velocity="${limit_cr7_joint_3['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_link_4">
+    <link name="${station_name}${device_name}cr7_link_4">
       <inertial>
-        <origin xyz="-4.028E-05 -3.496E-02 3.8015E-03" rpy="0 0 0"/>
-        <mass value="0.57"/>
-        <inertia ixx="4.97615E-04" ixy="5.3887E-07" ixz="7.046E-07" iyy="3.2497E-04" iyz="0" izz="1.1634E-03"/>
+        <origin xyz="-0.00098049161725656 -0.00207570116557487 -0.00155508673006152" rpy="0 0 0"/>
+        <mass value="0.670573134819647"/>
+        <inertia ixx="0.000669371731621344" ixy="-5.32805461934157E-08" ixz="3.52586632357936E-07" iyy="0.000654228488306913" iyz="0.000110801103983602" izz="0.000653654751027863"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_4.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J4.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_4.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J4.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_4" type="revolute">
-      <origin xyz="0.24 0 -0.05888" rpy="0 0 1.5708"/>
-      <parent link="${station_name}${device_name}eco65_link_3"/>
-      <child link="${station_name}${device_name}eco65_link_4"/>
-      <axis xyz="0 0 1"/>
+    <joint name="${station_name}${device_name}cr7_joint_4" type="revolute">
+      <origin xyz="-0.306999999999969 0 0.116" rpy="0 0 -1.57079677671549"/>
+      <parent link="${station_name}${device_name}cr7_link_3"/>
+      <child link="${station_name}${device_name}cr7_link_4"/>
+      <axis xyz="0 0 0.999999999969965"/>
       <limit
-        effort="${limit_eco65_joint_4['effort']}"
-        lower="${limit_eco65_joint_4['lower']}"
-        upper="${limit_eco65_joint_4['upper']}"
-        velocity="${limit_eco65_joint_4['velocity']}"/>
+        effort="${limit_cr7_joint_4['effort']}"
+        lower="${limit_cr7_joint_4['lower']}"
+        upper="${limit_cr7_joint_4['upper']}"
+        velocity="${limit_cr7_joint_4['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_link_5">
+    <link name="${station_name}${device_name}cr7_link_5">
       <inertial>
-        <origin xyz="-3.97E-05 2.2647E-02 -7.365E-03" rpy="0 0 0"/>
-        <mass value="0.641"/>
-        <inertia ixx="6.2339218E-04" ixy="-5.31226E-07" ixz="-5.61849E-07" iyy="3.9337546E-04" iyz="-1.1339817E-04" izz="5.5741485E-04"/>
+        <origin xyz="-0.00139233872001005 -0.00449255371185306 -0.00130478579616922" rpy="0 0 0"/>
+        <mass value="0.725828190120638"/>
+        <inertia ixx="0.00073002940905788" ixy="1.46530702319641E-07" ixz="-1.21461719923983E-07" iyy="0.000710023403641111" iyz="-0.000119103387993809" izz="0.000712169450212708"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_5.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J5.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_5.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J5.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_5" type="revolute">
-      <origin xyz="0 -0.11 0" rpy="1.5708 0 0"/>
-      <parent link="${station_name}${device_name}eco65_link_4"/>
-      <child link="${station_name}${device_name}eco65_link_5"/>
+    <joint name="${station_name}${device_name}cr7_joint_5" type="revolute">
+      <origin xyz="0 -0.116 0" rpy="1.5707963267949 0 0"/>
+      <parent link="${station_name}${device_name}cr7_link_4"/>
+      <child link="${station_name}${device_name}cr7_link_5"/>
       <axis xyz="0 0 1"/>
       <limit
-        effort="${limit_eco65_joint_5['effort']}"
-        lower="${limit_eco65_joint_5['lower']}"
-        upper="${limit_eco65_joint_5['upper']}"
-        velocity="${limit_eco65_joint_5['velocity']}"/>
+        effort="${limit_cr7_joint_5['effort']}"
+        lower="${limit_cr7_joint_5['lower']}"
+        upper="${limit_cr7_joint_5['upper']}"
+        velocity="${limit_cr7_joint_5['velocity']}"/>
     </joint>
 
-    <link name="${station_name}${device_name}eco65_link_6">
+    <link name="${station_name}${device_name}cr7_link_6">
       <inertial>
-        <origin xyz="4.478E-04 -2.134E-04 -1.033579E-02" rpy="0 0 0"/>
-        <mass value="0.0857"/>
-        <inertia ixx="3.302707E-05" ixy="-2.5421576E-06" ixz="1.0241783E-07" iyy="3.0206675E-05" iyz="-8.4126596E-08" izz="5.1459675E-05"/>
+        <origin xyz="-0.00134099075400824 9.61028193323665E-05 -0.0192856508049091" rpy="0 0 0"/>
+        <mass value="0.157885328078873"/>
+        <inertia ixx="7.80450650011017E-05" ixy="3.56327806101489E-09" ixz="-3.98217377472077E-11" iyy="7.91678595101433E-05" iyz="-1.3821786505554E-07" izz="0.000129505866960959"/>
       </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_6.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J6.STL"/>
         </geometry>
         <material name="">
-          <color rgba="1 1 1 1"/>
+          <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
         </material>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="file://${mesh_path}/meshes/eco65/link_6.stl"/>
+          <mesh filename="file://${mesh_path}/meshes/cr7/J6.STL"/>
         </geometry>
       </collision>
     </link>
-    <joint name="${station_name}${device_name}eco65_joint_6" type="revolute">
-      <origin xyz="0 0.0967 0" rpy="-1.5708 0 0"/>
-      <parent link="${station_name}${device_name}eco65_link_5"/>
-      <child link="${station_name}${device_name}eco65_link_6"/>
+    <joint name="${station_name}${device_name}cr7_joint_6" type="revolute">
+      <origin xyz="0 0.104999656773681 0" rpy="-1.5707963267949 0 0"/>
+      <parent link="${station_name}${device_name}cr7_link_5"/>
+      <child link="${station_name}${device_name}cr7_link_6"/>
       <axis xyz="0 0 1"/>
       <limit
-        effort="${limit_eco65_joint_6['effort']}"
-        lower="${limit_eco65_joint_6['lower']}"
-        upper="${limit_eco65_joint_6['upper']}"
-        velocity="${limit_eco65_joint_6['velocity']}"/>
+        effort="${limit_cr7_joint_6['effort']}"
+        lower="${limit_cr7_joint_6['lower']}"
+        upper="${limit_cr7_joint_6['upper']}"
+        velocity="${limit_cr7_joint_6['velocity']}"/>
     </joint>
 
   </xacro:macro>

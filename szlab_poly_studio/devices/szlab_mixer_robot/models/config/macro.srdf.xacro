@@ -2,15 +2,19 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
     <xacro:macro name="szlab_mixer_robot_srdf" params="device_name">
         <group name="${device_name}arm">
-            <chain base_link="${device_name}arm_slideway" tip_link="${device_name}eco65_link_6"/>
+            <chain base_link="${device_name}arm_slideway" tip_link="${device_name}cr7_link_6"/>
         </group>
-        <disable_collisions link1="${device_name}arm_slideway" link2="${device_name}eco65_base" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_base" link2="${device_name}eco65_link_1" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_link_1" link2="${device_name}eco65_link_2" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_link_2" link2="${device_name}eco65_link_3" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_link_3" link2="${device_name}eco65_link_4" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_link_4" link2="${device_name}eco65_link_5" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}eco65_link_5" link2="${device_name}eco65_link_6" reason="Adjacent"/>
-        <disable_collisions link1="${device_name}arm_slideway" link2="${device_name}eco65_link_1" reason="Never"/>
+        <disable_collisions link1="${device_name}arm_slideway" link2="${device_name}cr7_base" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}arm_slideway" link2="${device_name}cr7_link_1" reason="Never"/>
+        <disable_collisions link1="${device_name}cr7_base" link2="${device_name}cr7_link_1" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}cr7_base" link2="${device_name}cr7_link_2" reason="Never"/>
+        <disable_collisions link1="${device_name}cr7_base" link2="${device_name}cr7_link_4" reason="Never"/>
+        <disable_collisions link1="${device_name}cr7_link_1" link2="${device_name}cr7_link_2" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}cr7_link_1" link2="${device_name}cr7_link_4" reason="Never"/>
+        <disable_collisions link1="${device_name}cr7_link_2" link2="${device_name}cr7_link_3" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}cr7_link_3" link2="${device_name}cr7_link_4" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}cr7_link_4" link2="${device_name}cr7_link_5" reason="Adjacent"/>
+        <disable_collisions link1="${device_name}cr7_link_4" link2="${device_name}cr7_link_6" reason="Never"/>
+        <disable_collisions link1="${device_name}cr7_link_5" link2="${device_name}cr7_link_6" reason="Adjacent"/>
     </xacro:macro>
 </robot>

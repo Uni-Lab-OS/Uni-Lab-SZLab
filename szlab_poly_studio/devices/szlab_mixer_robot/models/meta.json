@@ -1,8 +1,8 @@
 {
   "device_id": "szlab_mixer_robot",
   "source_kind": "xacro",
-  "source_path": "arm_slider rail + ECO65-6FB arm",
-  "generated_at": "2026-08-03T00:20:00",
+  "source_path": "arm_slider rail + Dobot CR7 (uni-lab-assets/robots/dobot/ros2_v4/dobot_rviz)",
+  "generated_at": "2026-08-04T21:50:00",
   "stats": {
     "link_total": 9,
     "joint_total": 8,
@@ -10,27 +10,27 @@
     "mesh_total": 8
   },
   "root_link": "arm_slideway",
-  "note": "Rail kept; arm_base removed; ECO65-6FB (eco65_base..link_6) rides on arm_base_joint prismatic",
+  "note": "Rail kept; arm_base removed; Dobot CR7 (cr7_base..cr7_link_6) rides on arm_base_joint prismatic",
   "sanitized_link_names": {
     "device_link": "device_link",
     "arm_slideway": "arm_slideway",
-    "eco65_base": "eco65_base",
-    "eco65_link_1": "eco65_link_1",
-    "eco65_link_2": "eco65_link_2",
-    "eco65_link_3": "eco65_link_3",
-    "eco65_link_4": "eco65_link_4",
-    "eco65_link_5": "eco65_link_5",
-    "eco65_link_6": "eco65_link_6"
+    "cr7_base": "cr7_base",
+    "cr7_link_1": "cr7_link_1",
+    "cr7_link_2": "cr7_link_2",
+    "cr7_link_3": "cr7_link_3",
+    "cr7_link_4": "cr7_link_4",
+    "cr7_link_5": "cr7_link_5",
+    "cr7_link_6": "cr7_link_6"
   },
   "sanitized_joint_names": {
     "base_link_joint": "base_link_joint",
     "device_link_joint": "device_link_joint",
     "arm_base_joint": "arm_base_joint",
-    "eco65_joint_1": "eco65_joint_1",
-    "eco65_joint_2": "eco65_joint_2",
-    "eco65_joint_3": "eco65_joint_3",
-    "eco65_joint_4": "eco65_joint_4",
-    "eco65_joint_5": "eco65_joint_5",
-    "eco65_joint_6": "eco65_joint_6"
+    "cr7_joint_1": "cr7_joint_1",
+    "cr7_joint_2": "cr7_joint_2",
+    "cr7_joint_3": "cr7_joint_3",
+    "cr7_joint_4": "cr7_joint_4",
+    "cr7_joint_5": "cr7_joint_5",
+    "cr7_joint_6": "cr7_joint_6"
   }
 }
