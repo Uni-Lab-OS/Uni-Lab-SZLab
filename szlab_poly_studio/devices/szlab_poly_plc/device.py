@@ -439,7 +439,7 @@ class SZLabPolyPLCDevice(BaseClient):
         self.heartbeat_node = heartbeat_node
         self.heartbeat_on = False
         self._heartbeat_timer: Optional[threading.Timer] = None
-        self._sensor_read_warning_names: set[str] = set()
+        self._sensor_failure_reported = False
         self._io_lock = threading.RLock()
         self.connection_check_interval = max(float(connection_check_interval), 0.0)
         self.reconnect_attempts = max(int(reconnect_attempts), 1)
@@ -500,9 +500,12 @@ class SZLabPolyPLCDevice(BaseClient):
 
     @not_action
     def _mark_connection_healthy(self) -> None:
+        was_healthy = self._connection_healthy
         self._connection_healthy = True
         self._last_connection_check_at = time.time()
         self._last_connection_error = None
+        if not was_healthy:
+            self._sensor_failure_reported = False
 
     @not_action
     def _mark_connection_unhealthy(self, exc: BaseException) -> None:
@@ -638,7 +641,15 @@ class SZLabPolyPLCDevice(BaseClient):
             return self._read_variable_locked(node_name, use_cache=use_cache)
 
     @not_action
-    def _read_variable_locked(self, node_name: str, use_cache: bool = True) -> Any:
+    def _read_variable_locked(
+        self,
+        node_name: str,
+        use_cache: bool = True,
+        *,
+        emit_diagnostic_log: bool = True,
+    ) -> Any:
+        """读取一个 PLC 变量；遥测批量读取可关闭逐变量诊断输出。"""
+
         del use_cache  # BaseClient reads directly from the OPC UA node.
         started_at = time.monotonic()
         context = current_action_log_context()
@@ -652,57 +663,69 @@ class SZLabPolyPLCDevice(BaseClient):
             except Exception as exc:
                 is_retryable = is_direct and self._is_retryable_direct_io_error(exc)
                 if is_retryable and attempt < attempts:
-                    logger.warning(
-                        f"读取 PLC 变量遇到临时通信错误，准备重连后重试 "
-                        f"({attempt}/{attempts}): {node_name}: "
-                        f"{type(exc).__name__}: {exc}"
-                    )
+                    if emit_diagnostic_log:
+                        logger.warning(
+                            f"读取 PLC 变量遇到临时通信错误，准备重连后重试 "
+                            f"({attempt}/{attempts}): {node_name}: "
+                            f"{type(exc).__name__}: {exc}"
+                        )
                     self._mark_connection_unhealthy(exc)
                     try:
                         self._reconnect_locked(reason=f"read {node_name} failed: {type(exc).__name__}: {exc}")
                     except Exception as reconnect_exc:
-                        logger.warning(
-                            f"读取 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
-                            f"{type(reconnect_exc).__name__}: {reconnect_exc}"
-                        )
+                        if emit_diagnostic_log:
+                            logger.warning(
+                                f"读取 PLC 变量前重连未成功，保留 I/O 重试: {node_name}: "
+                                f"{type(reconnect_exc).__name__}: {reconnect_exc}"
+                            )
                     time.sleep(OPCUA_DIRECT_IO_RETRY_DELAY)
                     continue
                 if is_retryable:
                     self._mark_connection_unhealthy(exc)
                 elapsed = time.monotonic() - started_at
-                logger.error(
-                    f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
-                    f"attempt={attempt}/{attempts} elapsed={elapsed:.3f}s "
-                    f"cause={type(exc).__name__}: {exc}"
-                )
-                raise RuntimeError(f"读取 PLC 变量失败: {node_name}: {exc}") from exc
+                if emit_diagnostic_log:
+                    logger.error(
+                        f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
+                        f"attempt={attempt}/{attempts} elapsed={elapsed:.3f}s "
+                        f"cause={type(exc).__name__}: {exc}"
+                    )
+                raise RuntimeError(
+                    f"读取 PLC 变量失败: {node_name}: {exc}"
+                ) from exc
             if not error:
                 self._mark_connection_healthy()
-                logger.debug(
-                    f"[SZLAB-PLC-READ] SUCCESS {context} variable={variable_ref} "
-                    f"value={compact_log_value(value)} attempt={attempt}/{attempts} "
-                    f"elapsed={time.monotonic() - started_at:.3f}s"
-                )
+                if emit_diagnostic_log:
+                    logger.debug(
+                        f"[SZLAB-PLC-READ] SUCCESS {context} variable={variable_ref} "
+                        f"value={compact_log_value(value)} attempt={attempt}/{attempts} "
+                        f"elapsed={time.monotonic() - started_at:.3f}s"
+                    )
                 return value
             if attempt < attempts:
-                logger.warning(f"读取 PLC 变量暂时失败，准备重试 ({attempt}/{attempts}): {node_name}")
+                if emit_diagnostic_log:
+                    logger.warning(
+                        f"读取 PLC 变量暂时失败，准备重试 "
+                        f"({attempt}/{attempts}): {node_name}"
+                    )
                 time.sleep(OPCUA_DIRECT_IO_RETRY_DELAY)
         elapsed = time.monotonic() - started_at
         if is_direct:
             direct_node_id = self._direct_node_id_map[node_name]
-            logger.error(
-                f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
-                f"attempts={attempts} elapsed={elapsed:.3f}s "
-                f"cause=direct read returned an error"
-            )
+            if emit_diagnostic_log:
+                logger.error(
+                    f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
+                    f"attempts={attempts} elapsed={elapsed:.3f}s "
+                    f"cause=direct read returned an error"
+                )
             raise RuntimeError(
                 f"读取 PLC 变量失败: {node_name}: 直连读取未成功: {direct_node_id}（已重试 {attempts} 次）"
             )
-        logger.error(
-            f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
-            f"attempts={attempts} elapsed={elapsed:.3f}s "
-            f"cause=read returned an error"
-        )
+        if emit_diagnostic_log:
+            logger.error(
+                f"[SZLAB-PLC-READ] FAIL {context} variable={variable_ref} "
+                f"attempts={attempts} elapsed={elapsed:.3f}s "
+                f"cause=read returned an error"
+            )
         raise RuntimeError(f"读取 PLC 变量失败: {node_name}")
 
     @not_action
@@ -984,6 +1007,8 @@ class SZLabPolyPLCDevice(BaseClient):
 
     @not_action
     def _read_sensor_group(self, sensors: Dict[str, str]) -> Dict[str, Optional[bool]]:
+        """读取一组传感器；任一失败即关闭本轮并把剩余库位投影为未知。"""
+
         with self._io_lock:
             # ``auto_connect: false`` is the committed offline authoring mode
             # for the complete local deployment graph. Publishing status in
@@ -995,14 +1020,23 @@ class SZLabPolyPLCDevice(BaseClient):
             result: Dict[str, Optional[bool]] = {}
             for site_key, variable_name in sensors.items():
                 try:
-                    result[site_key] = bool(self.read_variable(variable_name))
+                    result[site_key] = bool(self._read_variable_locked(
+                        variable_name,
+                        emit_diagnostic_log=False,
+                    ))
                 except Exception as exc:
-                    if variable_name not in self._sensor_read_warning_names:
-                        logger.warning(f"读取传感器 {variable_name} 失败: {exc}")
-                        self._sensor_read_warning_names.add(variable_name)
-                    else:
-                        logger.debug(f"读取传感器 {variable_name} 失败: {exc}")
+                    self._mark_connection_unhealthy(exc)
+                    if not getattr(self, "_sensor_failure_reported", False):
+                        logger.warning(
+                            "传感器轮询已暂停，连接恢复前剩余读数投影为未知：%s: %s",
+                            type(exc).__name__,
+                            exc,
+                        )
+                        self._sensor_failure_reported = True
                     result[site_key] = None
+                    for remaining_site_key in sensors:
+                        result.setdefault(remaining_site_key, None)
+                    break
             return result
 
     @not_action

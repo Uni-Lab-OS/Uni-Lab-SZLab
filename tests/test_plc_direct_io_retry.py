@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import logging
 import threading
 import time
 from typing import Any
@@ -73,6 +74,8 @@ def test_direct_read_retries_a_transient_node_error(monkeypatch) -> None:
 
 
 def test_offline_sensor_topic_does_not_attempt_opcua_io() -> None:
+    """连接离线时，传感器遥测投影应直接返回未知且不访问 OPC UA。"""
+
     device = _bare_plc(FakeReadNode([]))
     device._connection_healthy = False
     device.read_variable = lambda *_args, **_kwargs: (_ for _ in ()).throw(
@@ -83,6 +86,35 @@ def test_offline_sensor_topic_does_not_attempt_opcua_io() -> None:
         "L1": None,
         "L2": None,
     }
+
+
+def test_sensor_group_stops_after_first_failure_and_logs_one_summary(
+    caplog,
+) -> None:
+    """首个传感器失败后应中止本轮，剩余库位返回未知且只写一条摘要。"""
+
+    device = _bare_plc(FakeReadNode([]))
+    calls: list[str] = []
+
+    def fail_first_read(node_name: str, **_kwargs: Any) -> Any:
+        """记录首个读取并模拟连接断开，不允许继续读取其余变量。"""
+
+        calls.append(node_name)
+        raise ConnectionError("socket closed")
+
+    device._read_variable_locked = fail_first_read
+    with caplog.at_level(logging.WARNING):
+        result = device._read_sensor_group({"L1": "A", "L2": "B", "L3": "C"})
+
+    assert result == {"L1": None, "L2": None, "L3": None}
+    assert calls == ["A"]
+    assert device._connection_healthy is False
+    summaries = [
+        record.message
+        for record in caplog.records
+        if "传感器轮询已暂停" in record.message
+    ]
+    assert len(summaries) == 1
 
 
 def test_direct_read_still_fails_after_retry_budget(monkeypatch) -> None:
