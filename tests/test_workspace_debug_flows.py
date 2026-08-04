@@ -48,7 +48,7 @@ def test_full_workspace_debug_discovers_graph_workflows_and_assets(
     resolver = PackageAssetResolver(WorkspaceSource(repo_root), package_catalog)
 
     assert len(graph["nodes"]) == 129
-    assert len(package_catalog.definitions.workflows) == 14
+    assert len(package_catalog.definitions.workflows) == 16
     asset_paths = {asset.logical_path for asset in package_catalog.assets}
     assert any(path.endswith(".xacro") for path in asset_paths)
     assert any(path.lower().endswith(".stl") for path in asset_paths)
@@ -88,7 +88,13 @@ def test_all_declared_workflows_compile_against_fe_template_catalog(
             source_uri=str(workflow.details["source_uri"]),
             applied_graph=applied_graph,
         )
-        assert result.valid, (workflow.id, result.diagnostics)
+        if workflow.id == "s_z_lab_单样品全流程_物料感知":
+            assert result.valid is False
+            assert {item["code"] for item in result.diagnostics} == {
+                "composite_child_unapplied"
+            }
+        else:
+            assert result.valid, (workflow.id, result.diagnostics)
 
 
 def test_graph_selected_material_factories_receive_graph_config(
@@ -116,6 +122,7 @@ def test_graph_selected_material_factories_receive_graph_config(
     assert set(initialized) < catalog_resources
     assert catalog_resources - set(initialized) == {
         "community.szlab_poly_studio.szlab_pipette_tip",
+        "community.szlab_poly_studio.szlab_sample_vial_500ml",
         "community.szlab_poly_studio.szlab_poly_s3_unused_sample_vial_warehouse",
         "community.szlab_poly_studio.szlab_poly_s11_used_sample_vial_warehouse",
     }

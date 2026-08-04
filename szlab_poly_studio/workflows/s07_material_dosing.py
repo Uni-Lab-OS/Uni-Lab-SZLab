@@ -15,19 +15,26 @@ from unilabos.workflow.authoring import (
 )
 
 from szlab_poly_studio.devices.szlab_mixer_robot.device import SzlabMixerRobotDevice
-from szlab_poly_studio.devices.szlab_s07_solid_addition.device import SZLabS07SolidAdditionDevice
+from szlab_poly_studio.devices.szlab_s07_solid_addition.device import (
+    SZLabS07SolidAdditionDevice,
+)
 from szlab_poly_studio.resources.materials import beaker_500ml, powder_container
 
 
 class S07粉桶与烧杯搬运后固体称量Result(TypedDict):
     beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
-    powder_cartridge: Annotated[ResourceSlot, AllowedResourceTemplates(powder_container)]
+    powder_cartridge: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(powder_container),
+    ]
     commanded_mass_g: float
     message: str
 
 
 szlab_mixer_robot_device: SzlabMixerRobotDevice = device("szlab_mixer_robot")
-s_z_lab_s07_solid_addition_device: SZLabS07SolidAdditionDevice = device("szlab_s07_solid_addition")
+s_z_lab_s07_solid_addition_device: SZLabS07SolidAdditionDevice = device(
+    "szlab_s07_solid_addition"
+)
 host_node: HostNode = device("host_node")
 
 
@@ -41,8 +48,6 @@ host_node: HostNode = device("host_node")
 )
 def s07_粉桶与烧杯搬运后固体称量(
     *,
-    powder_transfer_id: str,
-    beaker_transfer_id: str,
     solid_addition_device_id: str = "szlab_s07_solid_addition",
     target_mass_g: Annotated[float, Field(ge=0.001, le=100)] = 1.0,
     recipe_name: str = "default",
@@ -67,6 +72,9 @@ def s07_粉桶与烧杯搬运后固体称量(
         slot_range=None,
         flow_role=MaterialFlowRole.REAGENT,
     )
+
+    # 两条物料链在 DAG 中并行；它们竞争同一 robot device，因此由 scheduler
+    # 对机械臂动作实施设备互斥。每个 pick/place 的命令身份由 OS NodeJob 注入。
     with parallel():
         # unilab:node_uuid=115b2549-9202-518c-9aac-0a71de8ba72f
         with group(name="烧杯搬运"):
@@ -74,14 +82,12 @@ def s07_粉桶与烧杯搬运后固体称量(
             picked_beaker = szlab_mixer_robot_device.pick(
                 resource=source_beaker,
                 site="L1B1",
-                transfer_id=beaker_transfer_id,
                 warehouse=resource_ref("s3_unused_beaker"),
             )
             # unilab:node_uuid=6c673893-36e1-5674-aeeb-8bac8c9197c4
             placed_beaker = szlab_mixer_robot_device.place(
                 resource=picked_beaker.resource,
                 site="S0722",
-                transfer_id=beaker_transfer_id,
                 warehouse=resource_ref("s07_process_warehouse"),
             )
             # unilab:node_uuid=65fbc7bf-5e17-5a3e-9b15-eab6ebebbf82
@@ -91,24 +97,27 @@ def s07_粉桶与烧杯搬运后固体称量(
                 site="S0722",
                 target_device=solid_addition_device_id,
             )
+
         # unilab:node_uuid=b6337f56-31f2-55c1-ab9d-f44e1b956e50
         with group(name="粉桶搬运"):
             # unilab:node_uuid=9f67e05d-020a-5e8d-bf86-ae812aac7c01
             picked_powder = szlab_mixer_robot_device.pick(
                 resource=source_powder,
                 site="L1C1",
-                transfer_id=powder_transfer_id,
                 warehouse=resource_ref("powder_container_warehouse"),
             )
             # unilab:node_uuid=7394a0a0-b08e-541e-9403-0c9898e06936
-            prepared_powder = s_z_lab_s07_solid_addition_device.prepare_powder_cartridge_site(
-                powder_cartridge=picked_powder.resource, powder_site="P01", timeout=300.0
+            prepared_powder = (
+                s_z_lab_s07_solid_addition_device.prepare_powder_cartridge_site(
+                    powder_cartridge=picked_powder.resource,
+                    powder_site="P01",
+                    timeout=300.0,
+                )
             )
             # unilab:node_uuid=45ffc4a3-ab9e-5805-a2f6-673c35989d2f
             placed_powder = szlab_mixer_robot_device.place(
                 resource=prepared_powder.powder_cartridge,
                 site="P01",
-                transfer_id=powder_transfer_id,
                 warehouse=resource_ref("s07_process_warehouse"),
             )
             # unilab:node_uuid=8d8bfc18-03db-5ff3-a681-edf1c15294b7
@@ -118,6 +127,7 @@ def s07_粉桶与烧杯搬运后固体称量(
                 site="P01",
                 target_device=solid_addition_device_id,
             )
+
     # unilab:node_uuid=58198f7a-eec4-5276-9bc5-5dd5b54c4b06
     dosed = s_z_lab_s07_solid_addition_device.dose_powder_with_materials(
         beaker=committed_beaker.resource,

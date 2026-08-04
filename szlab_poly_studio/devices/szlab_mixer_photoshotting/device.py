@@ -4,10 +4,12 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, TypedDict
 from urllib import request
 
+from unilabos.registry.annotations import AllowedResourceTemplates
 from unilabos.registry.decorators import action, device, not_action, topic_config
+from unilabos.registry.placeholder_type import ResourceSlot
 
 from szlab_poly_studio.common.action_logging import install_action_logging
 from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
@@ -17,11 +19,20 @@ from szlab_poly_studio.devices.szlab_mixer_photoshotting.sensors import (
     S05_RESULT,
 )
 from szlab_poly_studio.devices.szlab_poly_plc.device import wait_variable_true
+from szlab_poly_studio.resources.materials import beaker_500ml
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
     "opc.tcp://jdht1471820.bohrium.tech:50001",
 )
+
+
+class InspectBeakerStatus(TypedDict):
+    success: bool
+    message: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
+    photo_path: str
+    inspection_result: str
 
 
 @device(
@@ -286,6 +297,30 @@ class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
             "success": True,
             "message": f"S05 拍照检测完成，结果 {result_label}",
             "data": data,
+        }
+
+    @action(description="对 S05 中的烧杯拍照检测并显式透传物料与命名结果")
+    def inspect_beaker(
+        self,
+        beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
+        sample_id: str = "",
+        photo_path: str = "",
+        inspection_result: str = "",
+    ) -> InspectBeakerStatus:
+        result = self.take_photo(
+            sample_id=sample_id,
+            photo_path=photo_path,
+            inspection_result=inspection_result,
+        )
+        data = result.get("data") if isinstance(result.get("data"), dict) else {}
+        resolved_photo_path = str(data.get("photo_url") or data.get("photo_path") or photo_path)
+        resolved_inspection = str(data.get("result") or inspection_result)
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "beaker": beaker,
+            "photo_path": resolved_photo_path,
+            "inspection_result": resolved_inspection,
         }
 
     @not_action

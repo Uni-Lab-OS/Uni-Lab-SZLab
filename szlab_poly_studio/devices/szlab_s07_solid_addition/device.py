@@ -72,6 +72,26 @@ class PowderDoseWithMaterialsStatus(TypedDict):
     ]
 
 
+class PowderDoseWithTwoMaterialsStatus(TypedDict):
+    """粗、精注粉桶共同参与一次称量，并显式透传三项物料。"""
+
+    success: bool
+    message: str
+    commanded_mass_g: float
+    coarse_powder_cartridge: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(powder_container),
+    ]
+    fine_powder_cartridge: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(powder_container),
+    ]
+    beaker: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(beaker_500ml),
+    ]
+
+
 @device(
     id="szlab_s07_solid_addition",
     display_name="S07 固体加料工位",
@@ -405,6 +425,62 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
             "powder_cartridge": powder_cartridge,
             "beaker": beaker,
         }
+
+    @action(description="使用已装入 S07 的粗、精注粉桶向同一烧杯投粉（物料感知）")
+    def dose_powder_with_two_materials(
+        self,
+        coarse_powder_cartridge: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(powder_container),
+        ],
+        fine_powder_cartridge: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(powder_container),
+        ],
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+        ],
+        coarse_powder_site: str,
+        fine_powder_site: str,
+        target_mass_g: float,
+        recipe_name: str = "default",
+        params_json: str | None = None,
+        timeout: float = 300.0,
+    ) -> PowderDoseWithTwoMaterialsStatus:
+        def result(success: bool, message: str) -> PowderDoseWithTwoMaterialsStatus:
+            return {
+                "success": success,
+                "message": message,
+                "commanded_mass_g": float(target_mass_g),
+                "coarse_powder_cartridge": coarse_powder_cartridge,
+                "fine_powder_cartridge": fine_powder_cartridge,
+                "beaker": beaker,
+            }
+
+        if not 0 < float(target_mass_g) <= 100:
+            return result(False, "target_mass_g 必须在 (0, 100] g 范围内")
+        try:
+            coarse_position = self._powder_position_from_site(coarse_powder_site)
+            fine_position = self._powder_position_from_site(fine_powder_site)
+        except ValueError as exc:
+            return result(False, str(exc))
+        if coarse_position == fine_position:
+            return result(False, "粗、精注粉桶必须占用不同的 S07 Site")
+
+        action_result = self.dose_powder(
+            coarse_position=coarse_position,
+            fine_position=fine_position,
+            target_weight=float(target_mass_g),
+            timeout=timeout,
+            params_json=params_json,
+            recipe_name=recipe_name,
+        )
+        success = bool(action_result.get("success", False))
+        message = str(action_result.get("message", ""))
+        if success and not message:
+            message = "S07 粗、精注粉称量流程完成；PLC 未提供实测质量"
+        return result(success, message)
 
 
 install_action_logging(SZLabS07SolidAdditionDevice)

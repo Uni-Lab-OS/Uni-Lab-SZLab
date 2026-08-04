@@ -66,7 +66,7 @@ def test_every_szlab_action_is_wrapped_for_observability() -> None:
         if callable(value) and hasattr(value, "_action_registry_meta")
     ]
 
-    assert len(actions) == 81
+    assert len(actions) == 91
     assert all(getattr(value, "__szlab_action_traced__", False) for value in actions)
 
 

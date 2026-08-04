@@ -44,7 +44,7 @@ def production_registry(package_catalog):
 
 
 @pytest.fixture()
-def production_authoring_compiler(
+def production_authoring_service(
     repo_root: Path,
     package_catalog,
     production_registry,
@@ -82,9 +82,14 @@ def production_authoring_compiler(
     )
     try:
         assert service.compiler is not None
-        yield service.compiler
+        yield service
     finally:
         reset_workflow_service_for_test()
+
+
+@pytest.fixture()
+def production_authoring_compiler(production_authoring_service):
+    yield production_authoring_service.compiler
 
 
 @pytest.fixture(scope="session")

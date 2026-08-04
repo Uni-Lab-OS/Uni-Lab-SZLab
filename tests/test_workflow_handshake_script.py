@@ -43,8 +43,8 @@ class MemoryAdapter:
 def test_catalog_matches_every_python_workflow_action() -> None:
     specs = handshake.build_workflow_specs()
 
-    assert len(specs) == 15
-    assert len(handshake.SUPPORTED_ACTIONS) == 28
+    assert len(specs) == 17
+    assert len(handshake.SUPPORTED_ACTIONS) == 37
     assert {item.workflow_id for item in specs} == {
         "szlab_magnetic_stirring_workflow",
         "szlab_photoshotting_workflow",
@@ -61,6 +61,8 @@ def test_catalog_matches_every_python_workflow_action() -> None:
         "szlab_material_s06_workflow",
         "szlab_robot_liquid_stirring_demo_workflow",
         "s07_material_dosing",
+        "s_z_lab_标准物料转运",
+        "s_z_lab_单样品全流程_物料感知",
     }
 
     workflows_dir = Path(__file__).parents[1] / "szlab_poly_studio" / "workflows"

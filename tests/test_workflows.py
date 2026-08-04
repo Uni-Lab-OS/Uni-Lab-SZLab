@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import difflib
 import json
 from pathlib import Path
 
@@ -199,6 +200,109 @@ def test_s06_material_actions_define_the_resource_slot_at_the_action_boundary(
         assert isinstance(action_function.returns, ast.Name)
 
 
+def test_s07_material_workflow_keeps_two_material_sources_and_parallel_transfers(
+    repo_root: Path,
+) -> None:
+    source = (
+        repo_root / "szlab_poly_studio/workflows/s07_material_dosing.py"
+    ).read_text(encoding="utf-8")
+    workflow = _workflow_function(source)
+
+    material_sources = [
+        node
+        for node in ast.walk(workflow)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "material_source"
+    ]
+    assert len(material_sources) == 2
+    assert all(
+        any(
+            keyword.arg == "mount"
+            and isinstance(keyword.value, ast.Call)
+            and isinstance(keyword.value.func, ast.Name)
+            and keyword.value.func.id == "resource_ref"
+            for keyword in call.keywords
+        )
+        for call in material_sources
+    )
+
+    parallel_blocks = [
+        statement
+        for statement in workflow.body
+        if isinstance(statement, ast.With)
+        and len(statement.items) == 1
+        and isinstance(statement.items[0].context_expr, ast.Call)
+        and isinstance(statement.items[0].context_expr.func, ast.Name)
+        and statement.items[0].context_expr.func.id == "parallel"
+    ]
+    assert len(parallel_blocks) == 1
+    branches = parallel_blocks[0].body
+    assert len(branches) == 2
+    assert all(
+        isinstance(branch, ast.With)
+        and len(branch.items) == 1
+        and isinstance(branch.items[0].context_expr, ast.Call)
+        and isinstance(branch.items[0].context_expr.func, ast.Name)
+        and branch.items[0].context_expr.func.id == "group"
+        for branch in branches
+    )
+
+    selector_ids = {
+        "szlab_mixer_robot_device": "szlab_mixer_robot",
+        "host_node": "host_node",
+    }
+    branch_actions = []
+    for branch in branches:
+        calls = sorted(
+            (
+                node
+                for node in ast.walk(branch)
+                if isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id in selector_ids
+            ),
+            key=lambda node: (node.lineno, node.col_offset),
+        )
+        branch_actions.append(
+            [
+                f"{selector_ids[call.func.value.id]}.{call.func.attr}"
+                for call in calls
+            ]
+        )
+    assert branch_actions == [
+        [
+            "szlab_mixer_robot.pick",
+            "szlab_mixer_robot.place",
+            "host_node.transfer_resource",
+        ],
+        [
+            "szlab_mixer_robot.pick",
+            "szlab_mixer_robot.place",
+            "host_node.transfer_resource",
+        ],
+    ]
+
+    dose = next(
+        node
+        for node in ast.walk(workflow)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "dose_powder_with_materials"
+    )
+    dose_inputs = {keyword.arg: ast.unparse(keyword.value) for keyword in dose.keywords}
+    assert dose_inputs["powder_cartridge"] == "committed_powder.resource"
+    assert dose_inputs["beaker"] == "committed_beaker.resource"
+    assert all(argument.arg != "transfer_id" for argument in workflow.args.kwonlyargs)
+    assert all(
+        keyword.arg != "transfer_id"
+        for node in ast.walk(workflow)
+        if isinstance(node, ast.Call)
+        for keyword in node.keywords
+    )
+
+
 def test_all_package_workflows_satisfy_authoring_candidate_contract(
     repo_root: Path,
     package_catalog: PackageCatalog,
@@ -233,10 +337,107 @@ def test_all_package_workflows_satisfy_authoring_candidate_contract(
             },
         )
 
+        if workflow.id == "s_z_lab_单样品全流程_物料感知":
+            assert result.valid is False
+            assert {item["code"] for item in result.diagnostics} == {
+                "composite_child_unapplied"
+            }
+            continue
+
         assert result.valid, (
             workflow.id,
-            [diagnostic["code"] for diagnostic in result.diagnostics],
+            result.diagnostics,
         )
+        if workflow.id == "s07_粉桶与烧杯搬运后固体称量":
+            assert result.graph is not None
+            assert result.normalized_python_source is not None
+            nodes = {node["uuid"]: node for node in result.graph["nodes"]}
+            assert {
+                node["uuid"]
+                for node in nodes.values()
+                if node["type"] == "material_source"
+            } == {
+                "f7969031-098d-52eb-9193-92e41de3f3da",
+                "af599d17-1d6c-5f34-a2f1-dc5239d1275d",
+            }
+            assert nodes[
+                "9f67e05d-020a-5e8d-bf86-ae812aac7c01"
+            ]["parent_uuid"] == "b6337f56-31f2-55c1-ab9d-f44e1b956e50"
+            assert nodes[
+                "4058067c-18e2-5b35-90eb-ddf04694c040"
+            ]["parent_uuid"] == "115b2549-9202-518c-9aac-0a71de8ba72f"
+            dose_predecessors = {
+                edge["source_node_uuid"]
+                for edge in result.graph["edges"]
+                if edge["target_node_uuid"]
+                == "58198f7a-eec4-5276-9bc5-5dd5b54c4b06"
+            }
+            assert {
+                "8d8bfc18-03db-5ff3-a681-edf1c15294b7",
+                "65fbc7bf-5e17-5a3e-9b15-eab6ebebbf82",
+            } <= dose_predecessors
+            assert result.normalized_python_source.count("material_source(") == 2
+            assert "with parallel():" in result.normalized_python_source
+
+
+def test_material_transfer_applies_before_single_sample_composite(
+    repo_root: Path,
+    production_authoring_service,
+) -> None:
+    package_root = repo_root / "szlab_poly_studio"
+    children = (
+        ("e7c53119-9fde-5250-9bf5-264f23d157a8", "material_transfer.py"),
+    )
+
+    for workflow_uuid, filename in children:
+        production_authoring_service.register_editable_source(
+            workflow_uuid=workflow_uuid,
+            package_id="szlab_poly_studio",
+            package_root=package_root,
+            relative_path=f"workflows/{filename}",
+        )
+        aggregate = production_authoring_service.reconcile_registered_source(
+            workflow_uuid
+        )
+        assert aggregate["draft"]["diagnostics"] == []
+        assert aggregate["candidate"] is not None
+        assert (
+            aggregate["draft"]["python_source"]
+            == aggregate["candidate"]["normalized_python_source"]
+        )
+        production_authoring_service.apply_authoring(
+            workflow_uuid,
+            candidate_hash=aggregate["candidate"]["candidate_hash"],
+        )
+
+    parent_uuid = "6d9fb3e2-4dcb-5f23-93b4-74d1b6083393"
+    production_authoring_service.register_editable_source(
+        workflow_uuid=parent_uuid,
+        package_id="szlab_poly_studio",
+        package_root=package_root,
+        relative_path="workflows/single_sample_atomic_material.py",
+    )
+    parent = production_authoring_service.reconcile_registered_source(parent_uuid)
+    assert parent["draft"]["diagnostics"] == []
+    assert parent["candidate"] is not None
+    assert (
+        parent["draft"]["python_source"]
+        == parent["candidate"]["normalized_python_source"]
+    ), "".join(
+        difflib.unified_diff(
+            parent["draft"]["python_source"].splitlines(keepends=True),
+            parent["candidate"]["normalized_python_source"].splitlines(
+                keepends=True
+            ),
+            fromfile="draft",
+            tofile="normalized",
+        )
+    )
+    applied = production_authoring_service.apply_authoring(
+        parent_uuid,
+        candidate_hash=parent["candidate"]["candidate_hash"],
+    )
+    assert applied["apply_result"]["workflow_revision"] == 2
 
 
 def test_legacy_json_action_sequences_are_preserved(

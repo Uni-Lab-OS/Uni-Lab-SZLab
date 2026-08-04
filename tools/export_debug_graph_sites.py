@@ -233,11 +233,23 @@ MATERIAL_FACTORIES: dict[str, Any] = {
 
 MATERIAL_DISPLAY: dict[str, str] = {
     "szlab_beaker_500ml": "烧杯 500 mL",
+    "szlab_sample_vial_250ml": "样品瓶 250 mL",
     "szlab_sample_vial_500ml": "样品瓶 500 mL",
     "szlab_liquid_reagent_bottle_100ml": "试剂瓶 100 mL",
     "szlab_powder_container": "注粉瓶",
     "szlab_tip_box": "TIP 盒",
 }
+
+PACKAGE_NAMESPACE = "community.szlab_poly_studio"
+
+
+def _material_class_id(value: object) -> str:
+    class_id = str(value or "")
+    return class_id.removeprefix(f"{PACKAGE_NAMESPACE}.")
+
+
+def _material_fqid(value: object) -> str:
+    return f"{PACKAGE_NAMESPACE}.{_material_class_id(value)}"
 
 # 样品瓶位点已并入烧杯堆栈的 A 行（3 层 × 6 列 = 18，正好对应 PLC 的样品瓶
 # 传感器组），独立的样品瓶仓连同仓里那个 250 mL 调试瓶一起从图里删掉。
@@ -410,9 +422,9 @@ def _beaker_stack_sites(carrier) -> list[dict[str, Any]]:
     sites: list[dict[str, Any]] = []
     for label, holder in carrier._ordering.items():
         loc = holder.location
-        row_ch = label[2]  # A=500mL样品瓶, B=烧杯
+        row_ch = label[2]  # A=250mL样品瓶, B=烧杯
         if row_ch == "A":
-            content_types = ["szlab_sample_vial_500ml"]
+            content_types = ["szlab_sample_vial_250ml"]
         else:
             content_types = ["szlab_beaker_500ml"]
         sites.append(
@@ -486,14 +498,18 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         "tips live in the tip box (4 cols x 6 rows, pitch 18)"
     )
 
-    # Beaker stacks — 两个规格相同，共用 s3 烧杯堆栈类型（同一 3D mesh）
+    # Beaker stacks — 两个规格相同、共享 3D mesh，但保留各自 PackageCatalog identity。
     for stack in BEAKER_STACKS:
         carrier = SZLab_BeakerStackCarrier(stack["name"], fill_placeholders=False)
         node = nodes_by_id[stack["node_id"]]
         node["name"] = stack["name"]
         node["position"] = dict(stack["position"])
         node["parent"] = "szlab_poly_deck"
-        node["class"] = "szlab_poly_beaker_warehouse"
+        node["class"] = (
+            "community.szlab_poly_studio.szlab_poly_s3_unused_beaker_warehouse"
+            if stack["node_id"] == "s3_unused_beaker"
+            else "community.szlab_poly_studio.szlab_poly_s11_used_beaker_warehouse"
+        )
         cfg = node.setdefault("config", {})
         cfg["size_x"] = float(carrier.get_size_x())
         cfg["size_y"] = float(carrier.get_size_y())
@@ -506,9 +522,9 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
         cfg["num_items_z"] = int(carrier.num_items_z)
         cfg["layout_note"] = (
             "origin=bottom-left; SZLab_BeakerStackCarrier 3x6x2; "
-            "L{layer}A{col}=sample_vial_500ml(+50,+50), "
+            "L{layer}A{col}=sample_vial_250ml(+50,+50), "
             "L{layer}B{col}=beaker_500ml(+50,+150); "
-            "class=szlab_poly_beaker_warehouse (S3/S11 shared)"
+            "S3/S11 retain distinct package resource identities"
         )
 
     # Reagent bottle stack — SZLab_ReagentBottleStackCarrier
@@ -626,7 +642,7 @@ def _apply_layout(graph: dict[str, Any]) -> dict[str, Any]:
 
     # Material container sizes from Python factories
     for node in out["nodes"]:
-        factory = MATERIAL_FACTORIES.get(str(node.get("class") or ""))
+        factory = MATERIAL_FACTORIES.get(_material_class_id(node.get("class")))
         if factory is None:
             continue
         resource = factory(name=str(node.get("name") or node["id"]))
@@ -703,7 +719,7 @@ def _fill_stack_slots(
 
         material["name"] = f"{node['name']} {label} {display}"
         material["type"] = "container"
-        material["class"] = str(content)
+        material["class"] = _material_fqid(content)
         material["parent"] = node_id
         material["position"] = dict(site["position"])
         size_x = float(resource.get_size_x())
@@ -765,7 +781,7 @@ def main() -> None:
     placed: dict[str, int] = {}
     tip_spots = 0
     for node in enriched["nodes"]:
-        klass = str(node.get("class") or "")
+        klass = _material_class_id(node.get("class"))
         if klass in MATERIAL_DISPLAY:
             placed[klass] = placed.get(klass, 0) + 1
         if klass == "szlab_tip_box":

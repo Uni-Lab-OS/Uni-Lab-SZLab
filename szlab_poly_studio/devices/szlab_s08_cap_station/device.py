@@ -34,9 +34,11 @@ from __future__ import annotations
 import os
 import time
 from enum import IntEnum
-from typing import Any, Optional, Sequence
+from typing import Annotated, Any, Optional, Sequence, TypedDict
 
+from unilabos.registry.annotations import AllowedResourceTemplates
 from unilabos.registry.decorators import action, device, not_action, topic_config
+from unilabos.registry.placeholder_type import ResourceSlot
 from unilabos.utils.log import logger
 
 from szlab_poly_studio.common.action_logging import (
@@ -45,6 +47,11 @@ from szlab_poly_studio.common.action_logging import (
     install_action_logging,
 )
 from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
+from szlab_poly_studio.resources.materials import (
+    liquid_reagent_bottle_100ml,
+    sample_vial_250ml,
+    sample_vial_500ml,
+)
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_S08_OPCUA_URL",
@@ -133,6 +140,39 @@ VIAL_TYPE_LABELS: dict[str, str] = {
     "sample_250ml": "样品瓶250ml",
     "liquid_100ml": "液体瓶100ml",
 }
+
+
+class CapWithMaterialStatus(TypedDict):
+    """开关盖结果及同一容器物料。"""
+
+    success: bool
+    message: str
+    container: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(
+            sample_vial_500ml,
+            sample_vial_250ml,
+            liquid_reagent_bottle_100ml,
+        ),
+    ]
+
+
+class SampleVial250mlCapStatus(TypedDict):
+    success: bool
+    message: str
+    container: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(sample_vial_250ml),
+    ]
+
+
+class LiquidReagent100mlCapStatus(TypedDict):
+    success: bool
+    message: str
+    container: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+    ]
 
 
 def _cap_cache_element_name(slot: int, index: int) -> str:
@@ -814,6 +854,102 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             sample_id=[sample_id_1, sample_id_2, sample_id_3],
             timeout=timeout,
         )
+
+    @not_action
+    def _sample_id_text_to_plc(self, sample_id: str) -> list[int]:
+        value = str(sample_id).strip()
+        if not value:
+            raise ValueError("sample_id 不能为空")
+        encoded = list(value.encode("utf-8"))
+        if len(encoded) > CAP_CACHE_LENGTH:
+            raise ValueError(f"sample_id UTF-8 编码后不能超过 {CAP_CACHE_LENGTH} 字节")
+        return encoded
+
+    @action(description="对指定样品瓶或试剂瓶执行 S08 开/关盖并显式透传物料")
+    def process_cap_with_material(
+        self,
+        container: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(
+                sample_vial_500ml,
+                sample_vial_250ml,
+                liquid_reagent_bottle_100ml,
+            ),
+        ],
+        operation: str,
+        vial_type: str,
+        sample_id: str,
+        timeout: float = 300.0,
+    ) -> CapWithMaterialStatus:
+        try:
+            plc_sample_id = self._sample_id_text_to_plc(sample_id)
+        except ValueError as exc:
+            return {"success": False, "message": str(exc), "container": container}
+        result = self.process_cap(
+            operation=operation,
+            vial_type=vial_type,
+            sample_id=plc_sample_id,
+            timeout=timeout,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "container": container,
+        }
+
+    @action(description="对 250 mL 样品瓶执行 S08 开/关盖并显式透传物料")
+    def process_sample_vial_250ml_cap_with_material(
+        self,
+        container: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(sample_vial_250ml),
+        ],
+        operation: str,
+        sample_id: str,
+        timeout: float = 300.0,
+    ) -> SampleVial250mlCapStatus:
+        try:
+            plc_sample_id = self._sample_id_text_to_plc(sample_id)
+        except ValueError as exc:
+            return {"success": False, "message": str(exc), "container": container}
+        result = self.process_cap(
+            operation=operation,
+            vial_type="sample_250ml",
+            sample_id=plc_sample_id,
+            timeout=timeout,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "container": container,
+        }
+
+    @action(description="对 100 mL 液体试剂瓶执行 S08 开/关盖并显式透传物料")
+    def process_liquid_reagent_100ml_cap_with_material(
+        self,
+        container: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+        ],
+        operation: str,
+        sample_id: str,
+        timeout: float = 300.0,
+    ) -> LiquidReagent100mlCapStatus:
+        try:
+            plc_sample_id = self._sample_id_text_to_plc(sample_id)
+        except ValueError as exc:
+            return {"success": False, "message": str(exc), "container": container}
+        result = self.process_cap(
+            operation=operation,
+            vial_type="liquid_100ml",
+            sample_id=plc_sample_id,
+            timeout=timeout,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "container": container,
+        }
 
     @topic_config(period=2.0)
     def last_s08_status(self) -> dict[str, Any]:

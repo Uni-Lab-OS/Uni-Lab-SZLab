@@ -7,7 +7,7 @@
 2. ``check``：只读检查远端 OPC UA 中可自动判定的先决条件。
 3. ``serve``：写入测试先决条件，并监听 PC→PLC 信号，模拟 PLC 握手。
 
-当前覆盖 ``workflows`` 目录中全部 15 个工作流、28 个唯一动作调用：
+当前覆盖 ``workflows`` 目录中全部 21 个工作流、37 个唯一动作调用：
 
 - ``szlab_mixer_robot.submit_place_to_s04``（机器人任务号 7）
 - ``szlab_mixer_stirrer.run_stirring``
@@ -183,6 +183,15 @@ SUPPORTED_ACTIONS = (
     "szlab_mixer_robot.place",
     "host_node.transfer_resource",
     "szlab_s07_solid_addition.dose_powder_with_materials",
+    "szlab_mixer_photoshotting.inspect_beaker",
+    "szlab_mixer_pipetting_station.add_liquid_with_materials",
+    "szlab_mixer_pump.add_solvent_with_materials",
+    "szlab_mixer_robot.pick_beaker",
+    "szlab_mixer_robot.pour_beaker_into_vial",
+    "szlab_mixer_stirrer.stir_beaker",
+    "szlab_s07_solid_addition.dose_powder_with_two_materials",
+    "szlab_s08_cap_station.process_liquid_reagent_100ml_cap_with_material",
+    "szlab_s08_cap_station.process_sample_vial_250ml_cap_with_material",
 )
 
 # 保留首版握手器导出的动作别名，避免既有测试脚本和外部调用方因扩展
@@ -226,6 +235,8 @@ WORKFLOW_IDS = (
     "szlab_material_s06_workflow",
     "szlab_robot_liquid_stirring_demo_workflow",
     "s07_material_dosing",
+    "s_z_lab_标准物料转运",
+    "s_z_lab_单样品全流程_物料感知",
 )
 
 WORKFLOW_COMPONENTS = {
@@ -246,6 +257,10 @@ WORKFLOW_COMPONENTS = {
         {"robot_s06", "pump", "robot_s04", "stirrer"}
     ),
     "s07_material_dosing": frozenset({"robot_s03", "robot_s07", "s07"}),
+    "s_z_lab_标准物料转运": frozenset({"robot_standard"}),
+    "s_z_lab_单样品全流程_物料感知": frozenset(
+        {"robot_standard", "pump", "stirrer", "photo", "s07", "s08", "s09"}
+    ),
 }
 ALL_COMPONENTS = frozenset().union(*WORKFLOW_COMPONENTS.values())
 
@@ -431,7 +446,7 @@ def _robot_common() -> tuple[Requirement, ...]:
 
 
 def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec, ...]:
-    """返回仓库当前 15 个 Python 工作流的先决条件目录。"""
+    """返回仓库当前 21 个 Python 工作流的先决条件目录。"""
 
     position = int(position)
     pump = int(pump)
@@ -453,6 +468,15 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
     s04_common = (
         _opc_eq(s04_allow(position), True),
         _opc_eq(s04_done(position), False, note="新一轮磁搅开始前完成信号应清零"),
+    )
+    standard_transfer_requirements = (
+        *_robot_common(),
+        _manual("config", "standard_actions_enabled", "必须启用标准 robot.pick/place"),
+        _manual(
+            "runtime",
+            "workflow_execution_identity",
+            "OS 必须为每个 robot.pick/place Action 注入有效 WorkflowNodeJob UUID",
+        ),
     )
     return (
         WorkflowSpec(
@@ -650,7 +674,59 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
                 _opc_eq(S07_ALLOW, True),
                 _opc_eq(S07_DONE, 0, note="每轮开始前完成工艺号应清零"),
                 _manual("config", "standard_actions_enabled", "必须启用标准 robot.pick/place"),
-                _manual("parameter", "transfer_id", "两次搬运分别使用稳定、非空且不同的 ID"),
+                _manual(
+                    "runtime",
+                    "workflow_execution_identity",
+                    "OS 必须为每个 robot.pick/place Action 注入有效 WorkflowNodeJob UUID",
+                ),
+            ),
+        ),
+        *(
+            WorkflowSpec(
+                workflow_id,
+                (
+                    "szlab_mixer_robot.pick",
+                    "szlab_mixer_robot.place",
+                    "host_node.transfer_resource",
+                ),
+                standard_transfer_requirements,
+            )
+            for workflow_id in (
+                "s_z_lab_标准物料转运",
+            )
+        ),
+        WorkflowSpec(
+            "s_z_lab_单样品全流程_物料感知",
+            (
+                "szlab_mixer_robot.pick",
+                "szlab_mixer_robot.place",
+                "host_node.transfer_resource",
+                "szlab_s07_solid_addition.scan_powder_cartridges",
+                "szlab_s07_solid_addition.prepare_powder_cartridge_site",
+                "szlab_s07_solid_addition.dose_powder_with_two_materials",
+                "szlab_mixer_pump.add_solvent_with_materials",
+                "szlab_s08_cap_station.process_liquid_reagent_100ml_cap_with_material",
+                "szlab_mixer_pipetting_station.add_liquid_with_materials",
+                "szlab_mixer_stirrer.stir_beaker",
+                "szlab_mixer_photoshotting.inspect_beaker",
+                "szlab_s08_cap_station.process_sample_vial_250ml_cap_with_material",
+                "szlab_mixer_robot.pick_beaker",
+                "szlab_mixer_robot.pour_beaker_into_vial",
+            ),
+            (
+                *standard_transfer_requirements,
+                _opc_eq(S06_READY, True),
+                _opc_eq(S06_ALLOW, True),
+                _opc_eq(S07_HOME, True),
+                _opc_eq(S07_ALLOW, True),
+                _opc_eq(S08_HOME, True),
+                _opc_eq(S08_ALLOW, True),
+                _opc_eq(S09_ALLOW, True),
+                _manual(
+                    "config",
+                    "s08_s09_site_witnesses",
+                    "S08 双向瓶位、S09 试剂瓶位与 250 mL 负载必须完成现场验收",
+                ),
             ),
         ),
     )

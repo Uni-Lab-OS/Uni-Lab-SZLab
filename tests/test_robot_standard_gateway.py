@@ -19,6 +19,8 @@ from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
 
 SOURCE_SENSOR = resolve_s071_site("L1C1").presence_variable
 TARGET_SENSOR = resolve_s07_process_site("P01").presence_variable
+NODE_JOB_UUID = "6199359e-c8e4-4a86-b709-1c50fc192ff7"
+TASK_UUID = "89326717-9448-47ce-825a-e679d6556c27"
 
 
 class FakeLegacyRobot:
@@ -79,6 +81,10 @@ def gateway(tmp_path, robot: FakeLegacyRobot, **overrides) -> SZLabStandardRobot
         "actions_enabled": True,
         "permit_asserts_remote_auto": True,
         "permit_asserts_safety_normal": True,
+        "execution_identity_provider": lambda: {
+            "node_job_uuid": NODE_JOB_UUID,
+            "task_uuid": TASK_UUID,
+        },
     }
     config.update(overrides)
     return SZLabStandardRobotGateway(robot, **config)
@@ -128,6 +134,55 @@ def test_standard_pick_reuses_legacy_plc_handshake_and_is_idempotent(tmp_path) -
     assert first["state"] == "SUCCEEDED"
     assert second == first
     assert robot.dispatch_count == 1
+
+
+def test_site_action_uses_workflow_node_job_as_command_identity(tmp_path) -> None:
+    robot = FakeLegacyRobot()
+    target = gateway(tmp_path, robot)
+
+    first = target.execute_site(
+        kind="pick",
+        resource={"uuid": "powder-001", "category": "powder_reagent"},
+        warehouse={
+            "uuid": "powder-warehouse-001",
+            "id": "powder_container_warehouse",
+        },
+        site="L1C1",
+    )
+    replay = target.execute_site(
+        kind="pick",
+        resource={"uuid": "powder-001", "category": "powder_reagent"},
+        warehouse={
+            "uuid": "powder-warehouse-001",
+            "id": "powder_container_warehouse",
+        },
+        site="L1C1",
+    )
+
+    assert first["success"] is True
+    assert first["command_id"] == f"workflow-node-job:{NODE_JOB_UUID}"
+    assert replay == first
+    assert robot.dispatch_count == 1
+
+
+def test_site_action_without_workflow_identity_fails_closed(tmp_path) -> None:
+    robot = FakeLegacyRobot()
+    target = gateway(tmp_path, robot, execution_identity_provider=lambda: {})
+
+    result = target.execute_site(
+        kind="pick",
+        resource={"uuid": "powder-001", "category": "powder_reagent"},
+        warehouse={
+            "uuid": "powder-warehouse-001",
+            "id": "powder_container_warehouse",
+        },
+        site="L1C1",
+    )
+
+    assert result["state"] == "REJECTED"
+    assert "WorkflowNodeJob" in result["message"]
+    assert "业务侧幂等标识" in result["message"]
+    assert robot.dispatch_count == 0
 
 
 def test_same_command_id_with_another_material_is_rejected(tmp_path) -> None:

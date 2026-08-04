@@ -117,5 +117,21 @@ additional_workflows:
   - workflow_id: s07_粉桶与烧杯搬运后固体称量
     python_source: ../szlab_poly_studio/workflows/s07_material_dosing.py
     devices: [szlab_mixer_robot, szlab_s07_solid_addition, host_node]
-    equivalence: material_source_workflow
+    equivalence: package_managed_parallel_material_source_workflow
+  - workflow_id: s_z_lab_标准物料转运
+    python_source: ../szlab_poly_studio/workflows/material_transfer.py
+    devices: [szlab_mixer_robot, host_node]
+    equivalence: package_managed_generic_standard_material_transfer_composite
+  - workflow_id: s_z_lab_单样品全流程_物料感知
+    python_source: ../szlab_poly_studio/workflows/single_sample_atomic_material.py
+    devices:
+      - szlab_mixer_robot
+      - szlab_s08_cap_station
+      - szlab_s07_solid_addition
+      - szlab_mixer_pump
+      - szlab_mixer_pipetting_station
+      - szlab_mixer_stirrer
+      - szlab_mixer_photoshotting
+      - host_node
+    equivalence: package_managed_material_aware_rewrite_of_38_action_json
 wayfinder_targets: []

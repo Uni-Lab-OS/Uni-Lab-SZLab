@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any
+from typing import Annotated, Any, TypedDict
 
-from unilabos.registry.annotations import JSONValue
+from unilabos.registry.annotations import AllowedResourceTemplates, JSONValue
 from unilabos.registry.decorators import action, device, not_action, topic_config
+from unilabos.registry.placeholder_type import ResourceSlot
 from unilabos.utils.log import logger
 
 from szlab_poly_studio.common.action_logging import (
@@ -39,6 +40,11 @@ from szlab_poly_studio.devices.szlab_mixer_pipetting_station.sensors import (
     validate_tip,
     validate_tip_box,
 )
+from szlab_poly_studio.resources.materials import (
+    beaker_500ml,
+    liquid_reagent_bottle_100ml,
+    pipette_tip,
+)
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
@@ -46,6 +52,17 @@ DEFAULT_OPCUA_URL = os.environ.get(
 )
 S09_VOLUME_RAW_MAX = 50000
 S09_VOLUME_UL_MAX = 5000.0
+
+
+class PipettingWithMaterialsStatus(TypedDict):
+    success: bool
+    message: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
+    reagent_bottle: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+    ]
+    tip: Annotated[ResourceSlot, AllowedResourceTemplates(pipette_tip)]
 
 
 @device(
@@ -712,6 +729,42 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             },
             "steps": steps,
             "logs": logs,
+        }
+
+    @action(description="使用试剂瓶和 TIP 向 S09 烧杯移液（物料感知）")
+    def add_liquid_with_materials(
+        self,
+        beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
+        reagent_bottle: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+        ],
+        tip: Annotated[ResourceSlot, AllowedResourceTemplates(pipette_tip)],
+        liquid_bottle_index: int = 1,
+        station: int = 1,
+        aspirate_volume: int = 1,
+        dispense_volume: int = 1,
+        volume_unit: str = "raw",
+        skip_level_check: bool = False,
+        tip_box_index: int = 1,
+        tip_index: int = 1,
+    ) -> PipettingWithMaterialsStatus:
+        result = self.add_liquid(
+            tip_box_index=tip_box_index,
+            tip_index=tip_index,
+            liquid_bottle_index=liquid_bottle_index,
+            station=station,
+            aspirate_volume=aspirate_volume,
+            dispense_volume=dispense_volume,
+            volume_unit=volume_unit,
+            skip_level_check=skip_level_check,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "beaker": beaker,
+            "reagent_bottle": reagent_bottle,
+            "tip": tip,
         }
 
     @action(description="执行 S09 多步加液工作流")

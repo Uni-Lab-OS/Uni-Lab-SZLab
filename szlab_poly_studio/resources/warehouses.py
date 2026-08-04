@@ -24,7 +24,7 @@ def s1_loading_buffer_warehouse(name: str = "S1上料过渡仓"):
 @resource(
     id="szlab_poly_s3_unused_beaker_warehouse",
     category=["szlab_poly_studio", "warehouse", "beaker_stack"],
-    description="苏州实验室烧杯堆栈2：3层×6列，A行500mL样品瓶 / B行烧杯",
+    description="苏州实验室烧杯堆栈2：3层×6列，A行250mL样品瓶 / B行烧杯",
     model={
         "format": "xacro",
         "entry": "szlab_poly_beaker_warehouse/models/resource.xacro",
@@ -61,7 +61,7 @@ def s3_unused_sample_vial_warehouse(name: str = "S3未使用样品瓶仓"):
 @resource(
     id="szlab_poly_s11_used_beaker_warehouse",
     category=["szlab_poly_studio", "warehouse", "beaker_stack"],
-    description="苏州实验室烧杯堆栈1：3层×6列，A行500mL样品瓶 / B行烧杯",
+    description="苏州实验室烧杯堆栈1：3层×6列，A行250mL样品瓶 / B行烧杯",
     model={
         "format": "xacro",
         "entry": "szlab_poly_beaker_warehouse/models/resource.xacro",

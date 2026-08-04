@@ -60,7 +60,10 @@ from szlab_poly_studio.devices.szlab_mixer_pump.sensors import (
     s06_pump_valve_var,
     s06_solution_amount_var,
 )
-from szlab_poly_studio.resources.materials import beaker_500ml
+from szlab_poly_studio.resources.materials import (
+    beaker_500ml,
+    liquid_reagent_bottle_100ml,
+)
 
 DOCKER_IMAGE = "registry-1.docker.io/styxhuang/unilabos:latest"
 DOCKER_UI_URL = "http://localhost:50003/"
@@ -75,6 +78,22 @@ class BeakerAdditionStatus(TypedDict):
 
     success: bool
     message: str
+
+
+class SolventAdditionWithMaterialsStatus(TypedDict):
+    """两路溶剂共同参与 S06 加液，并显式透传所有物料。"""
+
+    success: bool
+    message: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
+    solvent_pump_1: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+    ]
+    solvent_pump_2: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+    ]
 
 
 @device(
@@ -524,6 +543,49 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         return {
             "success": bool(result.get("success", False)),
             "message": str(result.get("message", "")),
+        }
+
+    @action(description="使用两路已绑定溶剂向 S06 烧杯加液（物料感知）")
+    def add_solvent_with_materials(
+        self,
+        beaker: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(beaker_500ml),
+        ],
+        solvent_pump_1: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+        ],
+        solvent_pump_2: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(liquid_reagent_bottle_100ml),
+        ],
+        volume_pump_1: int,
+        volume_pump_2: int,
+        skip_level_check: bool = False,
+        beaker_true_means_present: bool = True,
+    ) -> SolventAdditionWithMaterialsStatus:
+        if int(volume_pump_1) < 0 or int(volume_pump_2) < 0:
+            result = {"success": False, "message": "两路溶剂体积不得小于 0"}
+        elif int(volume_pump_1) == 0 and int(volume_pump_2) == 0:
+            result = {"success": False, "message": "至少一路溶剂体积必须大于 0"}
+        else:
+            selected_pump = 3 if volume_pump_1 and volume_pump_2 else (1 if volume_pump_1 else 2)
+            result = self._run_solvent_addition(
+                pump=selected_pump,
+                volume=1,
+                volume_pump_1=int(volume_pump_1),
+                volume_pump_2=int(volume_pump_2),
+                skip_level_check=skip_level_check,
+                skip_robot=True,
+                beaker_true_means_present=beaker_true_means_present,
+            )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "beaker": beaker,
+            "solvent_pump_1": solvent_pump_1,
+            "solvent_pump_2": solvent_pump_2,
         }
 
 

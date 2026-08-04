@@ -6,12 +6,12 @@ import json
 import sqlite3
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from szlab_poly_studio.common.site_control_bindings import (
     SiteControlBinding,
@@ -422,6 +422,7 @@ class SZLabStandardRobotGateway:
         permit_asserts_safety_normal: bool,
         motion_permit_variable: str = ROBOT_WRITE_ALLOWED_VARIABLE,
         tool_payload_sensor_variable: str = TOOL_PAYLOAD_SENSOR_VARIABLE,
+        execution_identity_provider: Callable[[], Mapping[str, str]] | None = None,
     ):
         self.owner = owner
         self.program_version = program_version
@@ -432,6 +433,9 @@ class SZLabStandardRobotGateway:
         self.permit_asserts_safety_normal = bool(permit_asserts_safety_normal)
         self.motion_permit_variable = motion_permit_variable
         self.tool_payload_sensor_variable = tool_payload_sensor_variable
+        self.execution_identity_provider = (
+            execution_identity_provider or _capture_workflow_execution_identity
+        )
         self.boot_id = str(uuid4())
         self._motion_lock = threading.RLock()
         self._sequence = time.monotonic_ns()
@@ -446,22 +450,19 @@ class SZLabStandardRobotGateway:
         resource: Any,
         warehouse: Any,
         site: str,
-        transfer_id: str,
     ) -> dict[str, Any]:
-        """由最小工作流参数生成稳定、可重放的标准请求。"""
+        """由 WorkflowNodeJob 身份和最小业务参数生成可重放请求。"""
 
-        transfer_id = str(transfer_id).strip()
-        if not transfer_id:
-            return _public_rejection("", self.boot_id, "transfer_id 不能为空")
         try:
+            workflow_identity = self.execution_identity_provider()
+            command_id = _workflow_node_command_id(workflow_identity)
             binding = resolve_robot_site_reference(warehouse, site)
             canonical_site = canonical_site_reference(binding)
             payload_profile = _payload_profile_for_resource(resource)
-            warehouse_reference = _resource_reference(warehouse, field_name="warehouse")
+            _resource_reference(warehouse, field_name="warehouse")
         except (TypeError, ValueError) as exc:
             return _public_rejection("", self.boot_id, str(exc))
 
-        command_id = _site_command_id(transfer_id, kind, warehouse_reference, canonical_site)
         existing = self.journal.get(command_id)
         if existing is None:
             self._sequence += 1
@@ -480,8 +481,12 @@ class SZLabStandardRobotGateway:
             payload_profile=payload_profile,
             source_boot_id=source_boot_id,
             monotonic_sequence=sequence,
-            material_context={"resource": resource, "warehouse": warehouse},
-            source="unilabos-standard-site-action",
+            material_context={
+                "resource": resource,
+                "warehouse": warehouse,
+                "workflow_identity": dict(workflow_identity),
+            },
+            source="unilabos-workflow-node-job",
         )
         return self.execute(request)
 
@@ -803,12 +808,31 @@ def _resource_reference(resource: Any, *, field_name: str) -> str:
     raise ValueError(f"{field_name} 缺少稳定资源标识")
 
 
-def _site_command_id(transfer_id: str, kind: str, warehouse: str, site: str) -> str:
-    readable = f"{transfer_id}:{kind}:{warehouse}:{site}"
-    if len(readable) <= 128:
-        return readable
-    digest = hashlib.sha256(readable.encode("utf-8")).hexdigest()
-    return f"site-action:{digest}"
+def _capture_workflow_execution_identity() -> Mapping[str, str]:
+    """兼容导入；旧 OS 没有 execution identity 时由调用方 fail-closed。"""
+
+    try:
+        from unilabos.observability.runtime import (
+            capture_workflow_execution_identity,
+        )
+    except ImportError:
+        return {}
+    return capture_workflow_execution_identity()
+
+
+def _workflow_node_command_id(identity: Mapping[str, str]) -> str:
+    """使用 OS 已认证的 WorkflowNodeJob UUID，不接受业务侧幂等参数。"""
+
+    if not isinstance(identity, Mapping):
+        raise TypeError("Workflow execution identity 必须是对象")
+    raw_job_uuid = str(identity.get("node_job_uuid") or "").strip()
+    try:
+        job_uuid = str(UUID(raw_job_uuid))
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "缺少有效 WorkflowNodeJob execution identity；标准机械臂动作不接受业务侧幂等标识"
+        ) from exc
+    return f"workflow-node-job:{job_uuid}"
 
 
 def _jsonable(value: Any) -> Any:

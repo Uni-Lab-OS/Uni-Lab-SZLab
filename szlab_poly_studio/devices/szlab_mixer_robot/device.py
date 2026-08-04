@@ -36,7 +36,7 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_WRITE_DONE_VARIABLE,
 )
 from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import SZLabStandardRobotGateway
-from szlab_poly_studio.resources.materials import beaker_500ml
+from szlab_poly_studio.resources.materials import beaker_500ml, sample_vial_250ml
 
 _UNSET = object()
 
@@ -78,9 +78,36 @@ class StandardRobotTransferStatus(TypedDict):
     resource: ResourceSlot
 
 
+class BeakerRobotTransferStatus(TypedDict):
+    command_id: str
+    state: Literal[
+        "ACCEPTED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELED",
+        "UNKNOWN",
+        "REJECTED",
+    ]
+    success: bool
+    message: str
+    boot_id: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
+
+
 class BeakerActionStatus(TypedDict):
     success: bool
     message: str
+
+
+class PourBeakerIntoVialStatus(TypedDict):
+    success: bool
+    message: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
+    sample_vial: Annotated[
+        ResourceSlot,
+        AllowedResourceTemplates(sample_vial_250ml),
+    ]
 
 
 @device(
@@ -508,14 +535,12 @@ class SzlabMixerRobotDevice(
         resource: ResourceSlot,
         warehouse: ResourceSlot,
         site: str,
-        transfer_id: str,
     ) -> StandardRobotTransferStatus:
         result = self._standard_gateway().execute_site(
             kind="pick",
             resource=resource,
             warehouse=warehouse,
             site=site,
-            transfer_id=transfer_id,
         )
         return {**result, "resource": resource}
 
@@ -530,16 +555,29 @@ class SzlabMixerRobotDevice(
         resource: ResourceSlot,
         warehouse: ResourceSlot,
         site: str,
-        transfer_id: str,
     ) -> StandardRobotTransferStatus:
         result = self._standard_gateway().execute_site(
             kind="place",
             resource=resource,
             warehouse=warehouse,
             site=site,
-            transfer_id=transfer_id,
         )
         return {**result, "resource": resource}
+
+    @action(description="标准物理取 500 mL 烧杯；保留精确 ResourceSlot 模板约束")
+    def pick_beaker(
+        self,
+        beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
+        warehouse: ResourceSlot,
+        site: str,
+    ) -> BeakerRobotTransferStatus:
+        result = self._standard_gateway().execute_site(
+            kind="pick",
+            resource=beaker,
+            warehouse=warehouse,
+            site=site,
+        )
+        return {**result, "beaker": beaker}
 
     @action(always_free=True, description="查询标准机械臂命令；不会重新下发运动")
     def get_command(self, command_id: str) -> StandardRobotActionStatus:
@@ -743,6 +781,31 @@ class SzlabMixerRobotDevice(
                 "station": "S08",
                 "product_type": product_type,
             }
+
+    @action(description="将机械臂持有的 500 mL 烧杯倒入 S08 的 250 mL 样品瓶")
+    def pour_beaker_into_vial(
+        self,
+        beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
+        sample_vial: Annotated[
+            ResourceSlot,
+            AllowedResourceTemplates(sample_vial_250ml),
+        ],
+        sample_vial_site: str,
+    ) -> PourBeakerIntoVialStatus:
+        if str(sample_vial_site).strip().upper() != "S081":
+            return {
+                "success": False,
+                "message": "250 mL 样品瓶倒料位必须是 S081",
+                "beaker": beaker,
+                "sample_vial": sample_vial,
+            }
+        result = self.submit_pour_from_s08(product_type=1)
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "beaker": beaker,
+            "sample_vial": sample_vial,
+        }
 
     @action(description="S09 放料")
     def submit_place_to_s09(self, product_type: int = 1, position: int = 1) -> dict[str, Any]:

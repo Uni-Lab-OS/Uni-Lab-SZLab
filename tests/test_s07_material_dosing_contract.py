@@ -231,7 +231,7 @@ def test_scheduler_serializes_parallel_actions_on_the_same_robot() -> None:
 class _SuccessfulRobotGateway:
     def execute_site(self, **_kwargs: Any) -> dict[str, Any]:
         return {
-            "command_id": "transfer-1:pick",
+            "command_id": "workflow-node-job:6199359e-c8e4-4a86-b709-1c50fc192ff7",
             "state": "SUCCEEDED",
             "success": True,
             "message": "complete",
@@ -252,13 +252,11 @@ def test_robot_pick_and_place_return_the_transferred_resource(
         resource=resource,
         warehouse=warehouse,
         site="L1C1",
-        transfer_id="transfer-1",
     )
     placed = robot.place(
         resource=resource,
         warehouse=warehouse,
         site="P01",
-        transfer_id="transfer-1",
     )
 
     assert picked["resource"] is resource

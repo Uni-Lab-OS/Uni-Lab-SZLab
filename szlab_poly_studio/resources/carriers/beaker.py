@@ -2,7 +2,7 @@
 
 坐标约定：相对载架左下角 (mm)。
 每层 6 列 × 2 行：
-  - A 行（低 y）：500 mL 样品瓶，圆心相对 slot 左下角 (+50, +50)
+  - A 行（低 y）：250 mL 样品瓶，圆心相对 slot 左下角 (+50, +50)
   - B 行（高 y）：500 mL 烧杯，圆心相对 slot 左下角 (+50, +150)
 共 3 层，层间高度差 240 mm；首层 z=80。
 
@@ -17,7 +17,7 @@ from typing import Dict, Union
 from pylabrobot.resources import ResourceHolder, create_ordered_items_2d
 from unilabos.resources.itemized_carrier import BottleCarrier, ResourcePLR
 
-from szlab_poly_studio.resources.materials import beaker_500ml, sample_vial_500ml
+from szlab_poly_studio.resources.materials import beaker_500ml, sample_vial_250ml
 
 
 def SZLab_BeakerStackCarrier(
@@ -34,7 +34,7 @@ def SZLab_BeakerStackCarrier(
     说明:
     - 载架尺寸 L790 × W200 × H560
     - slot 网格：首 slot 左下角 (45, 0, 80)，同行 Δx=120，层间 Δz=240
-    - A 行（低 y）：500 mL 样品瓶；B 行（高 y）：500 mL 烧杯
+    - A 行（低 y）：250 mL 样品瓶；B 行（高 y）：500 mL 烧杯
     """
 
     # 载架尺寸 (mm)
@@ -111,7 +111,7 @@ def SZLab_BeakerStackCarrier(
             row_ch = label[2]
             col_ch = label[3:]
             if row_ch == "A":
-                carrier[label] = sample_vial_500ml(
+                carrier[label] = sample_vial_250ml(
                     name=f"{name}_sample_L{layer_ch}C{col_ch}"
                 )
             else:

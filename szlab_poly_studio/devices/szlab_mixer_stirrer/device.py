@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Annotated, Any, TypedDict
 
+from unilabos.registry.annotations import AllowedResourceTemplates
 from unilabos.registry.decorators import action, device, not_action, topic_config
+from unilabos.registry.placeholder_type import ResourceSlot
 
 from szlab_poly_studio.common.action_logging import install_action_logging
 from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
@@ -21,11 +23,18 @@ from szlab_poly_studio.devices.szlab_mixer_stirrer.sensors import (
     s04_temperature_var,
 )
 from szlab_poly_studio.devices.szlab_poly_plc.device import wait_variable_true
+from szlab_poly_studio.resources.materials import beaker_500ml
 
 DEFAULT_OPCUA_URL = os.environ.get(
     "UNILABOS_SZLAB_MIXER_OPCUA_URL",
     "opc.tcp://192.168.1.10:4840/",
 )
+
+
+class StirBeakerStatus(TypedDict):
+    success: bool
+    message: str
+    beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)]
 
 
 @device(
@@ -226,6 +235,33 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
                 "done_variable": s04_done_var(position),
                 "reset": reset_result.get("data", {}),
             },
+        }
+
+    @action(description="对 S04 中的烧杯执行磁搅并显式透传物料")
+    def stir_beaker(
+        self,
+        beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
+        position: int,
+        mode: int = 3,
+        speed: int = 300,
+        temperature: int = 25,
+        duration: float = 30.0,
+        safe_temperature: int = 80,
+        reset: bool = False,
+    ) -> StirBeakerStatus:
+        result = self.run_stirring(
+            position=position,
+            mode=mode,
+            speed=speed,
+            temperature=temperature,
+            duration=duration,
+            safe_temperature=safe_temperature,
+            reset=reset,
+        )
+        return {
+            "success": bool(result.get("success", False)),
+            "message": str(result.get("message", "")),
+            "beaker": beaker,
         }
 
     @not_action
