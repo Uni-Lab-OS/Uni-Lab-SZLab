@@ -19,6 +19,20 @@ from szlab_poly_studio.common.site_control_bindings import (
     resolve_canonical_site_reference,
     resolve_robot_site_reference,
 )
+from szlab_poly_studio.devices.szlab_mixer_robot.execution_backend import (
+    BackendCapabilities,
+    BackendRejectedError,
+    CompletionObservation,
+    DispatchReceipt,
+    DispatchState,
+    DispatchUnknownError,
+    ExecutionObservation,
+    ObservationState,
+    ProgramInvocation,
+    ResolvedSiteAction,
+    RobotCommand,
+    RobotExecutionAdapter,
+)
 from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_HOME_VARIABLE,
     ROBOT_WRITE_ALLOWED_VARIABLE,
@@ -26,6 +40,19 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
 )
 
 TOOL_PAYLOAD_SENSOR_VARIABLE = "传感器状态_上位机[3].NO[6]"
+PLC_HARDWARE_PROFILE_REF = "szlab-mixer-plc-program@v1"
+PLC_HARDWARE_PROFILE_DIGEST = hashlib.sha256(
+    json.dumps(
+        {
+            "profile": PLC_HARDWARE_PROFILE_REF,
+            "driver": "plc-program-handshake",
+            "environment": "physical",
+        },
+        sort_keys=True,
+    ).encode("utf-8")
+).hexdigest()
+
+
 class CommandState(str, Enum):
     ACCEPTED = "ACCEPTED"
     RUNNING = "RUNNING"
@@ -58,6 +85,10 @@ class StandardRobotRequest:
     material_context: Mapping[str, Any]
     source: str = "unilabos"
     protocol_version: str = "unilab.robot/v1"
+    backend_id: str = "szlab.plc-program"
+    hardware_profile_ref: str = PLC_HARDWARE_PROFILE_REF
+    hardware_profile_digest: str = PLC_HARDWARE_PROFILE_DIGEST
+    execution_environment: Literal["physical", "simulation"] = "physical"
 
     def __post_init__(self) -> None:
         required = {
@@ -67,10 +98,16 @@ class StandardRobotRequest:
             "point_set_version": self.point_set_version,
             "payload_profile": self.payload_profile,
             "source_boot_id": self.source_boot_id,
+            "backend_id": self.backend_id,
+            "hardware_profile_ref": self.hardware_profile_ref,
+            "hardware_profile_digest": self.hardware_profile_digest,
+            "execution_environment": self.execution_environment,
         }
         missing = [name for name, value in required.items() if not isinstance(value, str) or not value.strip()]
         if missing:
             raise ValueError(f"标准机械臂请求缺少字段: {', '.join(missing)}")
+        if self.execution_environment not in {"physical", "simulation"}:
+            raise ValueError("execution_environment 只能是 physical/simulation")
         if len(self.command_id) > 128:
             raise ValueError("command_id 长度不能超过 128")
         if (
@@ -96,41 +133,15 @@ class StandardRobotRequest:
             "material_context": _jsonable(self.material_context),
             "source": self.source,
             "protocol_version": self.protocol_version,
+            "backend_id": self.backend_id,
+            "hardware_profile_ref": self.hardware_profile_ref,
+            "hardware_profile_digest": self.hardware_profile_digest,
+            "execution_environment": self.execution_environment,
         }
 
     def fingerprint(self) -> str:
         payload = json.dumps(self.to_dict(), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-
-@dataclass(frozen=True)
-class RobotCommand:
-    """传给 PLC/厂家 adapter 的完整标准化命令；不包含业务 SkillBinding。"""
-
-    kind: Literal["pick", "place"]
-    command_id: str
-    skill_id: str
-    station: str
-    site: str
-    controller_position: int
-    presence_variable: str
-    payload_profile: str
-    legacy_runner_name: str
-    legacy_parameters: Mapping[str, Any]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "kind": self.kind,
-            "command_id": self.command_id,
-            "skill_id": self.skill_id,
-            "station": self.station,
-            "site": self.site,
-            "controller_position": self.controller_position,
-            "presence_variable": self.presence_variable,
-            "payload_profile": self.payload_profile,
-            "legacy_runner_name": self.legacy_runner_name,
-            "legacy_parameters": dict(self.legacy_parameters),
-        }
 
 
 @dataclass(frozen=True)
@@ -143,12 +154,19 @@ class CommandRecord:
     output: Mapping[str, Any]
 
     def public_result(self) -> dict[str, Any]:
+        raw_action = self.output.get("resolved_site_action")
+        environment = "physical"
+        if isinstance(raw_action, Mapping):
+            environment = str(raw_action.get("execution_environment") or environment)
+        succeeded = self.state is CommandState.SUCCEEDED
         return {
             "command_id": str(self.request["command_id"]),
             "state": self.state.value,
-            "success": self.state is CommandState.SUCCEEDED,
+            "success": succeeded,
             "message": self.message,
             "boot_id": self.boot_id,
+            "execution_environment": environment,
+            "inventory_commit_allowed": succeeded and environment == "physical",
         }
 
 
@@ -157,6 +175,10 @@ class CommandConflictError(RuntimeError):
 
 
 class CommandSequenceError(RuntimeError):
+    pass
+
+
+class CommandUnresolvedError(RuntimeError):
     pass
 
 
@@ -223,6 +245,24 @@ class SZLabRobotCommandJournal:
                     raise CommandConflictError(f"command_id {request.command_id} 已被不同请求占用")
                 connection.commit()
                 return False, record
+
+            unresolved = connection.execute(
+                """
+                SELECT command_id FROM szlab_robot_commands_v1
+                WHERE state IN (?, ?, ?)
+                LIMIT 1
+                """,
+                (
+                    CommandState.ACCEPTED.value,
+                    CommandState.RUNNING.value,
+                    CommandState.UNKNOWN.value,
+                ),
+            ).fetchone()
+            if unresolved is not None:
+                raise CommandUnresolvedError(
+                    "存在未完成 ACCEPTED/RUNNING/UNKNOWN 命令，禁止新运动: "
+                    f"{unresolved['command_id']}"
+                )
 
             self._advance_sequence(connection, request)
             connection.execute(
@@ -331,11 +371,19 @@ class SZLabRobotCommandJournal:
             assert row is not None
             return _record_from_row(row)
 
-    def has_unknown(self) -> bool:
+    def has_unresolved(self) -> bool:
         with self._lock, self._connect() as connection:
             row = connection.execute(
-                "SELECT 1 FROM szlab_robot_commands_v1 WHERE state = ? LIMIT 1",
-                (CommandState.UNKNOWN.value,),
+                """
+                SELECT 1 FROM szlab_robot_commands_v1
+                WHERE state IN (?, ?, ?)
+                LIMIT 1
+                """,
+                (
+                    CommandState.ACCEPTED.value,
+                    CommandState.RUNNING.value,
+                    CommandState.UNKNOWN.value,
+                ),
             ).fetchone()
             return row is not None
 
@@ -359,55 +407,362 @@ class SZLabRobotCommandJournal:
             return cursor.rowcount
 
 
-class SZLabLegacyPLCAdapter:
-    """只消费 RobotCommand 的 SZLab PLC adapter；Legacy action 本身保持不变。"""
+class SZLabPLCExecutionAdapter:
+    """Existing PLC program handshake behind the shared execution Interfaces.
 
-    def __init__(self, owner: Any):
+    The owner may reach the PLC through OPC-UA, a TCP wrapper or a test channel;
+    that transport choice stays below this Adapter and does not change the
+    standard ``pick``/``place`` contract.
+    """
+
+    backend_id = "szlab.plc-program"
+
+    def __init__(
+        self,
+        owner: Any,
+        *,
+        permit_asserts_remote_auto: bool,
+        permit_asserts_safety_normal: bool,
+        motion_permit_variable: str,
+        tool_payload_sensor_variable: str,
+    ):
         self.owner = owner
+        self.permit_asserts_remote_auto = bool(permit_asserts_remote_auto)
+        self.permit_asserts_safety_normal = bool(permit_asserts_safety_normal)
+        self.motion_permit_variable = motion_permit_variable
+        self.tool_payload_sensor_variable = tool_payload_sensor_variable
+        self.backend_generation = str(uuid4())
+        self.capabilities = BackendCapabilities(
+            execution_environment="physical",
+            supports_controlled_cancel=False,
+            supports_restart_reconcile=False,
+        )
+        self.hardware_profile_ref = PLC_HARDWARE_PROFILE_REF
+        self.hardware_profile_digest = PLC_HARDWARE_PROFILE_DIGEST
+        self._resolved_bindings: dict[str, SiteControlBinding] = {}
 
-    def execute(self, command: RobotCommand) -> Mapping[str, Any]:
-        if command.station == "S071":
-            return self._execute_s071(command)
+    def resolve(
+        self,
+        *,
+        operation: Literal["pick", "place"],
+        command_id: str,
+        target_site: str,
+        material_id: str,
+        program_version: str,
+        point_set_version: str,
+        payload_profile: str,
+    ) -> ResolvedSiteAction:
+        self._validate_readiness(operation)
+        binding = resolve_canonical_site_reference(target_site)
+        if not binding.robot_action_ready:
+            raise ValueError(
+                binding.blocked_reason
+                or f"Site {target_site} 尚未启用标准机械臂动作"
+            )
+        expected_payload = _payload_profile_for_site(binding)
+        if payload_profile != expected_payload:
+            raise ValueError(
+                f"Site {canonical_site_reference(binding)} 要求负载 {expected_payload}, "
+                f"实际为 {payload_profile}"
+            )
 
-        runner = getattr(self.owner, command.legacy_runner_name, None)
+        station = binding.station
+        skill_station = station.lower()
+        program_ref = (
+            f"pick_from_{skill_station}"
+            if operation == "pick"
+            else f"place_to_{skill_station}"
+        )
+        arguments = _plc_program_arguments(binding)
+        command = RobotCommand(
+            command_id=command_id,
+            instruction=ProgramInvocation(program_ref, arguments),
+            program_version=program_version,
+            point_set_version=point_set_version,
+            payload_profile=payload_profile,
+        )
+        binding_digest = hashlib.sha256(
+            json.dumps(
+                {
+                    "binding_version": point_set_version,
+                    "site": canonical_site_reference(binding),
+                    "station": binding.station,
+                    "controller_position": binding.controller_position,
+                    "presence_variable": binding.presence_variable,
+                    "program_ref": program_ref,
+                    "arguments": arguments,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest()
+        self._resolved_bindings[command_id] = binding
+        return ResolvedSiteAction(
+            operation=operation,
+            target_site=canonical_site_reference(binding),
+            material_id=material_id,
+            backend_id=self.backend_id,
+            backend_generation=self.backend_generation,
+            hardware_profile_ref=self.hardware_profile_ref,
+            hardware_profile_digest=self.hardware_profile_digest,
+            execution_environment="physical",
+            binding_version=point_set_version,
+            binding_digest=binding_digest,
+            command=command,
+            completion_plan={
+                "site_sensor": binding.presence_variable,
+                "tool_sensor": self.tool_payload_sensor_variable,
+                "robot_home_variable": ROBOT_HOME_VARIABLE,
+                "expected_site_present": operation == "place",
+                "expected_tool_holding": operation == "pick",
+            },
+        )
+
+    def _validate_readiness(self, operation: Literal["pick", "place"]) -> None:
+        if not self.permit_asserts_remote_auto:
+            raise BackendRejectedError(
+                "未声明运动许可同时见证 REMOTE_AUTO，按 fail-closed 拒绝"
+            )
+        if not self.permit_asserts_safety_normal:
+            raise BackendRejectedError(
+                "未声明运动许可同时见证安全状态可运动，按 fail-closed 拒绝"
+            )
+        if not self.motion_permit_variable:
+            raise BackendRejectedError("未配置现有 PLC/机器人运动许可变量")
+        if not bool(
+            self.owner._read_variable(self.motion_permit_variable, use_cache=False)
+        ):
+            raise BackendRejectedError(
+                f"运动许可被拒绝: {self.motion_permit_variable}"
+            )
+        if not bool(self.owner._read_variable(ROBOT_HOME_VARIABLE, use_cache=False)):
+            raise BackendRejectedError("Robot_Home 未确认")
+        tool_holding = bool(
+            self.owner._read_variable(
+                self.tool_payload_sensor_variable,
+                use_cache=False,
+            )
+        )
+        if operation == "pick" and tool_holding:
+            raise BackendRejectedError("pick 前机械手夹爪已有物料")
+        if operation == "place" and not tool_holding:
+            raise BackendRejectedError("place 前机械手夹爪未见证持料")
+
+    def submit(self, command: RobotCommand) -> DispatchReceipt:
+        instruction = command.instruction
+        if not isinstance(instruction, ProgramInvocation):
+            raise BackendRejectedError("PLC Adapter 只接受 ProgramInvocation")
+        binding = self._resolved_bindings.get(command.command_id)
+        if binding is None:
+            raise BackendRejectedError("PLC 命令缺少本次启动中冻结的 SiteAccessBinding")
+        try:
+            result = self._execute_legacy(binding, instruction)
+        except (BackendRejectedError, DispatchUnknownError):
+            raise
+        except Exception as exc:
+            raise DispatchUnknownError(f"PLC 派发后结果不确定: {exc}") from exc
+
+        if not isinstance(result, Mapping):
+            return DispatchReceipt(
+                DispatchState.UNCERTAIN,
+                {"legacy_result": _jsonable(result)},
+            )
+        state = (
+            DispatchState.NOT_SENT
+            if not bool(result.get("success"))
+            and result.get("status") == "rejected"
+            else DispatchState.SENT
+        )
+        return DispatchReceipt(state, {"legacy_result": _jsonable(result)})
+
+    def _execute_legacy(
+        self,
+        binding: SiteControlBinding,
+        instruction: ProgramInvocation,
+    ) -> Any:
+        operation = "pick" if instruction.program_ref.startswith("pick_from_") else "place"
+        if operation == "place" and not instruction.program_ref.startswith("place_to_"):
+            raise BackendRejectedError(
+                f"PLC program_ref 不受支持: {instruction.program_ref}"
+            )
+        if binding.station == "S071":
+            return self._execute_s071(binding, operation)
+
+        runner_name = f"_run_{binding.station.lower()}_{operation}"
+        runner = getattr(self.owner, runner_name, None)
         if not callable(runner):
-            raise ValueError(f"标准命令没有 Legacy PLC runner: {command.legacy_runner_name}")
-        inspect.signature(runner).bind(**dict(command.legacy_parameters))
-        result = runner(**dict(command.legacy_parameters))
+            raise BackendRejectedError(f"标准命令没有 Legacy PLC runner: {runner_name}")
+        parameters = dict(instruction.arguments)
+        inspect.signature(runner).bind(**parameters)
+        result = runner(**parameters)
         if not isinstance(result, Mapping):
             return result
-        witness_key = "source_sensor_variable" if command.kind == "pick" else "target_sensor_variable"
-        if witness_key in result or not command.presence_variable:
+        witness_key = (
+            "source_sensor_variable"
+            if operation == "pick"
+            else "target_sensor_variable"
+        )
+        if witness_key in result or not binding.presence_variable:
             return result
-        return {**result, witness_key: command.presence_variable}
+        return {**result, witness_key: binding.presence_variable}
 
-    def _execute_s071(self, command: RobotCommand) -> Mapping[str, Any]:
+    def _execute_s071(
+        self,
+        binding: SiteControlBinding,
+        operation: Literal["pick", "place"],
+    ) -> Mapping[str, Any]:
         """标准路径按 2×3 紧凑编号下发；不改变 Legacy `_slot_number`。"""
 
-        is_pick = command.kind == "pick"
-        sensor = command.presence_variable
+        is_pick = operation == "pick"
+        sensor = binding.presence_variable
         return self.owner._submit_robot_task(
-            task=command.kind,
+            task=operation,
             station="S071",
             task_number=14 if is_pick else 13,
             variables=build_variables(
                 "pick_from_s071" if is_pick else "place_to_s071",
-                S071取放料编号=command.controller_position,
+                S071取放料编号=binding.controller_position,
             ),
             reset_variables={"S071取放料编号": 0, "任务号": 0},
             precheck=lambda: self.owner._ensure_sensor_gate(
                 sensor,
                 is_pick,
-                "S071 取粉罐源位必须有粉罐" if is_pick else "S071 放粉罐目标位必须为空",
+                "S071 取粉罐源位必须有粉罐"
+                if is_pick
+                else "S071 放粉罐目标位必须为空",
             ),
-            position=command.site.rsplit("/", maxsplit=1)[-1],
-            controller_position=command.controller_position,
-            **({"source_sensor_variable": sensor} if is_pick else {"target_sensor_variable": sensor}),
+            position=binding.site_label,
+            controller_position=binding.controller_position,
+            **(
+                {"source_sensor_variable": sensor}
+                if is_pick
+                else {"target_sensor_variable": sensor}
+            ),
         )
+
+    def observe(
+        self,
+        command: RobotCommand,
+        receipt: DispatchReceipt | None,
+    ) -> ExecutionObservation:
+        if receipt is None or receipt.state is DispatchState.UNCERTAIN:
+            return ExecutionObservation(
+                ObservationState.UNKNOWN,
+                "PLC 派发状态不确定，禁止自动重发",
+            )
+        legacy_result = receipt.output.get("legacy_result")
+        if receipt.state is DispatchState.NOT_SENT:
+            message = (
+                str(legacy_result.get("message"))
+                if isinstance(legacy_result, Mapping)
+                else "PLC 明确拒绝命令"
+            )
+            return ExecutionObservation(ObservationState.FAILED, message)
+        if not isinstance(legacy_result, Mapping):
+            return ExecutionObservation(
+                ObservationState.UNKNOWN,
+                "PLC 返回值不是对象，无法确认控制器终态",
+            )
+        if not bool(legacy_result.get("success")):
+            return ExecutionObservation(
+                ObservationState.UNKNOWN,
+                str(legacy_result.get("message") or "PLC 未确认动作成功"),
+                {"legacy_result": dict(legacy_result)},
+            )
+        return ExecutionObservation(
+            ObservationState.SUCCEEDED,
+            "PLC 程序报告完成",
+            {
+                "completion_value": _jsonable(
+                    legacy_result.get("completion_value")
+                )
+            },
+        )
+
+    def verify(
+        self,
+        action: ResolvedSiteAction,
+        execution: ExecutionObservation,
+    ) -> CompletionObservation:
+        if execution.state is not ObservationState.SUCCEEDED:
+            return CompletionObservation(
+                execution.state,
+                execution.message,
+                execution.evidence,
+            )
+        plan = action.completion_plan
+        site_sensor = str(plan.get("site_sensor") or "")
+        if not site_sensor:
+            return CompletionObservation(
+                ObservationState.UNKNOWN,
+                f"{action.operation} 缺少工位物料见证变量",
+            )
+        try:
+            site_present = bool(
+                self.owner._read_variable(site_sensor, use_cache=False)
+            )
+            tool_sensor = str(plan["tool_sensor"])
+            tool_holding = bool(
+                self.owner._read_variable(tool_sensor, use_cache=False)
+            )
+            robot_home_variable = str(plan["robot_home_variable"])
+            robot_home = bool(
+                self.owner._read_variable(robot_home_variable, use_cache=False)
+            )
+        except Exception as exc:
+            return CompletionObservation(
+                ObservationState.UNKNOWN,
+                f"完成后见证读取失败: {exc}",
+            )
+
+        expected_site = bool(plan["expected_site_present"])
+        expected_tool = bool(plan["expected_tool_holding"])
+        witnesses = {
+            "backend": self.backend_id,
+            "site_sensor": site_sensor,
+            "site_present": site_present,
+            "expected_site_present": expected_site,
+            "tool_sensor": tool_sensor,
+            "tool_holding": tool_holding,
+            "expected_tool_holding": expected_tool,
+            "robot_home": robot_home,
+            **dict(execution.evidence),
+        }
+        if site_present != expected_site or tool_holding != expected_tool or not robot_home:
+            return CompletionObservation(
+                ObservationState.UNKNOWN,
+                f"{action.operation} 完成见证不一致，保持 UNKNOWN，禁止自动重发",
+                witnesses,
+            )
+        return CompletionObservation(
+            ObservationState.SUCCEEDED,
+            f"{action.operation} 已由 PLC、工位在位、夹爪和 Robot_Home 共同见证",
+            witnesses,
+        )
+
+    def reconcile(
+        self,
+        command: RobotCommand,
+        receipt: DispatchReceipt | None,
+    ) -> ExecutionObservation:
+        if receipt is None:
+            return ExecutionObservation(
+                ObservationState.UNKNOWN,
+                "PLC 协议没有本命令的 controller identity/receipt，禁止仅凭当前传感器猜测成功",
+            )
+        return self.observe(command, receipt)
+
+    def cancel(
+        self,
+        command: RobotCommand,
+        receipt: DispatchReceipt | None,
+    ) -> bool:
+        del command, receipt
+        raise BackendRejectedError("当前 PLC 程序握手不声明受控取消能力")
 
 
 class SZLabStandardRobotGateway:
-    """Standard pick/place façade over the unchanged SZLab PLC handshake."""
+    """Durable standard pick/place façade over a composed execution Adapter."""
 
     def __init__(
         self,
@@ -423,16 +778,13 @@ class SZLabStandardRobotGateway:
         motion_permit_variable: str = ROBOT_WRITE_ALLOWED_VARIABLE,
         tool_payload_sensor_variable: str = TOOL_PAYLOAD_SENSOR_VARIABLE,
         execution_identity_provider: Callable[[], Mapping[str, str]] | None = None,
+        execution_backend: RobotExecutionAdapter | None = None,
     ):
         self.owner = owner
         self.program_version = program_version
         self.point_set_version = point_set_version
         self.payload_profiles = frozenset(payload_profiles)
         self.actions_enabled = bool(actions_enabled)
-        self.permit_asserts_remote_auto = bool(permit_asserts_remote_auto)
-        self.permit_asserts_safety_normal = bool(permit_asserts_safety_normal)
-        self.motion_permit_variable = motion_permit_variable
-        self.tool_payload_sensor_variable = tool_payload_sensor_variable
         self.execution_identity_provider = (
             execution_identity_provider or _capture_workflow_execution_identity
         )
@@ -440,8 +792,27 @@ class SZLabStandardRobotGateway:
         self._motion_lock = threading.RLock()
         self._sequence = time.monotonic_ns()
         self.journal = SZLabRobotCommandJournal(journal_path)
-        self.adapter = SZLabLegacyPLCAdapter(owner)
+        composition: RobotExecutionAdapter = execution_backend or SZLabPLCExecutionAdapter(
+            owner,
+            permit_asserts_remote_auto=permit_asserts_remote_auto,
+            permit_asserts_safety_normal=permit_asserts_safety_normal,
+            motion_permit_variable=motion_permit_variable,
+            tool_payload_sensor_variable=tool_payload_sensor_variable,
+        )
+        self.resolver = composition
+        self.backend = composition
+        self.completion_verifier = composition
         self.journal.mark_previous_boot_inflight_unknown(self.boot_id)
+
+    def replace_backend(self, backend: RobotExecutionAdapter) -> None:
+        """Composition hook used before actions start; never a runtime fallback."""
+
+        with self._motion_lock:
+            if self.journal.has_unresolved():
+                raise RuntimeError("存在 ACCEPTED/RUNNING/UNKNOWN 命令时禁止切换机械臂执行 Adapter")
+            self.resolver = backend
+            self.backend = backend
+            self.completion_verifier = backend
 
     def execute_site(
         self,
@@ -487,8 +858,74 @@ class SZLabStandardRobotGateway:
                 "workflow_identity": dict(workflow_identity),
             },
             source="unilabos-workflow-node-job",
+            backend_id=self.backend.backend_id,
+            hardware_profile_ref=str(self.backend.hardware_profile_ref),
+            hardware_profile_digest=str(self.backend.hardware_profile_digest),
+            execution_environment=(
+                self.backend.capabilities.execution_environment
+            ),
         )
         return self.execute(request)
+
+    def execute_simulation_site(
+        self,
+        *,
+        kind: Literal["pick", "place"],
+        target_site: str,
+        payload_profile: str,
+        fixture_id: str,
+    ) -> dict[str, Any]:
+        """Execute motion-only simulation without accepting production Material."""
+
+        if self.backend.capabilities.execution_environment != "simulation":
+            return _public_rejection(
+                "",
+                self.boot_id,
+                "simulation site motion 只允许 simulation HardwareProfile",
+            )
+        try:
+            workflow_identity = self.execution_identity_provider()
+            command_id = _workflow_node_command_id(workflow_identity)
+            canonical_site = canonical_site_reference(
+                resolve_canonical_site_reference(target_site)
+            )
+            normalized_fixture = str(fixture_id).strip()
+            if not normalized_fixture:
+                raise ValueError("simulation fixture_id 不能为空")
+        except (TypeError, ValueError) as exc:
+            return _public_rejection("", self.boot_id, str(exc))
+
+        existing = self.journal.get(command_id)
+        if existing is None:
+            self._sequence += 1
+            source_boot_id = self.boot_id
+            sequence = self._sequence
+        else:
+            source_boot_id = str(existing.request["source_boot_id"])
+            sequence = int(existing.request["monotonic_sequence"])
+        return self.execute(
+            StandardRobotRequest(
+                kind=kind,
+                command_id=command_id,
+                site=canonical_site,
+                program_version=self.program_version,
+                point_set_version=self.point_set_version,
+                payload_profile=payload_profile,
+                source_boot_id=source_boot_id,
+                monotonic_sequence=sequence,
+                material_context={
+                    "simulation_fixture_id": normalized_fixture,
+                    "workflow_identity": dict(workflow_identity),
+                },
+                source="unilabos-simulation-node-job",
+                backend_id=self.backend.backend_id,
+                hardware_profile_ref=str(self.backend.hardware_profile_ref),
+                hardware_profile_digest=str(self.backend.hardware_profile_digest),
+                execution_environment=(
+                    self.backend.capabilities.execution_environment
+                ),
+            )
+        )
 
     def execute(self, request: StandardRobotRequest) -> dict[str, Any]:
         with self._motion_lock:
@@ -497,22 +934,65 @@ class SZLabStandardRobotGateway:
     def _execute_locked(self, request: StandardRobotRequest) -> dict[str, Any]:
         existing = self.journal.get(request.command_id)
         if existing is not None:
+            if not self._request_matches_current_backend(existing.request):
+                return _public_rejection(
+                    request.command_id,
+                    self.boot_id,
+                    "command_id 属于不同 RobotExecutionBackend/HardwareProfile，禁止跨 profile 重放",
+                )
             if existing.request_hash != request.fingerprint():
                 return _public_rejection(request.command_id, self.boot_id, "command_id 已被不同请求占用")
             return existing.public_result()
-        if self.journal.has_unknown():
-            return _public_rejection(request.command_id, self.boot_id, "存在未对账 UNKNOWN 命令，禁止新运动")
+        if self.journal.has_unresolved():
+            return _public_rejection(
+                request.command_id,
+                self.boot_id,
+                "存在未完成 ACCEPTED/RUNNING/UNKNOWN 命令，禁止新运动",
+            )
 
         try:
             created, record = self.journal.accept(request, self.boot_id)
-        except (CommandConflictError, CommandSequenceError, ValueError, TypeError) as exc:
+        except (
+            CommandConflictError,
+            CommandSequenceError,
+            CommandUnresolvedError,
+            ValueError,
+            TypeError,
+        ) as exc:
             return _public_rejection(request.command_id, self.boot_id, str(exc))
         if not created:
             return record.public_result()
 
         try:
-            command = self._validate_request(request)
-        except (ValueError, TypeError, RuntimeError) as exc:
+            self._validate_request(request)
+            material = request.material_context.get("resource")
+            fixture_id = request.material_context.get("simulation_fixture_id")
+            if fixture_id is not None:
+                if self.backend.capabilities.execution_environment != "simulation":
+                    raise BackendRejectedError(
+                        "physical HardwareProfile 禁止使用 simulation fixture"
+                    )
+                material_id = f"simulation-fixture:{str(fixture_id)}"
+            else:
+                material_id = _resource_reference(material, field_name="resource")
+            resolved = self.resolver.resolve(
+                operation=request.kind,
+                command_id=request.command_id,
+                target_site=request.site,
+                material_id=material_id,
+                program_version=request.program_version,
+                point_set_version=request.point_set_version,
+                payload_profile=request.payload_profile,
+            )
+            if resolved.backend_id != self.backend.backend_id:
+                raise RuntimeError(
+                    "SiteActionResolver 与 RobotExecutionBackend backend_id 不一致"
+                )
+            if resolved.backend_generation != self.backend.backend_generation:
+                raise RuntimeError(
+                    "SiteActionResolver 与 RobotExecutionBackend generation 不一致"
+                )
+        except Exception as exc:
             return self.journal.update(
                 request.command_id,
                 CommandState.REJECTED,
@@ -520,50 +1000,83 @@ class SZLabStandardRobotGateway:
                 str(exc),
             ).public_result()
 
-        self.journal.update(
-            request.command_id,
-            CommandState.RUNNING,
-            self.boot_id,
-            "命令已下发到既有 SZLab PLC 握手驱动",
-        )
         try:
-            legacy_result = self.adapter.execute(command)
-        except Exception as exc:  # communication may have failed after dispatch
+            resolved_output = {"resolved_site_action": resolved.to_dict()}
+            self.journal.update(
+                request.command_id,
+                CommandState.RUNNING,
+                self.boot_id,
+                f"命令即将通过 {resolved.backend_id} 唯一派发",
+                resolved_output,
+            )
+        except Exception as exc:
+            return self.journal.update(
+                request.command_id,
+                CommandState.FAILED,
+                self.boot_id,
+                f"派发前无法冻结 ResolvedSiteAction: {exc}",
+            ).public_result()
+        try:
+            receipt = self.backend.submit(resolved.command)
+        except BackendRejectedError as exc:
+            return self.journal.update(
+                request.command_id,
+                CommandState.FAILED,
+                self.boot_id,
+                str(exc),
+                resolved_output,
+            ).public_result()
+        except Exception as exc:  # dispatch may have happened
             return self.journal.update(
                 request.command_id,
                 CommandState.UNKNOWN,
                 self.boot_id,
-                f"PLC 派发后结果不确定: {exc}",
+                f"{resolved.backend_id} 派发后结果不确定: {exc}",
+                resolved_output,
             ).public_result()
 
-        if not isinstance(legacy_result, Mapping):
+        try:
+            output = {
+                **resolved_output,
+                "dispatch_receipt": receipt.to_dict(),
+            }
+            # Persist the receipt before observation. If this or any later step
+            # fails, RUNNING itself is an unresolved fence and prevents resend.
+            self.journal.update(
+                request.command_id,
+                CommandState.RUNNING,
+                self.boot_id,
+                f"{resolved.backend_id} 已返回派发 receipt，正在独立观察与见证",
+                output,
+            )
+            execution = self.backend.observe(resolved.command, receipt)
+            completion = self.completion_verifier.verify(resolved, execution)
+            output["execution_observation"] = {
+                "state": execution.state.value,
+                "message": execution.message,
+                "evidence": dict(execution.evidence),
+            }
+            output["completion_observation"] = {
+                "state": completion.state.value,
+                "message": completion.message,
+                "witnesses": dict(completion.witnesses),
+            }
+            state = _command_state_from_observation(completion.state)
+            return self.journal.update(
+                request.command_id,
+                state,
+                self.boot_id,
+                completion.message,
+                output,
+            ).public_result()
+        except Exception as exc:
             return self.journal.update(
                 request.command_id,
                 CommandState.UNKNOWN,
                 self.boot_id,
-                "旧驱动返回值不是对象，无法确认物理结果",
-                {"legacy_result": _jsonable(legacy_result)},
+                f"派发后的观察/见证失败，结果不确定: {exc}",
+                locals().get("output", resolved_output),
             ).public_result()
-
-        output = {
-            "command": command.to_dict(),
-            "legacy_result": _jsonable(legacy_result),
-        }
-        if not bool(legacy_result.get("success")):
-            state = CommandState.REJECTED if legacy_result.get("status") == "rejected" else CommandState.UNKNOWN
-            message = str(legacy_result.get("message") or "旧驱动未确认动作成功")
-            return self.journal.update(request.command_id, state, self.boot_id, message, output).public_result()
-
-        witness_ok, witness_message, witnesses = self._observe_completion(request.kind, legacy_result)
-        output["witnesses"] = witnesses
-        state = CommandState.SUCCEEDED if witness_ok else CommandState.UNKNOWN
-        return self.journal.update(
-            request.command_id,
-            state,
-            self.boot_id,
-            witness_message,
-            output,
-        ).public_result()
 
     def get_command(self, command_id: str) -> dict[str, Any]:
         record = self.journal.get(command_id)
@@ -578,42 +1091,73 @@ class SZLabStandardRobotGateway:
         if record.state is not CommandState.UNKNOWN:
             return record.public_result()
 
-        legacy_result = record.output.get("legacy_result")
-        if not isinstance(legacy_result, Mapping):
+        raw_resolved = record.output.get("resolved_site_action")
+        raw_receipt = record.output.get("dispatch_receipt")
+        if not isinstance(raw_resolved, Mapping):
             return record.public_result()
-        kind = str(record.request.get("kind", ""))
-        if kind not in {"pick", "place"}:
+        try:
+            resolved = ResolvedSiteAction.from_dict(raw_resolved)
+            receipt = (
+                DispatchReceipt.from_dict(raw_receipt)
+                if isinstance(raw_receipt, Mapping)
+                else None
+            )
+        except (KeyError, TypeError, ValueError):
             return record.public_result()
-        witness_ok, witness_message, witnesses = self._observe_completion(kind, legacy_result)
-        if not witness_ok:
+        current_profile_digest = str(
+            getattr(self.backend, "hardware_profile_digest", "")
+        )
+        if (
+            resolved.backend_id != self.backend.backend_id
+            or resolved.backend_generation != self.backend.backend_generation
+            or resolved.hardware_profile_digest != current_profile_digest
+        ):
             return self.journal.update(
                 command_id,
                 CommandState.UNKNOWN,
                 self.boot_id,
-                witness_message,
-                {**record.output, "witnesses": witnesses},
+                "命令冻结的 Adapter generation/HardwareProfile 与当前 composition 不一致；禁止跨实例、跨环境对账",
+                record.output,
             ).public_result()
+        try:
+            execution = self.backend.reconcile(resolved.command, receipt)
+            completion = self.completion_verifier.verify(resolved, execution)
+        except Exception as exc:
+            return self.journal.update(
+                command_id,
+                CommandState.UNKNOWN,
+                self.boot_id,
+                f"对账 Adapter 异常，继续保持 UNKNOWN: {exc}",
+                record.output,
+            ).public_result()
+        state = _command_state_from_observation(completion.state)
         return self.journal.update(
             command_id,
-            CommandState.SUCCEEDED,
+            state,
             self.boot_id,
-            f"对账成功: {witness_message}",
-            {**record.output, "witnesses": witnesses},
+            (
+                f"对账成功: {completion.message}"
+                if state is CommandState.SUCCEEDED
+                else completion.message
+            ),
+            {
+                **record.output,
+                "execution_observation": {
+                    "state": execution.state.value,
+                    "message": execution.message,
+                    "evidence": dict(execution.evidence),
+                },
+                "completion_observation": {
+                    "state": completion.state.value,
+                    "message": completion.message,
+                    "witnesses": dict(completion.witnesses),
+                },
+            },
         ).public_result()
 
-    def _validate_request(self, request: StandardRobotRequest):
+    def _validate_request(self, request: StandardRobotRequest) -> None:
         if not self.actions_enabled:
             raise RuntimeError("标准 pick/place 尚未启用；必须先完成现场许可与见证映射验收")
-        if not self.permit_asserts_remote_auto:
-            raise RuntimeError("未声明运动许可同时见证 REMOTE_AUTO，按 fail-closed 拒绝")
-        if not self.permit_asserts_safety_normal:
-            raise RuntimeError("未声明运动许可同时见证安全状态可运动，按 fail-closed 拒绝")
-        if not self.motion_permit_variable:
-            raise RuntimeError("未配置现有 PLC/机器人运动许可变量")
-        if not bool(self.owner._read_variable(self.motion_permit_variable, use_cache=False)):
-            raise RuntimeError(f"运动许可被拒绝: {self.motion_permit_variable}")
-        if not bool(self.owner._read_variable(ROBOT_HOME_VARIABLE, use_cache=False)):
-            raise RuntimeError("Robot_Home 未确认")
         if request.program_version != self.program_version:
             raise ValueError(
                 f"程序版本不匹配: 请求 {request.program_version}, 已部署 {self.program_version}"
@@ -624,47 +1168,24 @@ class SZLabStandardRobotGateway:
             )
         if request.payload_profile not in self.payload_profiles:
             raise ValueError(f"负载配置不在允许列表: {request.payload_profile}")
+        if not self._request_matches_current_backend(request.to_dict()):
+            raise ValueError(
+                "请求冻结的 RobotExecutionBackend/HardwareProfile 与当前 composition 不一致"
+            )
 
-        command = _robot_command_from_request(request)
-
-        tool_holding = bool(self.owner._read_variable(self.tool_payload_sensor_variable, use_cache=False))
-        if request.kind == "pick" and tool_holding:
-            raise RuntimeError("pick 前机械手夹爪已有物料")
-        if request.kind == "place" and not tool_holding:
-            raise RuntimeError("place 前机械手夹爪未见证持料")
-        return command
-
-    def _observe_completion(
+    def _request_matches_current_backend(
         self,
-        kind: Literal["pick", "place"] | str,
-        legacy_result: Mapping[str, Any],
-    ) -> tuple[bool, str, dict[str, Any]]:
-        site_sensor_key = "source_sensor_variable" if kind == "pick" else "target_sensor_variable"
-        site_sensor = str(legacy_result.get(site_sensor_key) or "")
-        if not site_sensor:
-            return False, f"{kind} 缺少工位物料见证变量", {}
-        try:
-            site_present = bool(self.owner._read_variable(site_sensor, use_cache=False))
-            tool_holding = bool(self.owner._read_variable(self.tool_payload_sensor_variable, use_cache=False))
-            robot_home = bool(self.owner._read_variable(ROBOT_HOME_VARIABLE, use_cache=False))
-        except Exception as exc:
-            return False, f"完成后见证读取失败: {exc}", {}
-
-        expected_site = kind == "place"
-        expected_tool = kind == "pick"
-        witnesses = {
-            "site_sensor": site_sensor,
-            "site_present": site_present,
-            "expected_site_present": expected_site,
-            "tool_sensor": self.tool_payload_sensor_variable,
-            "tool_holding": tool_holding,
-            "expected_tool_holding": expected_tool,
-            "robot_home": robot_home,
-            "completion_value": _jsonable(legacy_result.get("completion_value")),
-        }
-        if site_present != expected_site or tool_holding != expected_tool or not robot_home:
-            return False, f"{kind} 完成见证不一致，保持 UNKNOWN，禁止自动重发", witnesses
-        return True, f"{kind} 已由 PLC 完成、工位在位、夹爪和 Robot_Home 共同见证", witnesses
+        request: Mapping[str, Any],
+    ) -> bool:
+        return (
+            str(request.get("backend_id") or "") == self.backend.backend_id
+            and str(request.get("hardware_profile_ref") or "")
+            == str(self.backend.hardware_profile_ref)
+            and str(request.get("hardware_profile_digest") or "")
+            == str(self.backend.hardware_profile_digest)
+            and str(request.get("execution_environment") or "")
+            == self.backend.capabilities.execution_environment
+        )
 
 
 def _record_from_row(row: sqlite3.Row) -> CommandRecord:
@@ -685,56 +1206,42 @@ def _public_rejection(command_id: str, boot_id: str, message: str) -> dict[str, 
         "success": False,
         "message": message,
         "boot_id": boot_id,
+        "execution_environment": "unknown",
+        "inventory_commit_allowed": False,
     }
 
 
-def _robot_command_from_request(request: StandardRobotRequest) -> RobotCommand:
-    binding = resolve_canonical_site_reference(request.site)
-    if not binding.robot_action_ready:
-        raise ValueError(binding.blocked_reason or f"Site {request.site} 尚未启用标准机械臂动作")
-    expected_payload = _payload_profile_for_site(binding)
-    if request.payload_profile != expected_payload:
-        raise ValueError(
-            f"Site {canonical_site_reference(binding)} 要求负载 {expected_payload}, "
-            f"实际为 {request.payload_profile}"
-        )
+def _plc_program_arguments(binding: SiteControlBinding) -> dict[str, Any]:
+    """Resolve one legacy Site binding into vendor-neutral program arguments."""
 
     station = binding.station
-    skill_station = station.lower()
-    skill_id = f"pick_from_{skill_station}" if request.kind == "pick" else f"place_to_{skill_station}"
-    legacy_runner_name = f"_run_{skill_station}_{request.kind}"
-    legacy_parameters: dict[str, Any]
     if station in {"S02", "S04", "S10"}:
-        legacy_parameters = {"position": binding.controller_position}
-    elif station in {"S03", "S11"}:
-        legacy_parameters = {
+        return {"position": binding.controller_position}
+    if station in {"S03", "S11"}:
+        return {
             "product_type": binding.product_type,
             "position": binding.sensor_key,
         }
-    elif station == "S072":
-        legacy_parameters = {
+    if station == "S072":
+        return {
             "product_type": binding.product_type,
             "position": binding.controller_position,
         }
-    elif station == "S071":
-        legacy_parameters = {"position": binding.sensor_key}
-    elif station in {"S05", "S06"}:
-        legacy_parameters = {}
-    else:
-        raise ValueError(f"标准机械臂 Site 尚未绑定动作: {canonical_site_reference(binding)}")
-
-    return RobotCommand(
-        kind=request.kind,
-        command_id=request.command_id,
-        skill_id=skill_id,
-        station=station,
-        site=canonical_site_reference(binding),
-        controller_position=binding.controller_position,
-        presence_variable=binding.presence_variable,
-        payload_profile=request.payload_profile,
-        legacy_runner_name=legacy_runner_name,
-        legacy_parameters=legacy_parameters,
+    if station == "S071":
+        return {"position": binding.sensor_key}
+    if station in {"S05", "S06"}:
+        return {}
+    raise ValueError(
+        f"标准机械臂 Site 尚未绑定动作: {canonical_site_reference(binding)}"
     )
+
+
+def _command_state_from_observation(state: ObservationState) -> CommandState:
+    if state is ObservationState.SUCCEEDED:
+        return CommandState.SUCCEEDED
+    if state is ObservationState.FAILED:
+        return CommandState.FAILED
+    return CommandState.UNKNOWN
 
 
 def _payload_profile_for_site(binding: SiteControlBinding) -> str:

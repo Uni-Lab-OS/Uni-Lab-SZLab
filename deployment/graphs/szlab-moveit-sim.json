@@ -1,0 +1,78 @@
+{
+  "nodes": [
+    {
+      "id": "powder_container_warehouse",
+      "uuid": "fa7b0692-2e78-5d5e-b789-9b0dfffb5dc7",
+      "name": "MoveIt 仿真粉桶仓",
+      "children": ["debug_powder_container"],
+      "parent": null,
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_poly_powder_container_placeholder_warehouse",
+      "position": {"x": 1800, "y": 700, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "s07_process_warehouse",
+      "uuid": "b6c71c10-4b75-55c9-8789-2fdcda682361",
+      "name": "MoveIt 仿真 S07 转盘仓",
+      "children": [],
+      "parent": null,
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s07_process_warehouse",
+      "position": {"x": 1500, "y": 1500, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "debug_powder_container",
+      "uuid": "2105ae5c-31ed-5218-926c-56661c57318f",
+      "name": "MoveIt 仿真粉罐",
+      "children": [],
+      "parent": "powder_container_warehouse",
+      "type": "container",
+      "class": "community.szlab_poly_studio.szlab_powder_container",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {"sample_id": "moveit-sim-powder"}
+    },
+    {
+      "id": "szlab_mixer_robot",
+      "name": "SZLab MoveIt 仿真机械臂",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_robot",
+      "position": {"x": 500, "y": 1500, "z": 0},
+      "config": {
+        "standard_execution_backend": "moveit_sim",
+        "standard_actions_enabled": true,
+        "standard_program_version": "szlab-mixer-moveit-sim@v1",
+        "standard_point_set_version": "szlab-mixer-moveit-sim-demo@v1",
+        "standard_moveit_binding_version": "szlab-mixer-moveit-sim-bindings@v1",
+        "standard_moveit_hardware_profile_ref": "szlab-mixer-moveit-sim@v1",
+        "standard_moveit_simulation_only": true,
+        "standard_moveit_speed": 0.1,
+        "standard_moveit_final_joint_tolerance": 0.01,
+        "standard_moveit_site_targets": {
+          "powder_container_warehouse/L1C1": {
+            "pick": [
+              [0.2, 0.0, -0.6, 1.2, 0.0, 0.6, 0.0],
+              [0.4, 0.2, -0.7, 1.1, 0.1, 0.5, 0.0],
+              [0.2, 0.0, -0.6, 1.2, 0.0, 0.6, 0.0]
+            ]
+          },
+          "s07_process_warehouse/P01": {
+            "place": [
+              [0.8, -0.2, -0.6, 1.0, -0.1, 0.5, 0.0],
+              [1.0, -0.2, -0.7, 1.1, -0.1, 0.4, 0.0],
+              [0.8, -0.2, -0.6, 1.0, -0.1, 0.5, 0.0]
+            ]
+          }
+        }
+      },
+      "data": {"status": "Idle"}
+    }
+  ],
+  "links": []
+}

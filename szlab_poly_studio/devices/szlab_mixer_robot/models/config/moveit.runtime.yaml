@@ -1,0 +1,25 @@
+schema: unilab.moveit/v1
+robot:
+  entry: ../device.xacro
+  macro: szlab_mixer_robot
+  arguments:
+    parent_link: world
+semantic:
+  entry: macro.srdf.xacro
+  macro: szlab_mixer_robot_srdf
+ros2_control:
+  entry: macro.ros2_control.xacro
+  macro: szlab_mixer_robot_ros2_control
+configs:
+  move_group: move_group.json
+  kinematics: kinematics.yaml
+  joint_limits: joint_limits.yaml
+  moveit_controllers: moveit_controllers.yaml
+  ros2_controllers: ros2_controllers.yaml
+  moveit_planners: moveit_planners.yaml
+runtime:
+  hardware_profile_ref: szlab-mixer-moveit-sim@v1
+  environment: simulation
+  ros2_control_plugin: mock_components/GenericSystem
+  use_sim_time: false
+  rviz_required: false

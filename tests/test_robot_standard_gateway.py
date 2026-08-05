@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
+
+import pytest
 
 from szlab_poly_studio.common.site_control_bindings import (
     resolve_s07_process_site,
@@ -13,8 +16,17 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
 from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
     TOOL_PAYLOAD_SENSOR_VARIABLE,
     StandardRobotRequest,
+    CommandUnresolvedError,
+    SZLabRobotCommandJournal,
     SZLabStandardRobotGateway,
     _payload_profile_for_resource,
+)
+from szlab_poly_studio.devices.szlab_mixer_robot.execution_backend import (
+    MotionSequence,
+    RobotCommand,
+)
+from szlab_poly_studio.devices.szlab_mixer_robot.moveit_execution import (
+    SZLabMoveItExecutionAdapter,
 )
 
 SOURCE_SENSOR = resolve_s071_site("L1C1").presence_variable
@@ -72,6 +84,61 @@ class FakeLegacyRobot:
         }
 
 
+class FakeMoveItClient:
+    def __init__(self) -> None:
+        self.dispatch_count = 0
+        self.positions = (0.0,) * 7
+
+    def ready(self) -> bool:
+        return True
+
+    def execute_joint_target(
+        self,
+        *,
+        planning_group,
+        joint_names,
+        joint_positions,
+    ) -> bool:
+        assert planning_group == "arm"
+        assert len(joint_names) == 7
+        self.dispatch_count += 1
+        self.positions = tuple(joint_positions)
+        return True
+
+    def current_joint_positions(self, joint_names):
+        assert len(joint_names) == 7
+        return self.positions
+
+
+def moveit_adapter(client: FakeMoveItClient) -> SZLabMoveItExecutionAdapter:
+    return SZLabMoveItExecutionAdapter(
+        client,
+        site_targets={
+            "powder_container_warehouse/L1C1": {
+                "pick": [
+                    [0.10, 0.00, -0.30, 0.60, 0.00, 0.20, 0.00],
+                    [0.15, 0.00, -0.25, 0.55, 0.00, 0.20, 0.00],
+                ],
+                "place": [
+                    [0.15, 0.00, -0.25, 0.55, 0.00, 0.20, 0.00],
+                    [0.10, 0.00, -0.30, 0.60, 0.00, 0.20, 0.00],
+                ],
+            }
+        },
+        joint_names=(
+            "arm_base_joint",
+            "eco65_joint_1",
+            "eco65_joint_2",
+            "eco65_joint_3",
+            "eco65_joint_4",
+            "eco65_joint_5",
+            "eco65_joint_6",
+        ),
+        binding_version="moveit-test@v1",
+        simulation_only=True,
+    )
+
+
 def gateway(tmp_path, robot: FakeLegacyRobot, **overrides) -> SZLabStandardRobotGateway:
     config = {
         "journal_path": str(tmp_path / "commands.sqlite3"),
@@ -110,6 +177,16 @@ def request(
             "source_device": "powder-stack",
             "target_device": "s07",
         },
+    )
+
+
+def request_for_adapter(adapter, **kwargs) -> StandardRobotRequest:
+    return replace(
+        request(**kwargs),
+        backend_id=adapter.backend_id,
+        hardware_profile_ref=adapter.hardware_profile_ref,
+        hardware_profile_digest=adapter.hardware_profile_digest,
+        execution_environment=adapter.capabilities.execution_environment,
     )
 
 
@@ -232,7 +309,7 @@ def test_unknown_witness_is_not_automatically_redispatched(tmp_path) -> None:
     assert first["state"] == "UNKNOWN"
     assert second == first
     assert blocked_new["state"] == "REJECTED"
-    assert "未对账 UNKNOWN" in blocked_new["message"]
+    assert "ACCEPTED/RUNNING/UNKNOWN" in blocked_new["message"]
     assert robot.dispatch_count == 1
 
 
@@ -299,3 +376,185 @@ def test_pick_then_place_use_distinct_ids_and_increasing_sequence(tmp_path) -> N
 
     assert placed["state"] == "SUCCEEDED"
     assert robot.dispatch_count == 2
+
+
+def test_moveit_adapter_uses_same_gateway_without_reading_plc_variables(tmp_path) -> None:
+    class NoPLC:
+        def _read_variable(self, *args, **kwargs):
+            raise AssertionError("MoveIt Adapter 不得读取 PLC 变量")
+
+    client = FakeMoveItClient()
+    adapter = moveit_adapter(client)
+    target = gateway(
+        tmp_path,
+        NoPLC(),
+        execution_backend=adapter,
+    )
+
+    first = target.execute(request_for_adapter(adapter))
+    replay = target.execute(request_for_adapter(adapter))
+
+    assert first["state"] == "SUCCEEDED"
+    assert replay == first
+    assert client.dispatch_count == 2  # two approved segments, dispatched once each
+
+
+def test_moveit_final_joint_mismatch_remains_unknown_and_is_not_resent(tmp_path) -> None:
+    client = FakeMoveItClient()
+    adapter = moveit_adapter(client)
+    target = gateway(tmp_path, object(), execution_backend=adapter)
+
+    original_current = client.current_joint_positions
+    client.current_joint_positions = lambda joint_names: (9.0,) * 7  # type: ignore[method-assign]
+    first = target.execute(request_for_adapter(adapter))
+    replay = target.execute(request_for_adapter(adapter))
+    client.current_joint_positions = original_current  # type: ignore[method-assign]
+
+    assert first["state"] == "UNKNOWN"
+    assert replay == first
+    assert client.dispatch_count == 2
+
+
+def test_robot_command_wire_shape_contains_no_site_material_or_transport_fields() -> None:
+    command = RobotCommand(
+        command_id="cmd-001",
+        instruction=MotionSequence(
+            planning_group="arm",
+            joint_names=("j1", "j2"),
+            joint_targets=((0.0, 0.0), (0.1, -0.1)),
+        ),
+        program_version="moveit-program@v1",
+        point_set_version="moveit-points@v1",
+        payload_profile="powder_container@v1",
+    ).to_dict()
+    serialized = str(command).lower()
+
+    for forbidden in (
+        "warehouse",
+        "material",
+        "site",
+        "register",
+        "presence_variable",
+        "legacy_runner",
+        "tcp_host",
+        "ros_action",
+    ):
+        assert forbidden not in serialized
+
+
+def test_observation_exception_becomes_unknown_and_fences_new_motion(tmp_path) -> None:
+    client = FakeMoveItClient()
+    adapter = moveit_adapter(client)
+    adapter.observe = lambda command, receipt: (_ for _ in ()).throw(  # type: ignore[method-assign]
+        RuntimeError("observation exploded")
+    )
+    target = gateway(tmp_path, object(), execution_backend=adapter)
+
+    first = target.execute(request_for_adapter(adapter))
+    blocked = target.execute(
+        request_for_adapter(adapter, command_id="pick-002", sequence=2)
+    )
+
+    assert first["state"] == "UNKNOWN"
+    assert "观察/见证失败" in first["message"]
+    assert blocked["state"] == "REJECTED"
+    assert client.dispatch_count == 2
+
+
+def test_verifier_exception_becomes_unknown_and_fences_new_motion(tmp_path) -> None:
+    client = FakeMoveItClient()
+    adapter = moveit_adapter(client)
+    adapter.verify = lambda action, execution: (_ for _ in ()).throw(  # type: ignore[method-assign]
+        RuntimeError("verification exploded")
+    )
+    target = gateway(tmp_path, object(), execution_backend=adapter)
+
+    first = target.execute(request_for_adapter(adapter))
+    blocked = target.execute(
+        request_for_adapter(adapter, command_id="pick-002", sequence=2)
+    )
+
+    assert first["state"] == "UNKNOWN"
+    assert blocked["state"] == "REJECTED"
+    assert client.dispatch_count == 2
+
+
+def test_moveit_rejects_non_finite_target_and_tolerance() -> None:
+    client = FakeMoveItClient()
+    try:
+        SZLabMoveItExecutionAdapter(
+            client,
+            site_targets={},
+            joint_names=("j1",),
+            binding_version="test@v1",
+            simulation_only=True,
+            final_joint_tolerance=float("nan"),
+        )
+    except ValueError as exc:
+        assert "有限正数" in str(exc)
+    else:
+        raise AssertionError("NaN tolerance 必须 fail-closed")
+
+    try:
+        MotionSequence(
+            planning_group="arm",
+            joint_names=("j1",),
+            joint_targets=((float("inf"),),),
+        )
+    except ValueError as exc:
+        assert "有限数" in str(exc)
+    else:
+        raise AssertionError("Inf joint target 必须 fail-closed")
+
+
+def test_accept_checks_unresolved_fence_inside_one_sqlite_transaction(tmp_path) -> None:
+    path = tmp_path / "shared.sqlite3"
+    first = SZLabRobotCommandJournal(path)
+    second = SZLabRobotCommandJournal(path)
+
+    created, _ = first.accept(request(command_id="pick-a", sequence=1), "edge-a")
+    assert created is True
+    with pytest.raises(CommandUnresolvedError):
+        second.accept(request(command_id="pick-b", sequence=2), "edge-b")
+
+
+def test_simulation_request_contains_fixture_not_production_resource(tmp_path) -> None:
+    client = FakeMoveItClient()
+    target = gateway(
+        tmp_path,
+        object(),
+        execution_backend=moveit_adapter(client),
+    )
+
+    result = target.execute_simulation_site(
+        kind="pick",
+        target_site="powder_container_warehouse/L1C1",
+        payload_profile="powder_container@v1",
+        fixture_id="fixture-001",
+    )
+    record = target.journal.get(result["command_id"])
+
+    assert result["state"] == "SUCCEEDED"
+    assert result["inventory_commit_allowed"] is False
+    assert record is not None
+    assert record.request["material_context"]["simulation_fixture_id"] == "fixture-001"
+    assert "resource" not in record.request["material_context"]
+
+
+def test_completed_command_cannot_replay_across_hardware_profiles(tmp_path) -> None:
+    robot = FakeLegacyRobot()
+    plc_gateway = gateway(tmp_path, robot)
+    assert plc_gateway.execute(request())["state"] == "SUCCEEDED"
+
+    client = FakeMoveItClient()
+    adapter = moveit_adapter(client)
+    moveit_gateway = gateway(
+        tmp_path,
+        object(),
+        execution_backend=adapter,
+    )
+    replay = moveit_gateway.execute(request_for_adapter(adapter))
+
+    assert replay["state"] == "REJECTED"
+    assert "跨 profile" in replay["message"]
+    assert client.dispatch_count == 0

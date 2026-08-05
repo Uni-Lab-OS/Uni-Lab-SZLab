@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
 from szlab_poly_studio.common.plc_gateway import (
     PLCActionGateway,
+    PLCVariableTransport,
     UnifiedPLCGatewayMixin,
 )
 from szlab_poly_studio.devices.szlab_mixer_photoshotting.device import (
@@ -65,6 +67,7 @@ def test_plc_action_gateway_delegates_to_the_single_plc_device() -> None:
         command_timeout=12.0,
         server_wait_timeout=3.0,
     )
+    assert isinstance(gateway, PLCVariableTransport)
 
     assert gateway.read_variable("A", use_cache=False) == 42
     assert gateway.write_variable("A", 7) is True
@@ -121,3 +124,36 @@ def test_every_plc_attached_device_uses_the_unified_gateway(
     assert isinstance(device._plc_gateway, PLCActionGateway)
     assert getattr(device, "_client", device._plc_gateway) is device._plc_gateway
     assert ros_node.calls == []
+
+
+def test_moveit_sim_profile_cannot_use_legacy_plc_read_or_write() -> None:
+    class InjectedPLC:
+        def __init__(self) -> None:
+            self.writes: list[tuple[str, Any]] = []
+
+        def read_variable(self, node_name: str, use_cache: bool = True) -> Any:
+            return True
+
+        def write_variable(self, node_name: str, value: Any) -> bool:
+            self.writes.append((node_name, value))
+            return True
+
+    transport = InjectedPLC()
+    device = SzlabMixerRobotDevice(
+        plc_gateway=transport,
+        standard_execution_backend="moveit_sim",
+    )
+
+    with pytest.raises(RuntimeError, match="禁止 legacy PLC 动作"):
+        device._write_variable("任务号", 1)
+    with pytest.raises(RuntimeError, match="禁止 legacy PLC 动作"):
+        device._read_variable("Robot_Home", use_cache=False)
+    assert transport.writes == []
+
+    injected_moveit = SzlabMixerRobotDevice(
+        plc_gateway=transport,
+        standard_execution_adapter=SimpleNamespace(backend_id="szlab.moveit"),
+    )
+    with pytest.raises(RuntimeError, match="禁止 legacy PLC 动作"):
+        injected_moveit._write_variable("任务号", 2)
+    assert transport.writes == []

@@ -35,6 +35,13 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_WRITE_ALLOWED_VARIABLE,
     ROBOT_WRITE_DONE_VARIABLE,
 )
+from szlab_poly_studio.devices.szlab_mixer_robot.execution_backend import (
+    RobotExecutionAdapter,
+)
+from szlab_poly_studio.devices.szlab_mixer_robot.moveit_execution import (
+    SZLabMoveItExecutionAdapter,
+    UniLabOSMoveItJointClient,
+)
 from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import SZLabStandardRobotGateway
 from szlab_poly_studio.resources.materials import beaker_500ml, sample_vial_250ml
 
@@ -57,6 +64,8 @@ class StandardRobotActionStatus(TypedDict):
     success: bool
     message: str
     boot_id: str
+    execution_environment: Literal["physical", "simulation", "unknown"]
+    inventory_commit_allowed: bool
 
 
 class StandardRobotTransferStatus(TypedDict):
@@ -114,7 +123,7 @@ class PourBeakerIntoVialStatus(TypedDict):
     id="szlab_mixer_robot",
     display_name="SZLab Mixer 机器人任务",
     category=["robotic_arm"],
-    description="SZLab Mixer 机器人任务设备，负责向 PLC 下发 S01-S11 取放料任务号",
+    description="SZLab Mixer 机器人任务设备；生产 PLC 程序与 MoveIt 仿真点位运动使用显式执行 profile",
     model={
         "format": "xacro",
         "entry": "models/device.xacro",
@@ -124,6 +133,10 @@ class PourBeakerIntoVialStatus(TypedDict):
         "shape": {
             "format": "unilab.shape/v1",
             "entry": "models/shape.yml",
+        },
+        "moveit": {
+            "format": "unilab.moveit/v1",
+            "entry": "models/config/moveit.runtime.yaml",
         },
     },
 )
@@ -161,9 +174,23 @@ class SzlabMixerRobotDevice(
         standard_permit_asserts_remote_auto: bool = False,
         standard_permit_asserts_safety_normal: bool = False,
         standard_tool_payload_sensor_variable: str = "传感器状态_上位机[3].NO[6]",
+        standard_execution_backend: str = "plc_program",
+        standard_execution_adapter: RobotExecutionAdapter | None = None,
+        standard_moveit_site_targets: dict[str, Any] | None = None,
+        standard_moveit_binding_version: str = "szlab-mixer-moveit-bindings@v1",
+        standard_moveit_simulation_only: bool = False,
+        standard_moveit_final_joint_tolerance: float = 0.01,
+        standard_moveit_speed: float = 0.1,
+        standard_moveit_hardware_profile_ref: str = "szlab-mixer-moveit-sim@v1",
         *args,
         **kwargs,
     ):
+        execution_backend = str(standard_execution_backend).strip().lower()
+        if execution_backend not in {"plc_program", "moveit_sim"}:
+            raise ValueError(
+                "当前 standard_execution_backend 只允许 plc_program/moveit_sim；"
+                "MoveIt 实机 HardwareProfile 与安全许可尚未实现"
+            )
         self.timeout = float(timeout)
         self.write_allowed_timeout = float(write_allowed_timeout)
         self.poll_interval = float(poll_interval)
@@ -196,31 +223,120 @@ class SzlabMixerRobotDevice(
             "motion_permit_variable": standard_motion_permit_variable,
             "tool_payload_sensor_variable": standard_tool_payload_sensor_variable,
         }
+        self._standard_execution_backend = execution_backend
+        self._standard_execution_adapter = standard_execution_adapter
+        self._standard_moveit_site_targets = dict(standard_moveit_site_targets or {})
+        self._standard_moveit_binding_version = standard_moveit_binding_version
+        self._standard_moveit_simulation_only = bool(
+            standard_moveit_simulation_only or execution_backend == "moveit_sim"
+        )
+        self._standard_moveit_final_joint_tolerance = float(
+            standard_moveit_final_joint_tolerance
+        )
+        self._standard_moveit_speed = float(standard_moveit_speed)
+        self._standard_moveit_hardware_profile_ref = (
+            standard_moveit_hardware_profile_ref
+        )
         self._standard_gateway_instance: SZLabStandardRobotGateway | None = None
         self._standard_gateway_lock = threading.Lock()
 
     @not_action
+    def post_init(self, ros_node: Any) -> None:
+        """Compose one execution Adapter; never auto-fallback during operation."""
+
+        if self._standard_execution_adapter is not None:
+            # Injected compositions own their transport/runtime dependencies.
+            # Never infer a PLC connection from the constructor default.
+            return
+        if self._standard_execution_backend == "plc_program":
+            UnifiedPLCGatewayMixin.post_init(self, ros_node)
+            return
+
+        joint_names = (
+            "arm_base_joint",
+            "eco65_joint_1",
+            "eco65_joint_2",
+            "eco65_joint_3",
+            "eco65_joint_4",
+            "eco65_joint_5",
+            "eco65_joint_6",
+        )
+        client = UniLabOSMoveItJointClient(
+            ros_node,
+            joint_names=joint_names,
+            base_link_name="arm_slideway",
+            end_effector_name="eco65_link_6",
+            planning_group="arm",
+            speed=self._standard_moveit_speed,
+            execution_timeout=self.timeout,
+        )
+        adapter = SZLabMoveItExecutionAdapter(
+            client,
+            site_targets=self._standard_moveit_site_targets,
+            joint_names=joint_names,
+            planning_group="arm",
+            binding_version=self._standard_moveit_binding_version,
+            simulation_only=self._standard_moveit_simulation_only,
+            final_joint_tolerance=self._standard_moveit_final_joint_tolerance,
+            hardware_profile_ref=self._standard_moveit_hardware_profile_ref,
+        )
+        self._standard_execution_adapter = adapter
+        if self._standard_gateway_instance is not None:
+            self._standard_gateway_instance.replace_backend(adapter)
+
+    @not_action
     def _standard_gateway(self) -> SZLabStandardRobotGateway:
+        if (
+            self._standard_execution_backend != "plc_program"
+            and self._standard_execution_adapter is None
+        ):
+            raise RuntimeError(
+                "MoveIt execution Adapter 尚未由 ROS post_init 完成组合；禁止静默回退 PLC"
+            )
         if self._standard_gateway_instance is None:
             with self._standard_gateway_lock:
                 if self._standard_gateway_instance is None:
                     self._standard_gateway_instance = SZLabStandardRobotGateway(
                         self,
+                        execution_backend=self._standard_execution_adapter,
                         **self._standard_gateway_config,
                     )
         return self._standard_gateway_instance
 
     @not_action
     def _write_variable(self, name: str, value: Any) -> None:
+        self._require_plc_program_profile()
         if self._plc_gateway is None:
             raise RuntimeError("机器人任务需要注入 szlab_poly_plc 网关")
         self._plc_gateway.write_variable(name, value)
 
     @not_action
     def _read_variable(self, name: str, use_cache: bool = False) -> Any:
+        self._require_plc_program_profile()
         if self._plc_gateway is None:
             raise RuntimeError("机器人任务需要注入 szlab_poly_plc 网关")
         return self._plc_gateway.read_variable(name, use_cache=use_cache)
+
+    @not_action
+    def _require_plc_program_profile(self) -> None:
+        composed = None
+        if self._standard_gateway_instance is not None:
+            composed = self._standard_gateway_instance.backend
+        elif self._standard_execution_adapter is not None:
+            composed = self._standard_execution_adapter
+        backend_id = (
+            str(getattr(composed, "backend_id", ""))
+            if composed is not None
+            else (
+                "szlab.plc-program"
+                if self._standard_execution_backend == "plc_program"
+                else ""
+            )
+        )
+        if backend_id != "szlab.plc-program":
+            raise RuntimeError(
+                "当前 HardwareProfile 不是 plc_program；禁止 legacy PLC 动作绕过 RobotExecutionBackend"
+            )
 
     @not_action
     def _wait_variable_equal(
@@ -536,6 +652,7 @@ class SzlabMixerRobotDevice(
         verify_reset: bool = False,
         **data: Any,
     ) -> dict[str, Any]:
+        self._require_plc_program_profile()
         reset_variables = reset_variables or {ROBOT_TASK_NUMBER_VARIABLE: 0}
         try:
             pre_sensor_conditions, post_sensor_conditions = self._robot_sensor_requirements(task, station, data)
@@ -713,6 +830,7 @@ class SzlabMixerRobotDevice(
         warehouse: ResourceSlot,
         site: str,
     ) -> StandardRobotTransferStatus:
+        self._require_physical_inventory_backend()
         result = self._standard_gateway().execute_site(
             kind="pick",
             resource=resource,
@@ -733,6 +851,7 @@ class SzlabMixerRobotDevice(
         warehouse: ResourceSlot,
         site: str,
     ) -> StandardRobotTransferStatus:
+        self._require_physical_inventory_backend()
         result = self._standard_gateway().execute_site(
             kind="place",
             resource=resource,
@@ -748,6 +867,7 @@ class SzlabMixerRobotDevice(
         warehouse: ResourceSlot,
         site: str,
     ) -> BeakerRobotTransferStatus:
+        self._require_physical_inventory_backend()
         result = self._standard_gateway().execute_site(
             kind="pick",
             resource=beaker,
@@ -755,6 +875,37 @@ class SzlabMixerRobotDevice(
             site=site,
         )
         return {**result, "beaker": beaker}
+
+    @not_action
+    def _require_physical_inventory_backend(self) -> None:
+        gateway = self._standard_gateway()
+        if gateway.backend.capabilities.execution_environment != "physical":
+            raise RuntimeError(
+                "MoveIt 仿真只允许 simulate_site_motion；标准 pick/place 会把 ResourceSlot 传给生产 Inventory，已按 fail-closed 阻止"
+            )
+
+    @action(
+        description=(
+            "MoveIt 仿真点位运动：只移动到配置的 pick/place 关节序列，不执行真实夹爪、"
+            "不返回 ResourceSlot、不得提交生产 Inventory"
+        )
+    )
+    def simulate_site_motion(
+        self,
+        operation: Literal["pick", "place"],
+        target_site: str,
+        payload_profile: str = "powder_container@v1",
+        fixture_id: str = "moveit-sim-fixture",
+    ) -> StandardRobotActionStatus:
+        gateway = self._standard_gateway()
+        if gateway.backend.capabilities.execution_environment != "simulation":
+            raise RuntimeError("simulate_site_motion 只允许 simulation HardwareProfile")
+        return gateway.execute_simulation_site(
+            kind=operation,
+            target_site=target_site,
+            payload_profile=payload_profile,
+            fixture_id=fixture_id,
+        )
 
     @action(always_free=True, description="查询标准机械臂命令；不会重新下发运动")
     def get_command(self, command_id: str) -> StandardRobotActionStatus:

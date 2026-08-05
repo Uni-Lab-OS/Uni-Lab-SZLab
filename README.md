@@ -74,7 +74,22 @@ OPC UA 仿真与 Edge 联调可直接使用 5 节点演示工作流
 `szlab_poly_studio/workflows/robot_liquid_stirring_demo.py`；对应握手器启动命令见
 [`docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md`](docs/SZLAB_OPCUA_SIM_STARTUP_DEBUG.md)。
 
-默认图中的直连 PLC 驱动均为 `auto_connect: false`。真机接入前必须单独核验 IP、NodeId、
+机械臂 MoveIt S1 仿真使用独立执行 profile，默认不启动 RViz、也不连接 PLC：
+
+```bash
+./scripts/start-moveit-sim-os.sh
+# 仅需要可视化时：
+UNILAB_VISUAL=rviz ./scripts/start-moveit-sim-os.sh
+```
+
+MoveIt 核心由独立 `szlab-moveit-sim.json` 中的
+`standard_execution_backend=moveit_sim` 启动，和 `--visual` 正交。UI/Workflow
+只能调用 `simulate_site_motion`；生产 `pick/place` 会 fail-closed，因为当前模型尚无
+真实夹爪动作与生产 Inventory 见证。该仿真 Action 只接受 `target_site`、
+`payload_profile` 和仿真 fixture 标识，不接受生产 ResourceSlot。示例关节序列仅用于
+仿真联调，不能作为生产批准点位。
+
+该独立 MoveIt graph 不包含 PLC 节点，也不会改写任何网络配置。真机接入前必须单独核验 IP、NodeId、
 账号、联锁、急停、物料占用和恢复语义。
 
 SZLab 前端 E2E 截图见 [`docs/E2E_SCREENSHOTS.md`](docs/E2E_SCREENSHOTS.md)，迁移前 12 个历史

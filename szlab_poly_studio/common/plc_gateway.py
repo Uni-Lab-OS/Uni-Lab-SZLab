@@ -8,7 +8,7 @@ PLC 工位驱动只依赖本模块提供的读、写、等待接口。生产环�
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from unilabos.utils.log import logger
 
@@ -21,6 +21,21 @@ _QUIET_PLC_OPERATIONS = {
     "read_variable",
     "get_opc_variable_metadata",
 }
+
+
+@runtime_checkable
+class PLCVariableTransport(Protocol):
+    """Minimal transport Seam required by the PLC program Module.
+
+    ``PLCActionGateway`` is the current ROS Adapter. Its downstream
+    ``szlab_poly_plc`` device owns the configured ``opc.tcp://`` session. A raw
+    vendor TCP Adapter can implement this same Interface once its framing,
+    acknowledgement and command-identity protocol are specified.
+    """
+
+    def read_variable(self, node_name: str, use_cache: bool = True) -> Any: ...
+
+    def write_variable(self, node_name: str, value: Any) -> bool: ...
 
 
 class PLCActionGateway:
@@ -259,13 +274,18 @@ class PLCActionGateway:
         """连接由 ``szlab_poly_plc`` 持有，业务设备释放时不关闭它。"""
 
 
+# Explicit Adapter name for new composition code; keep the original public
+# class because existing SZLab devices and tests import it.
+ROSPLCActionTransport = PLCActionGateway
+
+
 class UnifiedPLCGatewayMixin:
     """让 PLC 工位统一在 ROS ``post_init`` 阶段连接 PLC 模块。"""
 
     plc_device_id: str
     plc_action_timeout: float
     plc_server_wait_timeout: float
-    _plc_gateway: Any
+    _plc_gateway: PLCVariableTransport | Any
     _client: Any
 
     def _configure_plc_gateway(
@@ -282,7 +302,7 @@ class UnifiedPLCGatewayMixin:
         self._plc_gateway = plc_gateway
         self._client = plc_gateway
 
-    def set_plc_gateway(self, plc_gateway: Any) -> None:
+    def set_plc_gateway(self, plc_gateway: PLCVariableTransport) -> None:
         self._plc_gateway = plc_gateway
         self._client = plc_gateway
 
