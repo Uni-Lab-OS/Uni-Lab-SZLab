@@ -21,6 +21,8 @@ from szlab_poly_studio.resources.warehouses import (
     s10_liquid_reagent_placeholder_warehouse,
     s11_used_beaker_warehouse,
     s11_used_sample_vial_warehouse,
+    s08_process_warehouse,
+    s09_process_warehouse,
 )
 
 
@@ -98,6 +100,42 @@ def test_physical_warehouse_factories_match_deployment_graph() -> None:
                 size["height"],
                 size["depth"],
             )
+
+
+def test_process_warehouse_factories_publish_s08_and_s09_site_owners() -> None:
+    """S08/S09 过程仓必须给工作流提供稳定仓库与库位（Site）身份。"""
+
+    assert list(s08_process_warehouse("s08")._ordering) == ["S081", "S082"]
+    assert list(s09_process_warehouse("s09")._ordering) == [
+        "BEAKER1",
+        "REAGENT1",
+    ]
+
+
+def test_all_deployment_graphs_mount_s08_and_s09_process_warehouses(
+    repo_root: Path,
+) -> None:
+    """所有产品启动图必须把过程仓挂到唯一设备所有者，不能依赖任务输入。"""
+
+    graph_root = repo_root / "deployment" / "graphs"
+    for graph_path in sorted(graph_root.glob("szlab-*.json")):
+        graph = json.loads(graph_path.read_text(encoding="utf-8"))
+        nodes = {node["id"]: node for node in graph["nodes"]}
+        for device_id, warehouse_id, resource_class in (
+            (
+                "szlab_s08_cap_station",
+                "s08_process_warehouse",
+                "community.szlab_poly_studio.szlab_s08_process_warehouse",
+            ),
+            (
+                "szlab_mixer_pipetting_station",
+                "s09_process_warehouse",
+                "community.szlab_poly_studio.szlab_s09_process_warehouse",
+            ),
+        ):
+            assert warehouse_id in nodes[device_id]["children"]
+            assert nodes[warehouse_id]["parent"] == device_id
+            assert nodes[warehouse_id]["class"] == resource_class
 
 
 def test_s2_tip_stack_uses_confirmed_three_by_two_site_order() -> None:

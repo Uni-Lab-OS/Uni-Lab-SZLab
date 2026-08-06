@@ -32,6 +32,8 @@ SZLAB_RESOURCES = {
     "szlab_s05_process_warehouse",
     "szlab_s06_process_warehouse",
     "szlab_s07_process_warehouse",
+    "szlab_s08_process_warehouse",
+    "szlab_s09_process_warehouse",
     "szlab_sample_vial_250ml",
     "szlab_sample_vial_500ml",
     "szlab_tip_box",

@@ -53,8 +53,6 @@ def s_z_lab_单样品全流程_物料感知(
     tip: Annotated[ResourceSlot, AllowedResourceTemplates(pipette_tip)],
     solvent_pump_1: Annotated[ResourceSlot, AllowedResourceTemplates(liquid_reagent_bottle_100ml)],
     solvent_pump_2: Annotated[ResourceSlot, AllowedResourceTemplates(liquid_reagent_bottle_100ml)],
-    s08_warehouse: ResourceSlot,
-    s09_warehouse: ResourceSlot,
     sample_id: str = 'sample-001',
     target_powder_mass_g: Annotated[float, Field(ge=0.001, le=100)] = 1.0,
     volume_pump_1: Annotated[int, Field(ge=0)] = 10,
@@ -98,19 +96,19 @@ def s_z_lab_单样品全流程_物料感知(
             # unilab:node_uuid=00e72600-5c9c-5afd-9c70-338d6eddc102
             added_solvents = szlab_mixer_pump_device.add_solvent_with_materials(beaker=beaker_at_s06.resource, beaker_true_means_present=True, skip_level_check=False, solvent_pump_1=solvent_pump_1, solvent_pump_2=solvent_pump_2, volume_pump_1=volume_pump_1, volume_pump_2=volume_pump_2)
             # unilab:node_uuid=96db2ac9-4cb9-5242-b1b7-63e81c416aa4
-            beaker_at_s09 = s_z_lab_标准物料转运(resource=added_solvents.beaker, source_warehouse=resource_ref('s06_process_warehouse'), target_device='szlab_mixer_pipetting_station', target_warehouse=s09_warehouse, source_site='S061', target_site='BEAKER1')
+            beaker_at_s09 = s_z_lab_标准物料转运(resource=added_solvents.beaker, source_warehouse=resource_ref('s06_process_warehouse'), target_device='szlab_mixer_pipetting_station', target_warehouse=resource_ref('s09_process_warehouse'), source_site='S061', target_site='BEAKER1')
         # unilab:node_uuid=f473e32b-9dda-465c-9813-55996fe4b70a
         with group(name='液体试剂瓶开盖并搬到 S09'):
             # unilab:node_uuid=e01e23ce-72d2-5136-b849-60fa3fe2525f
-            reagent_at_s08 = s_z_lab_标准物料转运(resource=reagent_bottle, source_warehouse=resource_ref('s10_liquid_reagent'), target_device='szlab_s08_cap_station', target_warehouse=s08_warehouse, source_site='R1C1', target_site='S082')
+            reagent_at_s08 = s_z_lab_标准物料转运(resource=reagent_bottle, source_warehouse=resource_ref('s10_liquid_reagent'), target_device='szlab_s08_cap_station', target_warehouse=resource_ref('s08_process_warehouse'), source_site='R1C1', target_site='S082')
             # unilab:node_uuid=38c2603a-0dac-5930-a26e-966138075939
             opened_reagent = s_z_lab_s08_cap_station_device.process_liquid_reagent_100ml_cap_with_material(container=reagent_at_s08.resource, operation='open', sample_id=sample_id, timeout=300.0)
             # unilab:node_uuid=c0a01cc2-507c-5d28-84bd-192079cd7d59
-            reagent_at_s09 = s_z_lab_标准物料转运(resource=opened_reagent.container, source_warehouse=s08_warehouse, target_device='szlab_mixer_pipetting_station', target_warehouse=s09_warehouse, source_site='S082', target_site='REAGENT1')
+            reagent_at_s09 = s_z_lab_标准物料转运(resource=opened_reagent.container, source_warehouse=resource_ref('s08_process_warehouse'), target_device='szlab_mixer_pipetting_station', target_warehouse=resource_ref('s09_process_warehouse'), source_site='S082', target_site='REAGENT1')
     # unilab:node_uuid=c535cf80-22f3-5f92-9222-020d66f8b3ea
     pipetted = szlab_mixer_pipetting_station_device.add_liquid_with_materials(aspirate_volume=pipette_volume_raw, beaker=beaker_at_s09.resource, dispense_volume=pipette_volume_raw, liquid_bottle_index=1, reagent_bottle=reagent_at_s09.resource, skip_level_check=False, station=1, tip=tip, tip_box_index=1, tip_index=1, volume_unit='raw')
     # unilab:node_uuid=6ade06a7-f2e8-57f5-8d29-8124d303e43e
-    beaker_at_s04 = s_z_lab_标准物料转运(resource=pipetted.beaker, source_warehouse=s09_warehouse, target_device='szlab_mixer_stirrer', target_warehouse=resource_ref('s04_process_warehouse'), source_site='BEAKER1', target_site='S041')
+    beaker_at_s04 = s_z_lab_标准物料转运(resource=pipetted.beaker, source_warehouse=resource_ref('s09_process_warehouse'), target_device='szlab_mixer_stirrer', target_warehouse=resource_ref('s04_process_warehouse'), source_site='BEAKER1', target_site='S041')
     # unilab:node_uuid=ffa0066c-b9c2-5d37-aff3-bfac6481b01c
     stirred = szlab_mixer_magnetic_stirrer_device.stir_beaker(beaker=beaker_at_s04.resource, duration=30.0, mode=3, position=1, reset=False, safe_temperature=80, speed=300, temperature=25)
     with parallel():
@@ -123,7 +121,7 @@ def s_z_lab_单样品全流程_物料感知(
         # unilab:node_uuid=d2961527-c462-48d2-817d-8ba5e33ced54
         with group(name='样品瓶搬到 S08 并开盖'):
             # unilab:node_uuid=8eb012b4-f12a-5d61-a675-3bd68147ca85
-            sample_vial_at_s08 = s_z_lab_标准物料转运(resource=source_sample_vial, source_warehouse=resource_ref('s3_unused_beaker'), target_device='szlab_s08_cap_station', target_warehouse=s08_warehouse, source_site='L1A1', target_site='S081')
+            sample_vial_at_s08 = s_z_lab_标准物料转运(resource=source_sample_vial, source_warehouse=resource_ref('s3_unused_beaker'), target_device='szlab_s08_cap_station', target_warehouse=resource_ref('s08_process_warehouse'), source_site='L1A1', target_site='S081')
             # unilab:node_uuid=05fcfaa8-f511-519e-b29b-b6035086fd93
             opened_sample_vial = s_z_lab_s08_cap_station_device.process_sample_vial_250ml_cap_with_material(container=sample_vial_at_s08.resource, operation='open', sample_id=sample_id, timeout=300.0)
     # unilab:node_uuid=c3305a3e-c047-5c64-be13-18fd07c85436
@@ -142,5 +140,5 @@ def s_z_lab_单样品全流程_物料感知(
             # unilab:node_uuid=f7a8bda7-0ebf-5752-9598-1ef2c7f90fe3
             closed_sample_vial = s_z_lab_s08_cap_station_device.process_sample_vial_250ml_cap_with_material(container=poured.sample_vial, operation='close', sample_id=sample_id, timeout=300.0)
     # unilab:node_uuid=8436dc02-a9f3-5286-9822-6e5d22ae4205
-    product_vial_at_s11 = s_z_lab_标准物料转运(resource=closed_sample_vial.container, source_warehouse=s08_warehouse, target_device='host_node', target_warehouse=resource_ref('s11_used_beaker'), source_site='S081', target_site='L1A1')
+    product_vial_at_s11 = s_z_lab_标准物料转运(resource=closed_sample_vial.container, source_warehouse=resource_ref('s08_process_warehouse'), target_device='host_node', target_warehouse=resource_ref('s11_used_beaker'), source_site='S081', target_site='L1A1')
     return {'product_vial': poured.sample_vial, 'used_beaker': poured.beaker, 'reagent_bottle': pipetted.reagent_bottle, 'coarse_powder_cartridge': dosed.coarse_powder_cartridge, 'fine_powder_cartridge': dosed.fine_powder_cartridge, 'tip': pipetted.tip, 'photo_path': inspected.photo_path, 'inspection_result': inspected.inspection_result, 'commanded_powder_mass_g': dosed.commanded_mass_g, 'message': closed_sample_vial.message}

@@ -16,8 +16,9 @@
 S08/S09 Site owner、250 mL 样品瓶负载和 S09 试剂瓶在位见证仍是现场生产部署门禁。
 不得为了让本目标“可运行”而回退到 ``submit_*``、伪造见证或跳过 Host 记账。
 启动图已唯一确定的 Warehouse 直接使用 ``resource_ref("启动资源 ID")``；Site 全部保留为
-各 Action/复合 Workflow 调用点的内部 literal。当前仅 S08/S09 尚无启动图 Warehouse 实例，
-因此暂时保留这两个 ``ResourceSlot`` 输入。
+各动作（Action）/复合工作流（CompositeWorkflow）调用点的内部 literal。S08/S09 过程仓也由
+启动图提供稳定资源 ID；
+其库存库位（Site）投影不替代现场点位、负载和在位见证验收。
 """
 
 from typing import Annotated, TypedDict
@@ -124,8 +125,6 @@ def single_sample_atomic_material_workflow(
         ResourceSlot,
         AllowedResourceTemplates(liquid_reagent_bottle_100ml),
     ],
-    s08_warehouse: ResourceSlot,
-    s09_warehouse: ResourceSlot,
     sample_id: str = "sample-001",
     target_powder_mass_g: Annotated[float, Field(ge=0.001, le=100)] = 1.0,
     volume_pump_1: Annotated[int, Field(ge=0)] = 10,
@@ -188,7 +187,7 @@ def single_sample_atomic_material_workflow(
                 resource=reagent_bottle,
                 source_warehouse=resource_ref("s10_liquid_reagent"),
                 target_device="szlab_s08_cap_station",
-                target_warehouse=s08_warehouse,
+                target_warehouse=resource_ref("s08_process_warehouse"),
                 source_site="R1C1",
                 target_site="S082",
             )
@@ -205,9 +204,9 @@ def single_sample_atomic_material_workflow(
             # unilab:node_uuid=c0a01cc2-507c-5d28-84bd-192079cd7d59
             reagent_at_s09 = material_transfer(
                 resource=opened_reagent.container,
-                source_warehouse=s08_warehouse,
+                source_warehouse=resource_ref("s08_process_warehouse"),
                 target_device="szlab_mixer_pipetting_station",
-                target_warehouse=s09_warehouse,
+                target_warehouse=resource_ref("s09_process_warehouse"),
                 source_site="S082",
                 target_site="REAGENT1",
             )
@@ -269,7 +268,7 @@ def single_sample_atomic_material_workflow(
                 resource=source_sample_vial,
                 source_warehouse=resource_ref("s3_unused_beaker"),
                 target_device="szlab_s08_cap_station",
-                target_warehouse=s08_warehouse,
+                target_warehouse=resource_ref("s08_process_warehouse"),
                 source_site="L1A1",
                 target_site="S081",
             )
@@ -325,7 +324,7 @@ def single_sample_atomic_material_workflow(
         resource=added_solvents.beaker,
         source_warehouse=resource_ref("s06_process_warehouse"),
         target_device="szlab_mixer_pipetting_station",
-        target_warehouse=s09_warehouse,
+        target_warehouse=resource_ref("s09_process_warehouse"),
         source_site="S061",
         target_site="BEAKER1",
     )
@@ -347,7 +346,7 @@ def single_sample_atomic_material_workflow(
     # unilab:node_uuid=6ade06a7-f2e8-57f5-8d29-8124d303e43e
     beaker_at_s04 = material_transfer(
         resource=pipetted.beaker,
-        source_warehouse=s09_warehouse,
+        source_warehouse=resource_ref("s09_process_warehouse"),
         target_device="szlab_mixer_stirrer",
         target_warehouse=resource_ref("s04_process_warehouse"),
         source_site="BEAKER1",
@@ -432,7 +431,7 @@ def single_sample_atomic_material_workflow(
     # unilab:node_uuid=8436dc02-a9f3-5286-9822-6e5d22ae4205
     product_vial_at_s11 = material_transfer(
         resource=closed_sample_vial.container,
-        source_warehouse=s08_warehouse,
+        source_warehouse=resource_ref("s08_process_warehouse"),
         target_device="host_node",
         target_warehouse=resource_ref("s11_used_beaker"),
         source_site="S081",

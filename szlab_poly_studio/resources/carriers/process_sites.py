@@ -144,3 +144,41 @@ def SZLab_S07ProcessCarrier(name: str) -> BottleCarrier:
         category="s07_process_warehouse",
         model="SZLab_S07ProcessCarrier",
     )
+
+
+def SZLab_S08ProcessCarrier(name: str) -> BottleCarrier:
+    """S08 开关盖设备的两个过程库位（Site）所有者。
+
+    几何仅用于库存与前端投影；机械臂点位、负载和在位见证仍由现场驱动
+    关闭失败，不能由这些估算坐标授予物理执行许可。
+    """
+
+    return _fixed_site_carrier(
+        name,
+        size=(810.0, 147.0, 349.0),
+        sites=(
+            ("S081", 280.0, 38.5, 0.0, 70.0, 70.0, 200.0),
+            ("S082", 460.0, 38.5, 0.0, 70.0, 70.0, 200.0),
+        ),
+        category="s08_process_warehouse",
+        model="SZLab_S08ProcessCarrier",
+    )
+
+
+def SZLab_S09ProcessCarrier(name: str) -> BottleCarrier:
+    """S09 移液站烧杯位与试剂瓶位的过程库位（Site）所有者。
+
+    位置来自当前设备布局说明，仅服务库存与画布；未补齐的试剂瓶在位见证仍
+    必须阻止真实机械臂动作。
+    """
+
+    return _fixed_site_carrier(
+        name,
+        size=(800.0, 470.0, 650.0),
+        sites=(
+            ("BEAKER1", 365.5, 180.5, 12.0, 86.0, 86.0, 120.0),
+            ("REAGENT1", 93.0, 0.0, 12.0, 70.0, 70.0, 200.0),
+        ),
+        category="s09_process_warehouse",
+        model="SZLab_S09ProcessCarrier",
+    )

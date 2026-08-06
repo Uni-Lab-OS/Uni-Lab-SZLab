@@ -195,3 +195,31 @@ def s07_process_warehouse(name: str = "S07固体加料转盘仓"):
     from szlab_poly_studio.resources.carriers.process_sites import SZLab_S07ProcessCarrier
 
     return SZLab_S07ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s08_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s08_process_warehouse"],
+    description=(
+        "S08 开关盖设备内的样品瓶位与试剂瓶位；只提供库存库位（Site）所有权，"
+        "不替代现场点位、负载和在位见证验收。"
+    ),
+)
+def s08_process_warehouse(name: str = "S08开关盖工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S08ProcessCarrier
+
+    return SZLab_S08ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s09_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s09_process_warehouse"],
+    description=(
+        "S09 移液站内的烧杯位与试剂瓶位；只提供库存库位（Site）所有权，"
+        "不替代现场试剂瓶在位见证验收。"
+    ),
+)
+def s09_process_warehouse(name: str = "S09移液工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S09ProcessCarrier
+
+    return SZLab_S09ProcessCarrier(name)

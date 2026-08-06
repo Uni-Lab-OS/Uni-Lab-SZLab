@@ -349,7 +349,7 @@
     {
       "id": "szlab_s08_cap_station",
       "name": "S08 开关盖",
-      "children": [],
+      "children": ["s08_process_warehouse"],
       "parent": null,
       "type": "device",
       "class": "community.szlab_poly_studio.szlab_s08_cap_station",
@@ -368,7 +368,7 @@
     {
       "id": "szlab_mixer_pipetting_station",
       "name": "S09 移液站",
-      "children": [],
+      "children": ["s09_process_warehouse"],
       "parent": null,
       "type": "device",
       "class": "community.szlab_poly_studio.szlab_mixer_pipetting_station",
@@ -383,6 +383,28 @@
       "data": {
         "status": "Idle"
       }
+    },
+    {
+      "id": "s08_process_warehouse",
+      "name": "S08开关盖工位仓",
+      "children": [],
+      "parent": "szlab_s08_cap_station",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s08_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
+    },
+    {
+      "id": "s09_process_warehouse",
+      "name": "S09移液工位仓",
+      "children": [],
+      "parent": "szlab_mixer_pipetting_station",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s09_process_warehouse",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {},
+      "data": {}
     }
   ],
   "links": []

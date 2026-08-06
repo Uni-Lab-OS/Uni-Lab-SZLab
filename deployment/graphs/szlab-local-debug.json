@@ -3069,7 +3069,9 @@
     {
       "id": "szlab_s08_cap_station",
       "name": "S08 开关盖",
-      "children": [],
+      "children": [
+        "s08_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
       "class": "community.szlab_poly_studio.szlab_s08_cap_station",
@@ -3092,7 +3094,9 @@
     {
       "id": "szlab_mixer_pipetting_station",
       "name": "S09 移液站",
-      "children": [],
+      "children": [
+        "s09_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
       "class": "community.szlab_poly_studio.szlab_mixer_pipetting_station",
@@ -3111,6 +3115,130 @@
       "data": {
         "status": "Idle"
       }
+    },
+    {
+      "id": "s08_process_warehouse",
+      "name": "S08开关盖工位仓",
+      "children": [],
+      "parent": "szlab_s08_cap_station",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s08_process_warehouse",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "config": {
+        "size_x": 810.0,
+        "size_y": 147.0,
+        "size_z": 349.0,
+        "category": "s08_process_warehouse",
+        "logical_mount": true,
+        "motion_validated": false,
+        "sites": [
+          {
+            "label": "S081",
+            "name": "S081",
+            "position": {
+              "x": 280.0,
+              "y": 38.5,
+              "z": 0.0
+            },
+            "size": {
+              "width": 70.0,
+              "height": 70.0,
+              "depth": 200.0
+            },
+            "content_type": [
+              "szlab_sample_vial_250ml"
+            ],
+            "visible": true,
+            "geometry_confidence": "estimated"
+          },
+          {
+            "label": "S082",
+            "name": "S082",
+            "position": {
+              "x": 460.0,
+              "y": 38.5,
+              "z": 0.0
+            },
+            "size": {
+              "width": 70.0,
+              "height": 70.0,
+              "depth": 200.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true,
+            "geometry_confidence": "estimated"
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s09_process_warehouse",
+      "name": "S09移液工位仓",
+      "children": [],
+      "parent": "szlab_mixer_pipetting_station",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s09_process_warehouse",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "config": {
+        "size_x": 800.0,
+        "size_y": 470.0,
+        "size_z": 650.0,
+        "category": "s09_process_warehouse",
+        "logical_mount": true,
+        "motion_validated": false,
+        "sites": [
+          {
+            "label": "BEAKER1",
+            "name": "BEAKER1",
+            "position": {
+              "x": 365.5,
+              "y": 180.5,
+              "z": 12.0
+            },
+            "size": {
+              "width": 86.0,
+              "height": 86.0,
+              "depth": 120.0
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true,
+            "geometry_confidence": "estimated"
+          },
+          {
+            "label": "REAGENT1",
+            "name": "REAGENT1",
+            "position": {
+              "x": 93.0,
+              "y": 0.0,
+              "z": 12.0
+            },
+            "size": {
+              "width": 70.0,
+              "height": 70.0,
+              "depth": 200.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true,
+            "geometry_confidence": "estimated"
+          }
+        ]
+      },
+      "data": {}
     },
     {
       "id": "s11_used_beaker__L1B1",

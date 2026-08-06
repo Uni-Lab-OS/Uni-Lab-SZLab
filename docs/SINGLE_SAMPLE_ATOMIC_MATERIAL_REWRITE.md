@@ -44,10 +44,10 @@
 `sample_id` 替代物。它们所在的已知仓库不再重复作为 Workflow input：例如 S10 直接写为
 `resource_ref("s10_liquid_reagent")`。
 
-### 2.1 Warehouse 与 Site 的边界
+### 2.1 仓库（Warehouse）与库位（Site）的边界
 
-主 Workflow 只暴露业务运行时必须选择的输入。启动图已经唯一确定的 Warehouse 全部在流程内部
-用稳定资源 ID 绑定：
+主工作流（Workflow）只暴露业务运行时必须选择的输入。启动图已经唯一确定的
+仓库（Warehouse）全部在流程内部用稳定资源 ID 绑定：
 
 ```python
 source_warehouse = resource_ref("s3_unused_beaker")
@@ -55,13 +55,14 @@ powder_warehouse = resource_ref("powder_container_warehouse")
 s04_warehouse = resource_ref("s04_process_warehouse")
 ```
 
-所有 Site（如 `L1B1`、`S0721`、`S061`、`BEAKER1`、`S041`、`S051`、`S081`）都是当前工艺与
+所有库位（Site）（如 `L1B1`、`S0721`、`S061`、`BEAKER1`、`S041`、`S051`、`S081`）都是当前工艺与
 启动部署共同确定的内部常量，不作为顶层参数，也不再先定义一组“整体变量”再传递。这样调用者
 不能把 S07 的烧杯误送到粉瓶位，也不会把部署配置伪装成每次 Task 的业务输入。
 
-当前启动图尚未发布 S08/S09 的 typed process Warehouse 实例，因此主流程暂时只保留
-`s08_warehouse`、`s09_warehouse` 两个 `ResourceSlot` 输入，并继续受第 6 节现场门禁约束。待启动图
-补齐这两个稳定资源 ID 后，应按同一规则改成内部 `resource_ref(...)`，届时无需改变 Site 写法。
+当前启动图已经发布 `s08_process_warehouse`、`s09_process_warehouse` 两个有类型过程仓实例，
+分别拥有 `S081/S082` 与 `BEAKER1/REAGENT1` 库位（Site）。主工作流（Workflow）使用内部
+`resource_ref(...)`，不再把仓库错误建模为物料占位符（ResourceSlot）任务输入。库存和画布中的
+过程仓几何仍标记为估算值；现场机械臂点位、负载与在位见证继续受第 6 节关闭失败门禁约束。
 
 ## 3. 新拓扑
 
@@ -200,7 +201,7 @@ OS 注入的 `WorkflowNodeJob.uuid` 取得唯一 command identity。同一个 Jo
 
 | 缺口 | 要求 |
 |---|---|
-| S08/S09 typed Site owner | 为瓶位、烧杯位、试剂瓶位建立稳定 Warehouse/Site UUID、直接父子关系和部署图实例。 |
+| S08/S09 有类型库位（Site）所有者（已完成） | `s08_process_warehouse`、`s09_process_warehouse` 已建立稳定父子关系和部署图实例；几何仍为估算，不能替代现场动作验收。 |
 | S08 Site 见证 | 当前旧驱动的 place 1-5 与 pick 1-2 传感器集合不对称；现场确认前不能声称同一 Site 可闭环取放。 |
 | S09 试剂瓶见证 | 当前代码明确写着 CSV 未提供试剂瓶传感器映射；标准 `pick/place` 必须 fail-closed。 |
 | 250 mL 样品瓶负载 | 当前标准机械臂只接受 `sample_vial_500ml@v1`；要么补 250 mL payload/点位验收，要么由业务确认改用 500 mL，不能静默替换。 |

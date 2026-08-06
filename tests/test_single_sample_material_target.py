@@ -73,10 +73,7 @@ def test_single_sample_target_keeps_deployment_locations_internal(
     )
 
     assert not any(name.endswith("_site") for name in parameters)
-    assert {name for name in parameters if name.endswith("_warehouse")} == {
-        "s08_warehouse",
-        "s09_warehouse",
-    }
+    assert not any(name.endswith("_warehouse") for name in parameters)
     for resource_id in (
         "s3_unused_beaker",
         "powder_container_warehouse",
@@ -85,6 +82,8 @@ def test_single_sample_target_keeps_deployment_locations_internal(
         "s05_process_warehouse",
         "s06_process_warehouse",
         "s07_process_warehouse",
+        "s08_process_warehouse",
+        "s09_process_warehouse",
         "s11_used_beaker",
     ):
         assert f'resource_ref("{resource_id}")' in source
@@ -107,10 +106,7 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
     assert not any(name.endswith("_site") for name in parameters)
     assert calls.count("s_z_lab_标准物料转运") == 11
     assert not any(name.startswith("material_transfer_") for name in calls)
-    assert {name for name in parameters if name.endswith("_warehouse")} == {
-        "s08_warehouse",
-        "s09_warehouse",
-    }
+    assert not any(name.endswith("_warehouse") for name in parameters)
     for resource_id in (
         "s3_unused_beaker",
         "powder_container_warehouse",
@@ -119,6 +115,8 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
         "s05_process_warehouse",
         "s06_process_warehouse",
         "s07_process_warehouse",
+        "s08_process_warehouse",
+        "s09_process_warehouse",
         "s11_used_beaker",
     ):
         assert f"resource_ref('{resource_id}')" in source
