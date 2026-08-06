@@ -1,0 +1,58 @@
+schema_version: 1
+shape:
+  id: liquid_handler
+  display_name: S09 移液站
+  applies_to:
+  - category: liquid_handler
+  envelope:
+  - 800.0
+  - 470.0
+  - 650.0
+  note: >-
+    原点=底板左下角底面。三类工位：2×枪头盒矩形位 (86×127) LL=(127/247,106,85)；
+    1×5 试剂圆位 Ø57，首个中心=(140,40,63)、Δx=+95；烧杯圆位 Ø87，中心=(662,244,105)。
+  parts:
+  - type: box
+    style: plate
+    from: [0.0, 0.0, 0.0]
+    to: [800.0, 470.0, 12.0]
+  - type: rect
+    style: seat
+    from: [127.0, 106.0]
+    to: [213.0, 233.0]
+    z: 85.0
+  - type: rect
+    style: seat
+    from: [247.0, 106.0]
+    to: [333.0, 233.0]
+    z: 85.0
+  - type: disc
+    style: seat
+    center: [140.0, 40.0]
+    d: 57.0
+    z: 63.0
+  - type: disc
+    style: seat
+    center: [235.0, 40.0]
+    d: 57.0
+    z: 63.0
+  - type: disc
+    style: seat
+    center: [330.0, 40.0]
+    d: 57.0
+    z: 63.0
+  - type: disc
+    style: seat
+    center: [425.0, 40.0]
+    d: 57.0
+    z: 63.0
+  - type: disc
+    style: seat
+    center: [520.0, 40.0]
+    d: 57.0
+    z: 63.0
+  - type: disc
+    style: seat
+    center: [662.0, 244.0]
+    d: 87.0
+    z: 105.0

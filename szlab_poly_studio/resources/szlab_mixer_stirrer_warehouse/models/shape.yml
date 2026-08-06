@@ -1,0 +1,43 @@
+schema_version: 1
+shape:
+  id: stirrer_rack
+  display_name: S04 磁搅机架
+  applies_to:
+  - category: stirrer_rack
+  envelope:
+  - 710.0
+  - 330.0
+  - 780.0
+  note: >-
+    机架本身不声明任何 inventory slot；烧杯工位属于装在机架上的 szlab_mixer_stirrer 模块。
+    3×2 台模块按“模型中心相对机架底部中心 (255,50,10) mm、同排 Δx=-225、层间 Δz=+385”安装，
+    模块进深 359 mm 大于机架 330 mm，因此模块前后均略微出檐。
+  parts:
+  - type: box
+    style: frame
+    from: [0.0, 0.0, 0.0]
+    to: [10.0, 330.0, 780.0]
+  - type: box
+    style: frame
+    from: [700.0, 0.0, 0.0]
+    to: [710.0, 330.0, 780.0]
+  - type: box
+    style: board
+    from: [10.0, 0.0, 0.0]
+    to: [700.0, 330.0, 10.0]
+  - type: box
+    style: board
+    from: [10.0, 0.0, 140.0]
+    to: [700.0, 330.0, 150.0]
+  - type: box
+    style: board
+    from: [10.0, 0.0, 385.0]
+    to: [700.0, 330.0, 395.0]
+  - type: box
+    style: board
+    from: [10.0, 0.0, 525.0]
+    to: [700.0, 330.0, 535.0]
+  - type: box
+    style: board
+    from: [10.0, 0.0, 770.0]
+    to: [700.0, 330.0, 780.0]

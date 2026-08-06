@@ -78,6 +78,10 @@ class PipettingWithMaterialsStatus(TypedDict):
         "macro": "szlab_mixer_pipetting_station",
         # 合并装配原点=底板左下角底面；FE 默认按底面中心补半占位，需跳过。
         "model_origin": "bottom_left",
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "models/shape.yml",
+        },
     },
 )
 class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):

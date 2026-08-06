@@ -14,8 +14,8 @@
     </joint>
     <link name="${station_name}${device_name}device_link"/>
     <joint name="${station_name}${device_name}device_link_joint" type="fixed">
-      <!-- Normalize the compound assembly bbox to the PLR lower-left-bottom origin. -->
-      <origin xyz="0.0585 0.033 0" rpy="0 0 0"/>
+      <!-- 原点=底板左下角底面，与 shape.yml / PLR seat 同一坐标系；勿再加 bbox 平移。 -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <parent link="${station_name}${device_name}device_link"/>
       <child link="${station_name}${device_name}base_link"/>
       <axis xyz="0 0 0"/>
@@ -45,9 +45,9 @@
       </collision>
     </link>
 
-    <!-- 2) 原移液枪模组底座：左下角 → 底板 (4, 388, 12) mm -->
+    <!-- 2) 原移液枪模组底座：左下角 → 底板 (4, 388, 12) mm；joint = target - mesh_aabb_min -->
     <joint name="${station_name}${device_name}pipetting_station_joint" type="fixed">
-      <origin xyz="0.2615 0.429 0.012" rpy="0 0 0"/>
+      <origin xyz="0.324 0.429 0.012" rpy="0 0 0"/>
       <parent link="${station_name}${device_name}base_link"/>
       <child link="${station_name}${device_name}pipetting_station"/>
       <axis xyz="0 0 0"/>

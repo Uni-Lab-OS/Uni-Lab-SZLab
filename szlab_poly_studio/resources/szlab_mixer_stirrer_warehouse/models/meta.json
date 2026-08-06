@@ -1,0 +1,14 @@
+{
+  "device_id": "szlab_mixer_stirrer_warehouse",
+  "source_kind": "urdf",
+  "source_path": "devices/szlab_mixer_stirrer/urdf/DXY260502-09-00 磁搅模块.urdf.urdf",
+  "note": "S04 magnetic-stirrer rack migrated from szlab_mixer_stirrer; hosts 3x2 module devices (not inventory slots).",
+  "generated_at": "2026-08-05T23:00:00",
+  "stats": {
+    "link_total": 1,
+    "joint_total": 0,
+    "movable_joint_total": 0,
+    "mesh_total": 1
+  },
+  "root_link": "base_link"
+}

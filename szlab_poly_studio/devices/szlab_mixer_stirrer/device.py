@@ -44,7 +44,7 @@ class StirBeakerStatus(TypedDict):
     id="szlab_mixer_stirrer",
     display_name="SZLab 磁搅",
     category=["heaterstirrer"],
-    description="SZLab Poly Studio S04 磁搅工位设备",
+    description="SZLab Poly Studio S04 单体磁搅模块（3×2 装在 szlab_mixer_stirrer_warehouse 机架上）",
     model={
         "format": "xacro",
         "entry": "models/device.xacro",

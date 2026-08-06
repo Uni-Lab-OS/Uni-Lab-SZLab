@@ -1,8 +1,9 @@
 {
   "device_id": "szlab_mixer_stirrer",
   "source_kind": "urdf",
-  "source_path": "devices/szlab_mixer_stirrer/urdf/DXY260502-09-00 磁搅模块.urdf.urdf",
-  "generated_at": "2026-08-01T16:59:22",
+  "source_path": "单独磁搅模块/urdf/单独磁搅模块.urdf",
+  "generated_at": "2026-08-05T23:00:00",
+  "note": "Individual magnetic-stirrer module. Seat/model center at envelope X center + Y≈+50mm from geometric center; beaker seat at z+121, diameter 88.",
   "stats": {
     "link_total": 1,
     "joint_total": 0,
