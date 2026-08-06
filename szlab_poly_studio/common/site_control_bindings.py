@@ -73,7 +73,13 @@ _SITE_OWNER_ALIASES = {
     "s04_process_warehouse": "s04_process_warehouse",
     "szlab_s04_process_warehouse": "s04_process_warehouse",
     "szlab_s04processcarrier": "s04_process_warehouse",
+    "szlab_s04modulecarrier": "s04_process_warehouse",
     "s04磁搅工位仓": "s04_process_warehouse",
+    "s04_process_warehouse_2": "s04_process_warehouse_2",
+    "s04_process_warehouse_3": "s04_process_warehouse_3",
+    "s04_process_warehouse_4": "s04_process_warehouse_4",
+    "s04_process_warehouse_5": "s04_process_warehouse_5",
+    "s04_process_warehouse_6": "s04_process_warehouse_6",
     "s05": "s05_process_warehouse",
     "s5": "s05_process_warehouse",
     "s05_process_warehouse": "s05_process_warehouse",
@@ -92,6 +98,13 @@ _SITE_OWNER_ALIASES = {
     "szlab_s07_process_warehouse": "s07_process_warehouse",
     "szlab_s07processcarrier": "s07_process_warehouse",
     "s07固体加料转盘仓": "s07_process_warehouse",
+    "s09": "s09_process_warehouse",
+    "s9": "s09_process_warehouse",
+    "s09_process_warehouse": "s09_process_warehouse",
+    "s09_warehouse": "s09_process_warehouse",
+    "szlab_s09_process_warehouse": "s09_process_warehouse",
+    "szlab_s09processcarrier": "s09_process_warehouse",
+    "s09移液工位仓": "s09_process_warehouse",
 }
 
 

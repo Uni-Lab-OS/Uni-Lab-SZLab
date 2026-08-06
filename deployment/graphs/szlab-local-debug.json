@@ -2472,7 +2472,7 @@
       "config": {
         "url": "opc.tcp://127.0.0.1:50100/",
         "csv_path": "szlab_plc_0730.csv",
-        "auto_connect": false,
+        "auto_connect": true,
         "size_x": 200.0,
         "size_y": 120.0,
         "size_z": 80.0
@@ -2495,6 +2495,499 @@
       },
       "config": {
         "plc_device_id": "szlab_poly_plc",
+        "standard_execution_backend": "plc_program",
+        "standard_actions_enabled": true,
+        "standard_program_version": "szlab-mixer-moveit-sim@v1",
+        "standard_point_set_version": "szlab-mixer-moveit-sim-demo@v1",
+        "standard_moveit_binding_version": "szlab-mixer-moveit-sim-bindings@v1",
+        "standard_moveit_hardware_profile_ref": "szlab-mixer-moveit-sim@v1",
+        "standard_moveit_simulation_only": false,
+        "standard_moveit_speed": 0.1,
+        "standard_moveit_final_joint_tolerance": 0.01,
+        "standard_moveit_site_targets": {
+          "powder_container_warehouse/L1C1": {
+            "pick": [
+              [
+                0.2,
+                0.0,
+                -0.6,
+                1.2,
+                0.0,
+                0.6,
+                0.0
+              ],
+              [
+                0.4,
+                0.2,
+                -0.7,
+                1.1,
+                0.1,
+                0.5,
+                0.0
+              ],
+              [
+                0.2,
+                0.0,
+                -0.6,
+                1.2,
+                0.0,
+                0.6,
+                0.0
+              ]
+            ]
+          },
+          "s07_process_warehouse/P01": {
+            "place": [
+              [
+                0.8,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.5,
+                0.0
+              ],
+              [
+                1.0,
+                -0.2,
+                -0.7,
+                1.1,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.8,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.5,
+                0.0
+              ]
+            ]
+          },
+          "s06_process_warehouse/S061": {
+            "pick": [
+              [
+                0.3,
+                0.1,
+                -0.5,
+                1.0,
+                0.0,
+                0.5,
+                0.0
+              ],
+              [
+                0.5,
+                0.2,
+                -0.6,
+                1.1,
+                0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.3,
+                0.1,
+                -0.5,
+                1.0,
+                0.0,
+                0.5,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.3,
+                0.1,
+                -0.5,
+                1.0,
+                0.0,
+                0.5,
+                0.0
+              ],
+              [
+                0.5,
+                0.2,
+                -0.6,
+                1.1,
+                0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.3,
+                0.1,
+                -0.5,
+                1.0,
+                0.0,
+                0.5,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse/S041": {
+            "pick": [
+              [
+                0.6,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.8,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.6,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.6,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.8,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.6,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse_2/S042": {
+            "pick": [
+              [
+                0.65,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.85,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.65,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.65,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.85,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.65,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse_3/S043": {
+            "pick": [
+              [
+                0.7,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.9,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.7,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.7,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ],
+              [
+                0.9,
+                -0.2,
+                -0.6,
+                1.0,
+                -0.1,
+                0.3,
+                0.0
+              ],
+              [
+                0.7,
+                -0.1,
+                -0.5,
+                0.9,
+                -0.1,
+                0.4,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse_4/S044": {
+            "pick": [
+              [
+                0.6,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.8,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.6,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.6,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.8,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.6,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse_5/S045": {
+            "pick": [
+              [
+                0.65,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.85,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.65,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.65,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.85,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.65,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ]
+          },
+          "s04_process_warehouse_6/S046": {
+            "pick": [
+              [
+                0.7,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.9,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.7,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ],
+            "place": [
+              [
+                0.7,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ],
+              [
+                0.9,
+                -0.1,
+                -0.65,
+                1.05,
+                0.0,
+                0.3,
+                0.0
+              ],
+              [
+                0.7,
+                0.0,
+                -0.55,
+                0.95,
+                0.0,
+                0.4,
+                0.0
+              ]
+            ]
+          }
+        },
         "size_x": 4050.0,
         "size_y": 160.0,
         "size_z": 208.15,
@@ -2506,14 +2999,19 @@
       }
     },
     {
-      "id": "szlab_mixer_stirrer",
-      "name": "S04 磁搅",
+      "id": "szlab_mixer_stirrer_warehouse",
+      "name": "S04 磁搅机架",
       "children": [
-        "s04_process_warehouse"
+        "szlab_mixer_stirrer",
+        "szlab_mixer_stirrer_2",
+        "szlab_mixer_stirrer_3",
+        "szlab_mixer_stirrer_4",
+        "szlab_mixer_stirrer_5",
+        "szlab_mixer_stirrer_6"
       ],
       "parent": null,
-      "type": "device",
-      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer_warehouse",
       "position": {
         "x": 1480.0,
         "y": 80.0,
@@ -2521,15 +3019,432 @@
       },
       "config": {
         "size_x": 710.0,
-        "size_y": 359.0,
+        "size_y": 330.0,
         "size_z": 780.0,
         "category": "stirrer_rack",
-        "layout_note": "《理论交点测距结果》: 交点=占位左下角(x/y)+底面(z); size=bbox of DXY260502-09-00 磁搅模块/base_link.STL; 敞口柜前面朝 -Y，六个搅拌台位对应 S041..S046",
-        "plc_device_id": "szlab_poly_plc"
+        "layout_note": "机架(710×330×780)只提供视觉/碰撞外形，不持有烧杯 slot；3×2 台 szlab_mixer_stirrer 作为子设备装在机架上。第一台模型中心 = 机架底部中心 + (225.0, 50.0, 10.0)；同排 Δx=-225.0，层间 Δz=+385.0。"
+      },
+      "data": {}
+    },
+    {
+      "id": "szlab_mixer_stirrer",
+      "name": "S04 磁搅模块 1",
+      "children": [
+        "s04_process_warehouse"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 472.2,
+        "y": -11.618,
+        "z": 10.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 1,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(580.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
       },
       "data": {
         "status": "Idle"
       }
+    },
+    {
+      "id": "szlab_mixer_stirrer_2",
+      "name": "S04 磁搅模块 2",
+      "children": [
+        "s04_process_warehouse_2"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 247.2,
+        "y": -11.618,
+        "z": 10.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 2,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(355.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
+      },
+      "data": {
+        "status": "Idle"
+      }
+    },
+    {
+      "id": "szlab_mixer_stirrer_3",
+      "name": "S04 磁搅模块 3",
+      "children": [
+        "s04_process_warehouse_3"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 22.2,
+        "y": -11.618,
+        "z": 10.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 3,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(130.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
+      },
+      "data": {
+        "status": "Idle"
+      }
+    },
+    {
+      "id": "szlab_mixer_stirrer_4",
+      "name": "S04 磁搅模块 4",
+      "children": [
+        "s04_process_warehouse_4"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 472.2,
+        "y": -11.618,
+        "z": 395.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 4,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(580.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
+      },
+      "data": {
+        "status": "Idle"
+      }
+    },
+    {
+      "id": "szlab_mixer_stirrer_5",
+      "name": "S04 磁搅模块 5",
+      "children": [
+        "s04_process_warehouse_5"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 247.2,
+        "y": -11.618,
+        "z": 395.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 5,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(355.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
+      },
+      "data": {
+        "status": "Idle"
+      }
+    },
+    {
+      "id": "szlab_mixer_stirrer_6",
+      "name": "S04 磁搅模块 6",
+      "children": [
+        "s04_process_warehouse_6"
+      ],
+      "parent": "szlab_mixer_stirrer_warehouse",
+      "type": "device",
+      "class": "community.szlab_poly_studio.szlab_mixer_stirrer",
+      "position": {
+        "x": 22.2,
+        "y": -11.618,
+        "z": 395.0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "heaterstirrer",
+        "station_position": 6,
+        "plc_device_id": "szlab_poly_plc",
+        "layout_note": "加热盘中心(机架局部)=(130.0, 215.0, 顶面)；模块自身加热盘中心=(107.8, 226.618)（X 为包络几何中心）；烧杯 slot Ø88.0 落在加热盘 z=121.0。模块进深 359 > 机架 330，故 y 为负出檐。"
+      },
+      "data": {
+        "status": "Idle"
+      }
+    },
+    {
+      "id": "s04_process_warehouse",
+      "name": "S041 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 1,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S041",
+            "name": "S041",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s04_process_warehouse_2",
+      "name": "S042 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer_2",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 2,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S042",
+            "name": "S042",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s04_process_warehouse_3",
+      "name": "S043 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer_3",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 3,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S043",
+            "name": "S043",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s04_process_warehouse_4",
+      "name": "S044 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer_4",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 4,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S044",
+            "name": "S044",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s04_process_warehouse_5",
+      "name": "S045 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer_5",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 5,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S045",
+            "name": "S045",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
+    },
+    {
+      "id": "s04_process_warehouse_6",
+      "name": "S046 烧杯位",
+      "children": [],
+      "parent": "szlab_mixer_stirrer_6",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 215.6,
+        "size_y": 359.0,
+        "size_z": 122.1,
+        "category": "s04_process_warehouse",
+        "logical_mount": true,
+        "number": 6,
+        "layout_note": "slot 属于本台磁搅模块，坐标相对模块左下底角。",
+        "sites": [
+          {
+            "label": "S046",
+            "name": "S046",
+            "position": {
+              "x": 63.8,
+              "y": 182.618,
+              "z": 121.0
+            },
+            "size": {
+              "width": 88.0,
+              "height": 88.0,
+              "depth": 120
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
     },
     {
       "id": "szlab_mixer_photoshotting",
@@ -2608,137 +3523,6 @@
       "data": {
         "status": "Idle"
       }
-    },
-    {
-      "id": "s04_process_warehouse",
-      "name": "S04磁搅工位仓",
-      "children": [],
-      "parent": "szlab_mixer_stirrer",
-      "type": "warehouse",
-      "class": "community.szlab_poly_studio.szlab_s04_process_warehouse",
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "config": {
-        "size_x": 710,
-        "size_y": 359,
-        "size_z": 780,
-        "category": "s04_process_warehouse",
-        "logical_mount": true,
-        "sites": [
-          {
-            "label": "S041",
-            "name": "S041",
-            "position": {
-              "x": 92.1,
-              "y": 89.4,
-              "z": 150
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          },
-          {
-            "label": "S042",
-            "name": "S042",
-            "position": {
-              "x": 317.1,
-              "y": 89.4,
-              "z": 150
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          },
-          {
-            "label": "S043",
-            "name": "S043",
-            "position": {
-              "x": 542.1,
-              "y": 89.4,
-              "z": 150
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          },
-          {
-            "label": "S044",
-            "name": "S044",
-            "position": {
-              "x": 92.1,
-              "y": 89.4,
-              "z": 535
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          },
-          {
-            "label": "S045",
-            "name": "S045",
-            "position": {
-              "x": 317.1,
-              "y": 89.4,
-              "z": 535
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          },
-          {
-            "label": "S046",
-            "name": "S046",
-            "position": {
-              "x": 542.1,
-              "y": 89.4,
-              "z": 535
-            },
-            "size": {
-              "width": 86,
-              "height": 86,
-              "depth": 120
-            },
-            "content_type": [
-              "szlab_beaker_500ml"
-            ],
-            "visible": true
-          }
-        ]
-      },
-      "data": {}
     },
     {
       "id": "s05_process_warehouse",
@@ -3092,7 +3876,9 @@
     {
       "id": "szlab_mixer_pipetting_station",
       "name": "S09 移液站",
-      "children": [],
+      "children": [
+        "s09_process_warehouse"
+      ],
       "parent": null,
       "type": "device",
       "class": "community.szlab_poly_studio.szlab_mixer_pipetting_station",
@@ -3105,12 +3891,181 @@
         "size_x": 800.0,
         "size_y": 470.0,
         "size_z": 650.0,
-        "layout_note": "《理论交点测距结果》: 交点=占位左下角(x/y)+底面(z); size=bbox of merged: plate+pipetting+tip+reagent platforms; 底板 800×470×12；origin=bottom_left=底板左下角；相对 deck LL (1084,1164)；tip/reagent 相对底板 (105,98,12)/(93,0,12) mm；天平开合护罩中心相对底板 (408.5,223.5,12) mm",
-        "plc_device_id": "szlab_poly_plc"
+        "layout_note": "原点=底板左下角底面；size=800×470×650。TIP1/TIP2 LL=(127/247,106,85) size=86×127；REAGENT1..5 Ø57 首中心=(140,40,63) Δx=+95；BEAKER1 Ø87 中心=(662,244,105)。",
+        "plc_device_id": "szlab_poly_plc",
+        "category": "liquid_handler"
       },
       "data": {
         "status": "Idle"
       }
+    },
+    {
+      "id": "s09_process_warehouse",
+      "name": "S09移液工位仓",
+      "children": [],
+      "parent": "szlab_mixer_pipetting_station",
+      "type": "warehouse",
+      "class": "community.szlab_poly_studio.szlab_s09_process_warehouse",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "config": {
+        "size_x": 800.0,
+        "size_y": 470.0,
+        "size_z": 650.0,
+        "category": "s09_process_warehouse",
+        "logical_mount": true,
+        "layout_note": "slot 坐标相对移液站底板左下角；枪头盒/试剂/烧杯三类工位。",
+        "sites": [
+          {
+            "label": "TIP1",
+            "name": "TIP1",
+            "position": {
+              "x": 127.0,
+              "y": 106.0,
+              "z": 85.0
+            },
+            "size": {
+              "width": 86.0,
+              "height": 127.0,
+              "depth": 136.0
+            },
+            "content_type": [
+              "szlab_tip_box"
+            ],
+            "visible": true
+          },
+          {
+            "label": "TIP2",
+            "name": "TIP2",
+            "position": {
+              "x": 247.0,
+              "y": 106.0,
+              "z": 85.0
+            },
+            "size": {
+              "width": 86.0,
+              "height": 127.0,
+              "depth": 136.0
+            },
+            "content_type": [
+              "szlab_tip_box"
+            ],
+            "visible": true
+          },
+          {
+            "label": "REAGENT1",
+            "name": "REAGENT1",
+            "position": {
+              "x": 111.5,
+              "y": 11.5,
+              "z": 63.0
+            },
+            "size": {
+              "width": 57.0,
+              "height": 57.0,
+              "depth": 105.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true
+          },
+          {
+            "label": "REAGENT2",
+            "name": "REAGENT2",
+            "position": {
+              "x": 206.5,
+              "y": 11.5,
+              "z": 63.0
+            },
+            "size": {
+              "width": 57.0,
+              "height": 57.0,
+              "depth": 105.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true
+          },
+          {
+            "label": "REAGENT3",
+            "name": "REAGENT3",
+            "position": {
+              "x": 301.5,
+              "y": 11.5,
+              "z": 63.0
+            },
+            "size": {
+              "width": 57.0,
+              "height": 57.0,
+              "depth": 105.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true
+          },
+          {
+            "label": "REAGENT4",
+            "name": "REAGENT4",
+            "position": {
+              "x": 396.5,
+              "y": 11.5,
+              "z": 63.0
+            },
+            "size": {
+              "width": 57.0,
+              "height": 57.0,
+              "depth": 105.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true
+          },
+          {
+            "label": "REAGENT5",
+            "name": "REAGENT5",
+            "position": {
+              "x": 491.5,
+              "y": 11.5,
+              "z": 63.0
+            },
+            "size": {
+              "width": 57.0,
+              "height": 57.0,
+              "depth": 105.0
+            },
+            "content_type": [
+              "szlab_liquid_reagent_bottle_100ml"
+            ],
+            "visible": true
+          },
+          {
+            "label": "BEAKER1",
+            "name": "BEAKER1",
+            "position": {
+              "x": 618.5,
+              "y": 200.5,
+              "z": 105.0
+            },
+            "size": {
+              "width": 87.0,
+              "height": 87.0,
+              "depth": 120.0
+            },
+            "content_type": [
+              "szlab_beaker_500ml"
+            ],
+            "visible": true
+          }
+        ]
+      },
+      "data": {}
     },
     {
       "id": "s11_used_beaker__L1B1",

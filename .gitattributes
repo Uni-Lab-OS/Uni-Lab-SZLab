@@ -1,0 +1,4 @@
+# Workflow apply 要求磁盘上的源码与编译器产出的规范化源码逐字节一致，
+# 而规范化产物固定使用 LF。Windows 上若按 core.autocrlf 检出成 CRLF，
+# 所有 package workflow 都会卡在 candidate_not_materialized。
+*.py text eol=lf

@@ -17,6 +17,7 @@ SZLAB_DEVICES = {
 SZLAB_RESOURCES = {
     "szlab_beaker_500ml",
     "szlab_liquid_reagent_bottle_100ml",
+    "szlab_mixer_stirrer_warehouse",
     "szlab_pipette_tip",
     "szlab_poly_powder_container_placeholder_warehouse",
     "szlab_poly_s10_liquid_reagent_placeholder_warehouse",

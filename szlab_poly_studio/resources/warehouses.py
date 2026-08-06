@@ -154,14 +154,41 @@ def s10_liquid_reagent_placeholder_warehouse(name: str = "试剂瓶堆栈"):
 
 
 @resource(
+    id="szlab_mixer_stirrer_warehouse",
+    category=["szlab_poly_studio", "warehouse", "stirrer_rack"],
+    description="S04 磁搅机架：承载 3×2 台单体磁搅模块的视觉/碰撞模型；模块安装位不是 inventory slot。",
+    model={
+        "format": "xacro",
+        "entry": "szlab_mixer_stirrer_warehouse/models/resource.xacro",
+        "macro": "szlab_mixer_stirrer_warehouse",
+        "shape": {
+            "format": "unilab.shape/v1",
+            "entry": "szlab_mixer_stirrer_warehouse/models/shape.yml",
+        },
+    },
+)
+def mixer_stirrer_warehouse(name: str = "S04磁搅机架"):
+    from pylabrobot.resources import Resource
+
+    # Visual rack only — stirrer mounts are device placements, not carrier sites.
+    return Resource(
+        name=name,
+        size_x=710.0,
+        size_y=330.0,
+        size_z=780.0,
+        category="stirrer_rack",
+    )
+
+
+@resource(
     id="szlab_s04_process_warehouse",
     category=["szlab_poly_studio", "warehouse", "device_mount", "s04_process_warehouse"],
-    description="S04 磁搅设备内的 6 个烧杯工位；作为设备子资源承载 Inventory Site。",
+    description="单台磁搅模块自带的烧杯工位；挂在对应 szlab_mixer_stirrer 设备下，机架不持有该 slot。",
 )
-def s04_process_warehouse(name: str = "S04磁搅工位仓"):
-    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S04ProcessCarrier
+def s04_process_warehouse(name: str = "S04磁搅工位仓", number: int = 1):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S04ModuleCarrier
 
-    return SZLab_S04ProcessCarrier(name)
+    return SZLab_S04ModuleCarrier(name, number)
 
 
 @resource(
@@ -195,3 +222,14 @@ def s07_process_warehouse(name: str = "S07固体加料转盘仓"):
     from szlab_poly_studio.resources.carriers.process_sites import SZLab_S07ProcessCarrier
 
     return SZLab_S07ProcessCarrier(name)
+
+
+@resource(
+    id="szlab_s09_process_warehouse",
+    category=["szlab_poly_studio", "warehouse", "device_mount", "s09_process_warehouse"],
+    description="S09 移液站工位仓：2 个枪头盒位、5 个试剂瓶位、1 个烧杯位；挂在移液站设备下。",
+)
+def s09_process_warehouse(name: str = "S09移液工位仓"):
+    from szlab_poly_studio.resources.carriers.process_sites import SZLab_S09ProcessCarrier
+
+    return SZLab_S09ProcessCarrier(name)

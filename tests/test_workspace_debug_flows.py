@@ -47,7 +47,7 @@ def test_full_workspace_debug_discovers_graph_workflows_and_assets(
     graph = json.loads((repo_root / "deployment" / "graphs" / "szlab-local-debug.json").read_text(encoding="utf-8"))
     resolver = PackageAssetResolver(WorkspaceSource(repo_root), package_catalog)
 
-    assert len(graph["nodes"]) == 129
+    assert len(graph["nodes"]) == 141
     assert len(package_catalog.definitions.workflows) == 16
     asset_paths = {asset.logical_path for asset in package_catalog.assets}
     assert any(path.endswith(".xacro") for path in asset_paths)

@@ -82,12 +82,19 @@ OPC UA 仿真与 Edge 联调可直接使用 5 节点演示工作流
 UNILAB_VISUAL=rviz ./scripts/start-moveit-sim-os.sh
 ```
 
-MoveIt 核心由独立 `szlab-moveit-sim.json` 中的
-`standard_execution_backend=moveit_sim` 启动，和 `--visual` 正交。UI/Workflow
-只能调用 `simulate_site_motion`；生产 `pick/place` 会 fail-closed，因为当前模型尚无
-真实夹爪动作与生产 Inventory 见证。该仿真 Action 只接受 `target_site`、
-`payload_profile` 和仿真 fixture 标识，不接受生产 ResourceSlot。示例关节序列仅用于
+在整站图（如 `szlab-local-debug.json`）上把机械臂设为
+`standard_execution_backend=moveit_sim` 并配置 `standard_moveit_site_targets` 后，
+**同一工作流入口不变**（例如仍调用 `submit_place_to_s06` /
+`submit_pick_from_s06` / `submit_place_to_s04`）：设备内部改走 MoveIt 关节轨迹
+（RViz 可见），不写 PLC 任务号、也不写生产 Inventory。切回
+`plc_program` 则仍走 OPC UA 握手。泵/磁搅等其它设备继续走 PLC。
+
+独立最小图 `szlab-moveit-sim.json` 仍可只调 `simulate_site_motion` 做裸运动联调；
+生产 `pick`/`place`（带 ResourceSlot）在仿真 profile 上继续 fail-closed。示例关节序列仅用于
 仿真联调，不能作为生产批准点位。
+
+要让 MoveIt 轨迹真实下发，Edge 启动须去掉 `--test_mode`（必要时加
+`--enable_workflow_physical_execution`）；`--visual rviz` 与后端正交。
 
 该独立 MoveIt graph 不包含 PLC 节点，也不会改写任何网络配置。真机接入前必须单独核验 IP、NodeId、
 账号、联锁、急停、物料占用和恢复语义。

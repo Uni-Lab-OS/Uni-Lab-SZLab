@@ -28,7 +28,7 @@ EXPECTED_ROOTS = {
         (0.0, 0.0, 0.0),
     ),
     "devices/szlab_mixer_pipetting_station/models/device.xacro": (
-        (0.0585, 0.033, 0.0),
+        (0.0, 0.0, 0.0),
         (0.0, 0.0, 0.0),
     ),
     "devices/szlab_mixer_pump/models/device.xacro": (
@@ -40,7 +40,11 @@ EXPECTED_ROOTS = {
         (0.0, 0.0, 0.0),
     ),
     "devices/szlab_mixer_stirrer/models/device.xacro": (
-        (0.355, 0.182392, 0.0),
+        (0.33391374, 0.17660786, -0.008),
+        (0.0, 0.0, 0.0),
+    ),
+    "resources/szlab_mixer_stirrer_warehouse/models/resource.xacro": (
+        (0.355, 0.164991, 0.0),
         (0.0, 0.0, 0.0),
     ),
     "devices/szlab_s07_solid_addition/models/device.xacro": (
@@ -119,7 +123,7 @@ def test_each_xacro_owns_its_lower_left_origin(relative_path: str) -> None:
 
 def test_all_top_level_xacros_are_covered_by_the_origin_contract() -> None:
     actual = {
-        str(path.relative_to(PACKAGE))
+        path.relative_to(PACKAGE).as_posix()
         for pattern in ("**/models/device.xacro", "**/models/resource.xacro")
         for path in PACKAGE.glob(pattern)
     }

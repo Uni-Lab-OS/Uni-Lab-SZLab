@@ -158,7 +158,7 @@ def test_s06_material_workflow_forms_one_resource_slot_chain(repo_root: Path) ->
         "szlab_mixer_robot.pick_beaker_from_s06",
     ]
     assert isinstance(workflow.returns, ast.Name)
-    assert workflow.returns.id == "S06MaterialWorkflowResult"
+    assert workflow.returns.id == "S06材料感知加液Result"
     assert "ResourceSlot" in source
     assert "AllowedResourceTemplates(beaker_500ml)" in source
     assert "beaker=picked.beaker" in source
@@ -373,7 +373,7 @@ def test_all_package_workflows_satisfy_authoring_candidate_contract(
                 == "58198f7a-eec4-5276-9bc5-5dd5b54c4b06"
             }
             assert {
-                "8d8bfc18-03db-5ff3-a681-edf1c15294b7",
+                "c776a7e8-01b4-4a15-b0eb-a201e865cb2a",
                 "65fbc7bf-5e17-5a3e-9b15-eab6ebebbf82",
             } <= dose_predecessors
             assert result.normalized_python_source.count("material_source(") == 2

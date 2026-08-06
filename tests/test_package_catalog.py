@@ -19,9 +19,9 @@ def test_repository_compiles_as_the_szlab_domain_package(repo_root: Path) -> Non
     assert catalog.namespace == "community.szlab_poly_studio"
     assert (repo_root / "package.yaml").is_file()
     assert len(catalog.definitions.devices) == 9
-    assert len(catalog.definitions.resources) == 20
+    assert len(catalog.definitions.resources) == 22
     assert len(catalog.definitions.workflows) == 16
-    assert sum(len(device.details["actions"]) for device in catalog.definitions.devices) == 98
+    assert sum(len(device.details["actions"]) for device in catalog.definitions.devices) == 99
     asset_paths = {asset.logical_path for asset in catalog.assets}
     assert any(path.endswith(".xacro") for path in asset_paths)
     assert any(path.lower().endswith(".stl") for path in asset_paths)
@@ -57,9 +57,9 @@ def test_catalog_projects_to_registry_without_the_legacy_package_scanner(
     )
 
     assert len(lab_registry.device_type_registry) == 9
-    assert len(lab_registry.resource_type_registry) == 20
-    assert action_count == 98
-    assert len(action_catalog_from_package_catalog(catalog)) == 98
+    assert len(lab_registry.resource_type_registry) == 22
+    assert action_count == 99
+    assert len(action_catalog_from_package_catalog(catalog)) == 99
     assert all(
         definition.startswith("community.szlab_poly_studio.") for definition in lab_registry.device_type_registry
     )

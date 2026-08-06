@@ -44,9 +44,9 @@
 - ``host_node.transfer_resource``（物理动作成功后的物料系统记账）
 - ``szlab_s07_solid_addition.dose_powder_with_materials``（S07 工艺 3）
 
-建议用 ``--workflow WORKFLOW_ID`` 定向运行单个工作流；选择
-``s06_robot_workflow`` 或 ``szlab_robot_liquid_stirring_demo_workflow`` 时会让 S06
-烧杯传感器从 False 开始，并由任务 11/12 的握手周期切换；选择
+建议用 ``--workflow WORKFLOW_ID`` 定向运行单个工作流；只要场景启用了会向 S06
+放料的机器人组件（``robot_s06`` / ``robot_standard``，``all`` 也包含它们），S06
+烧杯传感器就从 False 开始，并由任务 11/12 的握手周期切换；选择
 ``s09_移液调试``（或兼容别名 ``szlab_s09_pipetting_workflow``）时会初始化
 S09 工位和液体余量，并响应全部内部工艺。原有
 ``--s06-robot-workflow``、``--s09-pipetting-workflow`` 参数仍作为兼容别名保留。
@@ -1021,15 +1021,10 @@ class WorkflowHandshakeSimulator:
         self.pump = int(pump)
         self.process_delay = max(float(process_delay), 0.0)
         self.workflow = selected_workflow
+        # S06 加液位由机器人放料填充时必须从空位起步，否则 place_to_s06 的前置
+        # 传感器检查（要求为空）会在 Edge 下发任务号之前就死锁。
         self.s06_robot_workflow = bool(
-            s06_robot_workflow
-            or selected_workflow
-            in {
-                "s06_robot_workflow",
-                "szlab_material_s06_workflow",
-                "szlab_robot_liquid_stirring_demo_workflow",
-                SINGLE_SAMPLE_WORKFLOW,
-            }
+            s06_robot_workflow or self.enabled_components & {"robot_s06", "robot_standard"}
         )
         self.s09_pipetting_workflow = bool(
             s09_pipetting_workflow

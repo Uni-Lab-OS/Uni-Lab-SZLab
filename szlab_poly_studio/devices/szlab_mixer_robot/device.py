@@ -38,6 +38,9 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
 from szlab_poly_studio.devices.szlab_mixer_robot.execution_backend import (
     RobotExecutionAdapter,
 )
+from szlab_poly_studio.devices.szlab_mixer_robot.legacy_to_moveit_sites import (
+    resolve_legacy_moveit_site,
+)
 from szlab_poly_studio.devices.szlab_mixer_robot.moveit_execution import (
     SZLabMoveItExecutionAdapter,
     UniLabOSMoveItJointClient,
@@ -254,18 +257,18 @@ class SzlabMixerRobotDevice(
 
         joint_names = (
             "arm_base_joint",
-            "eco65_joint_1",
-            "eco65_joint_2",
-            "eco65_joint_3",
-            "eco65_joint_4",
-            "eco65_joint_5",
-            "eco65_joint_6",
+            "cr7_joint_1",
+            "cr7_joint_2",
+            "cr7_joint_3",
+            "cr7_joint_4",
+            "cr7_joint_5",
+            "cr7_joint_6",
         )
         client = UniLabOSMoveItJointClient(
             ros_node,
             joint_names=joint_names,
             base_link_name="arm_slideway",
-            end_effector_name="eco65_link_6",
+            end_effector_name="cr7_link_6",
             planning_group="arm",
             speed=self._standard_moveit_speed,
             execution_timeout=self.timeout,
@@ -642,6 +645,120 @@ class SzlabMixerRobotDevice(
 
     @not_action
     def _submit_robot_task(
+        self,
+        task: str,
+        station: str,
+        task_number: int,
+        variables: dict[str, Any] | None = None,
+        reset_variables: dict[str, Any] | None = None,
+        precheck=None,
+        verify_reset: bool = False,
+        **data: Any,
+    ) -> dict[str, Any]:
+        if self._standard_execution_backend == "moveit_sim":
+            return self._submit_robot_task_via_moveit(
+                task=task,
+                station=station,
+                task_number=task_number,
+                **data,
+            )
+        return self._submit_robot_task_via_plc(
+            task=task,
+            station=station,
+            task_number=task_number,
+            variables=variables,
+            reset_variables=reset_variables,
+            precheck=precheck,
+            verify_reset=verify_reset,
+            **data,
+        )
+
+    @not_action
+    def _submit_robot_task_via_moveit(
+        self,
+        *,
+        task: str,
+        station: str,
+        task_number: int,
+        **data: Any,
+    ) -> dict[str, Any]:
+        """Run legacy submit_* entry points as MoveIt simulation site motion.
+
+        Does not read/write PLC variables or commit production Inventory.
+        """
+
+        try:
+            mapped = resolve_legacy_moveit_site(
+                station=station,
+                task=task,
+                position=data.get("position"),
+                product_type=data.get("product_type"),
+            )
+        except (TypeError, ValueError) as exc:
+            result = {
+                "success": False,
+                "message": str(exc),
+                "task": task,
+                "station": station,
+                "task_number": int(task_number),
+                "status": "rejected",
+                "execution_backend": "moveit_sim",
+                **data,
+            }
+            self._last_task = result
+            return result
+
+        kind = "pick" if str(task).strip().lower() == "pick" else "place"
+        try:
+            motion = self._standard_gateway().execute_simulation_site(
+                kind=kind,
+                target_site=mapped.target_site,
+                payload_profile=mapped.payload_profile,
+                fixture_id=mapped.fixture_id,
+            )
+        except Exception as exc:
+            result = {
+                "success": False,
+                "message": str(exc),
+                "task": task,
+                "station": station,
+                "task_number": int(task_number),
+                "status": "failed",
+                "execution_backend": "moveit_sim",
+                "target_site": mapped.target_site,
+                **data,
+            }
+            self._last_task = result
+            return result
+
+        success = bool(motion.get("success"))
+        result = {
+            "success": success,
+            "message": (
+                str(motion.get("message") or "")
+                if motion.get("message")
+                else (
+                    f"MoveIt 仿真任务已完成: {station} {task}"
+                    if success
+                    else f"MoveIt 仿真任务失败: {station} {task}"
+                )
+            ),
+            "task": task,
+            "station": station,
+            "task_number": int(task_number),
+            "status": "completed" if success else str(motion.get("state") or "failed").lower(),
+            "execution_backend": "moveit_sim",
+            "target_site": mapped.target_site,
+            "payload_profile": mapped.payload_profile,
+            "command_id": motion.get("command_id"),
+            "inventory_commit_allowed": bool(motion.get("inventory_commit_allowed")),
+            **data,
+        }
+        self._last_task = result
+        return result
+
+    @not_action
+    def _submit_robot_task_via_plc(
         self,
         task: str,
         station: str,
