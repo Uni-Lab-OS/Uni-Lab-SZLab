@@ -84,14 +84,16 @@ def test_s072_site_number_selects_the_matching_plc_product_and_sensor() -> None:
 
 def test_s3_and_s11_bind_product_type_to_physical_ab_row() -> None:
     s3_sample = resolve_s3_site(3, "L2A1")
+    s3_sample_250ml = resolve_s3_site(2, "L2A1")
     s3_beaker = resolve_s3_site(1, "L2B1")
     s11_sample = resolve_s11_site(3, 7)
+    s11_sample_250ml = resolve_s11_site(2, "L2A1")
 
     assert (s3_sample.site_label, s3_sample.controller_position) == ("L2A1", 7)
+    assert (s3_sample_250ml.site_label, s3_sample_250ml.product_type) == ("L2A1", 2)
     assert (s3_beaker.site_label, s3_beaker.controller_position) == ("L2B1", 7)
     assert (s11_sample.site_label, s11_sample.controller_position) == ("L2A1", 7)
-    with pytest.raises(ValueError, match="产品类型"):
-        resolve_s3_site(2, "2-1")
+    assert (s11_sample_250ml.site_label, s11_sample_250ml.product_type) == ("L2A1", 2)
     with pytest.raises(ValueError, match="A/B 行"):
         resolve_s11_site(3, "L2B1")
 

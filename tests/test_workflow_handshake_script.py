@@ -587,6 +587,7 @@ def test_single_sample_workflow_drives_standard_robot_and_new_action_names() -> 
     assert [(event.action, event.phase) for event in accepted] == [("szlab_mixer_robot.pick", "accepted")]
     assert [(event.action, event.phase) for event in completed] == [("szlab_mixer_robot.pick", "completed")]
     assert adapter.read(handshake.S03_BEAKER_SENSOR) is False
+    assert adapter.read(handshake.ROBOT_TOOL_PAYLOAD_SENSOR) is True
 
     adapter.write(handshake.ROBOT_WRITE_DONE, False)
     simulator.step(now=0.6)
@@ -599,6 +600,7 @@ def test_single_sample_workflow_drives_standard_robot_and_new_action_names() -> 
     assert [(event.action, event.phase) for event in accepted] == [("szlab_mixer_robot.place", "accepted")]
     assert [(event.action, event.phase) for event in completed] == [("szlab_mixer_robot.place", "completed")]
     assert adapter.read(handshake.s11_sensor(1, 1)) is True
+    assert adapter.read(handshake.ROBOT_TOOL_PAYLOAD_SENSOR) is False
 
     assert simulator._pump_action() == handshake.SINGLE_SAMPLE_PUMP_ACTION
     assert simulator._stirrer_action() == handshake.SINGLE_SAMPLE_STIR_ACTION

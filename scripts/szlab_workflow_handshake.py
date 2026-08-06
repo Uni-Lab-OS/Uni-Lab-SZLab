@@ -1121,7 +1121,7 @@ class WorkflowHandshakeSimulator:
                     S072_ROBOT_PRODUCT: 0,
                 }
             )
-        if self.workflow == S07_MATERIAL_WORKFLOW:
+        if self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in components:
             values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update(
@@ -1220,7 +1220,7 @@ class WorkflowHandshakeSimulator:
                     S072_ROBOT_PRODUCT: 0,
                 }
             )
-        if self.workflow == S07_MATERIAL_WORKFLOW:
+        if self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in components:
             values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update(
@@ -1406,10 +1406,13 @@ class WorkflowHandshakeSimulator:
             occupied = STANDARD_ROBOT_TASK_KIND.get(cycle.process) == "place"
             if cycle.sensor:
                 self.adapter.write(cycle.sensor, occupied)
-            if self.workflow == S07_MATERIAL_WORKFLOW and cycle.process in (6, 14, 15):
+            standard_kind = STANDARD_ROBOT_TASK_KIND.get(cycle.process)
+            if (
+                self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in self.enabled_components
+            ) and standard_kind in {"pick", "place"}:
                 self.adapter.write(
                     ROBOT_TOOL_PAYLOAD_SENSOR,
-                    cycle.process in (6, 14),
+                    standard_kind == "pick",
                 )
             rearmed_sensor = ""
             if cycle.process == 13:

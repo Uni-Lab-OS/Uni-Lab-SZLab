@@ -33,6 +33,16 @@ S072_SENSOR_BY_POSITION = {
     1: "传感器状态_上位机[3].NO[14]",
     2: "传感器状态_上位机[3].NO[15]",
 }
+S08_SENSOR_BY_POSITION = dict(S072_SENSOR_BY_POSITION)
+S09_TIP_SENSOR_BY_POSITION = {
+    1: "传感器状态_上位机[4].NO[5]",
+    2: "传感器状态_上位机[4].NO[6]",
+}
+S09_REAGENT_SENSOR_BY_POSITION = {
+    position: f"传感器状态_上位机[4].NO[{position + 6}]"
+    for position in range(1, 6)
+}
+S09_BEAKER_SENSOR = "传感器状态_上位机[4].NO[7]"
 
 S1_INVENTORY_ONLY_SITE_LABELS = (
     "L1C1",
@@ -92,6 +102,12 @@ _SITE_OWNER_ALIASES = {
     "szlab_s07_process_warehouse": "s07_process_warehouse",
     "szlab_s07processcarrier": "s07_process_warehouse",
     "s07固体加料转盘仓": "s07_process_warehouse",
+    "s08": "szlab_s08_cap_station",
+    "szlab_s08_cap_station": "szlab_s08_cap_station",
+    "s08 开关盖": "szlab_s08_cap_station",
+    "s09": "szlab_mixer_pipetting_station",
+    "szlab_mixer_pipetting_station": "szlab_mixer_pipetting_station",
+    "s09 移液站": "szlab_mixer_pipetting_station",
 }
 
 
@@ -255,6 +271,52 @@ def resolve_s072_site(position: int | str) -> SiteControlBinding:
     )
 
 
+def resolve_s08_site(position: int | str) -> SiteControlBinding:
+    value = str(position).strip().upper()
+    if value.startswith("S08"):
+        value = value[3:]
+    number = _single_axis_position(value, count=2, station="S08")
+    return SiteControlBinding(
+        warehouse_instance_id="szlab_s08_cap_station",
+        station="S08",
+        site_label=f"S08{number}",
+        sensor_key=str(number),
+        controller_position=number,
+        presence_variable=S08_SENSOR_BY_POSITION[number],
+        # PLC 既有产品枚举：1=250 mL 样品瓶，3=100 mL 液体试剂瓶。
+        product_type=1 if number == 1 else 3,
+    )
+
+
+def resolve_s09_site(position: int | str) -> SiteControlBinding:
+    value = str(position).strip().upper()
+    match = re.fullmatch(r"(?P<kind>TIP|REAGENT|BEAKER)(?P<position>\d+)", value)
+    if match is None:
+        raise ValueError("S09 Site 必须是 TIP1-2、REAGENT1-5 或 BEAKER1")
+    kind = match.group("kind")
+    number = int(match.group("position"))
+    if kind == "TIP" and number in S09_TIP_SENSOR_BY_POSITION:
+        product_type = 1
+        presence_variable = S09_TIP_SENSOR_BY_POSITION[number]
+    elif kind == "REAGENT" and number in S09_REAGENT_SENSOR_BY_POSITION:
+        product_type = 2
+        presence_variable = S09_REAGENT_SENSOR_BY_POSITION[number]
+    elif kind == "BEAKER" and number == 1:
+        product_type = 3
+        presence_variable = S09_BEAKER_SENSOR
+    else:
+        raise ValueError("S09 Site 必须是 TIP1-2、REAGENT1-5 或 BEAKER1")
+    return SiteControlBinding(
+        warehouse_instance_id="szlab_mixer_pipetting_station",
+        station="S09",
+        site_label=value,
+        sensor_key=str(number),
+        controller_position=number,
+        presence_variable=presence_variable,
+        product_type=product_type,
+    )
+
+
 def resolve_robot_site_reference(mount_resource: Any, site: str) -> SiteControlBinding:
     """Resolve ``ResourceSlot parent + local Site`` into a deployment binding.
 
@@ -288,6 +350,10 @@ def resolve_robot_site_reference(mount_resource: Any, site: str) -> SiteControlB
         if local_site.strip().upper().startswith("S072"):
             return resolve_s072_site(local_site)
         return resolve_s07_process_site(local_site)
+    if owner == "szlab_s08_cap_station":
+        return resolve_s08_site(local_site)
+    if owner == "szlab_mixer_pipetting_station":
+        return resolve_s09_site(local_site)
     raise ValueError(f"未注册机械臂 Site owner: {owner}")
 
 
@@ -333,6 +399,10 @@ def iter_process_site_bindings() -> Iterable[SiteControlBinding]:
         yield resolve_s07_process_site(position)
     for position in range(1, 3):
         yield resolve_s072_site(position)
+    for position in range(1, 3):
+        yield resolve_s08_site(position)
+    for label in ("TIP1", "TIP2", "REAGENT1", "REAGENT2", "REAGENT3", "REAGENT4", "REAGENT5", "BEAKER1"):
+        yield resolve_s09_site(label)
 
 
 def _resolve_mount_owner(mount_resource: Any) -> str:
@@ -402,11 +472,11 @@ def _resolve_container_stack_site(
     if product_type == 1:
         row = "B"
         sensors = S11_USED_BEAKER_SENSORS if used else S3_UNUSED_BEAKER_SENSORS
-    elif product_type == 3:
+    elif product_type in {2, 3}:
         row = "A"
         sensors = S11_USED_SAMPLE_VIAL_SENSORS if used else S3_UNUSED_SAMPLE_VIAL_SENSORS
     else:
-        raise ValueError("S03/S11 产品类型必须是 1(500mL烧杯) 或 3(500mL样品瓶)")
+        raise ValueError("S03/S11 产品类型必须是 1(500mL烧杯)、2(250mL样品瓶) 或 3(500mL样品瓶)")
 
     match = re.fullmatch(r"L(?P<layer>\d+)(?P<row>[AB])(?P<column>\d+)", str(position).strip().upper())
     if match is not None:

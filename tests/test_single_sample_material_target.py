@@ -29,6 +29,23 @@ def _workflow_parameters(source: str, function_name: str) -> set[str]:
     }
 
 
+def _resource_ref_ids(source: str) -> set[str]:
+    """提取源码中 ``resource_ref`` 调用的字符串资源身份。"""
+
+    identities: set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "resource_ref"
+            and node.args
+            and isinstance(node.args[0], ast.Constant)
+            and isinstance(node.args[0].value, str)
+        ):
+            identities.add(node.args[0].value)
+    return identities
+
+
 def test_single_sample_target_expresses_material_and_transfer_contract(
     repo_root: Path,
 ) -> None:
@@ -77,7 +94,7 @@ def test_single_sample_target_keeps_deployment_locations_internal(
         "s08_warehouse",
         "s09_warehouse",
     }
-    for resource_id in (
+    assert {
         "s3_unused_beaker",
         "powder_container_warehouse",
         "s10_liquid_reagent",
@@ -86,8 +103,7 @@ def test_single_sample_target_keeps_deployment_locations_internal(
         "s06_process_warehouse",
         "s07_process_warehouse",
         "s11_used_beaker",
-    ):
-        assert f'resource_ref("{resource_id}")' in source
+    } <= _resource_ref_ids(source)
 
 
 def test_production_single_sample_workflow_has_the_same_location_boundary(
@@ -106,12 +122,11 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
 
     assert not any(name.endswith("_site") for name in parameters)
     assert calls.count("s_z_lab_标准物料转运") == 11
+    assert calls.count("material_source") == 8
     assert not any(name.startswith("material_transfer_") for name in calls)
-    assert {name for name in parameters if name.endswith("_warehouse")} == {
-        "s08_warehouse",
-        "s09_warehouse",
-    }
-    for resource_id in (
+    assert not {name for name in parameters if name.endswith("_warehouse")}
+    assert {
+        "s2_tip_warehouse",
         "s3_unused_beaker",
         "powder_container_warehouse",
         "s10_liquid_reagent",
@@ -119,9 +134,10 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
         "s05_process_warehouse",
         "s06_process_warehouse",
         "s07_process_warehouse",
+        "szlab_s08_cap_station",
+        "szlab_mixer_pipetting_station",
         "s11_used_beaker",
-    ):
-        assert f"resource_ref('{resource_id}')" in source
+    } <= _resource_ref_ids(source)
 
 
 def test_standard_transfer_uses_implicit_material_passthrough(
@@ -144,6 +160,129 @@ def test_standard_transfer_uses_implicit_material_passthrough(
     assert result_fields == {"site"}
     assert "resource: ResourceSlot" in source
     assert "committed.resource" not in source
+
+
+def test_single_sample_root_materials_are_scheduler_allocated(
+    repo_root: Path,
+) -> None:
+    """全部根物料由物料来源（MaterialSource）交给 EdgeScheduler 预分配。"""
+
+    production = (
+        repo_root
+        / "szlab_poly_studio/workflows/single_sample_atomic_material.py"
+    )
+    module = ast.parse(production.read_text(encoding="utf-8"))
+    result = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.ClassDef)
+        and node.name == "SZLab单样品全流程物料感知Result"
+    )
+    workflow = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "s_z_lab_单样品全流程_物料感知"
+    )
+    returned = next(
+        node.value
+        for node in workflow.body
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)
+    )
+    explicit_fields = {
+        node.target.id
+        for node in result.body
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
+    }
+    returned_fields = {
+        key.value
+        for key in returned.keys
+        if isinstance(key, ast.Constant) and isinstance(key.value, str)
+    }
+
+    assert {"reagent_bottle", "tip_box"}.isdisjoint(explicit_fields)
+    assert {"reagent_bottle", "tip_box"}.isdisjoint(returned_fields)
+    assert {"reagent_bottle", "tip", "tip_box"}.isdisjoint(_workflow_parameters(
+        production.read_text(encoding="utf-8"),
+        "s_z_lab_单样品全流程_物料感知",
+    ))
+
+
+def test_single_sample_outputs_follow_the_final_material_consumers(
+    repo_root: Path,
+) -> None:
+    """成品瓶与使用后烧杯从最后一个物理消费者输出。"""
+
+    production = (
+        repo_root
+        / "szlab_poly_studio/workflows/single_sample_atomic_material.py"
+    )
+    module = ast.parse(production.read_text(encoding="utf-8"))
+    workflow = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "s_z_lab_单样品全流程_物料感知"
+    )
+    returned = next(
+        node.value
+        for node in workflow.body
+        if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)
+    )
+    values = {
+        key.value: value
+        for key, value in zip(returned.keys, returned.values, strict=True)
+        if isinstance(key, ast.Constant) and isinstance(key.value, str)
+    }
+
+    product = values["product_vial"]
+    used_beaker = values["used_beaker"]
+    assert isinstance(product, ast.Attribute)
+    assert isinstance(product.value, ast.Name)
+    assert (product.value.id, product.attr) == ("product_vial_at_s11", "resource")
+    assert isinstance(used_beaker, ast.Attribute)
+    assert isinstance(used_beaker.value, ast.Name)
+    assert (used_beaker.value.id, used_beaker.attr) == (
+        "committed_used_beaker",
+        "resource",
+    )
+
+
+def test_s09_warehouse_consumers_are_not_parallel_siblings(repo_root: Path) -> None:
+    """S09 两次入仓显式排序，不并发消费同一仓物料。"""
+
+    production = (
+        repo_root
+        / "szlab_poly_studio/workflows/single_sample_atomic_material.py"
+    )
+    module = ast.parse(production.read_text(encoding="utf-8"))
+    workflow = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "s_z_lab_单样品全流程_物料感知"
+    )
+    parallel_blocks = [
+        node
+        for node in ast.walk(workflow)
+        if isinstance(node, ast.With)
+        and any(
+            isinstance(item.context_expr, ast.Call)
+            and isinstance(item.context_expr.func, ast.Name)
+            and item.context_expr.func.id == "parallel"
+            for item in node.items
+        )
+    ]
+    parallel_targets = {
+        target.id
+        for block in parallel_blocks
+        for node in ast.walk(block)
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+
+    assert {"beaker_at_s09", "reagent_at_s09"}.isdisjoint(parallel_targets)
 
 
 def test_single_sample_mapping_covers_all_legacy_actions(repo_root: Path) -> None:

@@ -2495,6 +2495,9 @@
       },
       "config": {
         "plc_device_id": "szlab_poly_plc",
+        "standard_actions_enabled": true,
+        "standard_permit_asserts_remote_auto": true,
+        "standard_permit_asserts_safety_normal": true,
         "size_x": 4050.0,
         "size_y": 160.0,
         "size_z": 208.15,

@@ -31,6 +31,7 @@ UniLab 写入、对端读取：S08工艺选择、S08参数写入完成、S082瓶
 
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from enum import IntEnum
@@ -1001,6 +1002,22 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             raise ValueError(f"sample_id UTF-8 编码后不能超过 {CAP_CACHE_LENGTH} 字节")
         return encoded
 
+    @not_action
+    def _cap_tracking_sample_id(self, sample_id: str, *, namespace: str) -> list[int]:
+        """按容器角色生成稳定且不超过 PLC 缓存长度的瓶盖追踪标识。"""
+
+        value = str(sample_id).strip()
+        if not value:
+            raise ValueError("sample_id 不能为空")
+        normalized_namespace = str(namespace).strip().upper()
+        if len(normalized_namespace) != 1 or not normalized_namespace.isascii():
+            raise ValueError("瓶盖追踪命名空间必须是单个 ASCII 字符")
+        readable = f"{normalized_namespace}:{value}".encode("utf-8")
+        if len(readable) <= CAP_CACHE_LENGTH:
+            return list(readable)
+        digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[: CAP_CACHE_LENGTH - 2]
+        return list(f"{normalized_namespace}:{digest}".encode("ascii"))
+
     @action(description="对指定样品瓶或试剂瓶执行 S08 开/关盖并显式透传物料")
     def process_cap_with_material(
         self,
@@ -1045,7 +1062,7 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         timeout: float = 300.0,
     ) -> SampleVial250mlCapStatus:
         try:
-            plc_sample_id = self._sample_id_text_to_plc(sample_id)
+            plc_sample_id = self._cap_tracking_sample_id(sample_id, namespace="S")
         except ValueError as exc:
             return {"success": False, "message": str(exc), "container": container}
         result = self.process_cap(
@@ -1072,7 +1089,7 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
         timeout: float = 300.0,
     ) -> LiquidReagent100mlCapStatus:
         try:
-            plc_sample_id = self._sample_id_text_to_plc(sample_id)
+            plc_sample_id = self._cap_tracking_sample_id(sample_id, namespace="R")
         except ValueError as exc:
             return {"success": False, "message": str(exc), "container": container}
         result = self.process_cap(

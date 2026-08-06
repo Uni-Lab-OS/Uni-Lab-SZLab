@@ -45,7 +45,7 @@ from szlab_poly_studio.devices.szlab_mixer_pipetting_station.sensors import (
 from szlab_poly_studio.resources.materials import (
     beaker_500ml,
     liquid_reagent_bottle_100ml,
-    pipette_tip,
+    tip_box,
 )
 
 DEFAULT_OPCUA_URL = os.environ.get(
@@ -64,7 +64,7 @@ class PipettingWithMaterialsStatus(TypedDict):
         ResourceSlot,
         AllowedResourceTemplates(liquid_reagent_bottle_100ml),
     ]
-    tip: Annotated[ResourceSlot, AllowedResourceTemplates(pipette_tip)]
+    tip_box: Annotated[ResourceSlot, AllowedResourceTemplates(tip_box)]
 
 
 @device(
@@ -920,7 +920,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             ResourceSlot,
             AllowedResourceTemplates(liquid_reagent_bottle_100ml),
         ],
-        tip: Annotated[ResourceSlot, AllowedResourceTemplates(pipette_tip)],
+        tip_box: Annotated[ResourceSlot, AllowedResourceTemplates(tip_box)],
         liquid_bottle_index: int = 1,
         station: int = 1,
         aspirate_volume: int = 1,
@@ -945,7 +945,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "message": str(result.get("message", "")),
             "beaker": beaker,
             "reagent_bottle": reagent_bottle,
-            "tip": tip,
+            "tip_box": tip_box,
         }
 
     @action(description="执行 S09 烧杯加液：取 TIP、液体瓶取液、烧杯放液、放 TIP")

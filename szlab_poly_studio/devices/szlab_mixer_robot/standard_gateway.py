@@ -692,24 +692,33 @@ def _robot_command_from_request(request: StandardRobotRequest) -> RobotCommand:
     binding = resolve_canonical_site_reference(request.site)
     if not binding.robot_action_ready:
         raise ValueError(binding.blocked_reason or f"Site {request.site} 尚未启用标准机械臂动作")
+    station = binding.station
+    resolved_product_type = binding.product_type
     expected_payload = _payload_profile_for_site(binding)
+    if station in {"S03", "S11"} and binding.product_type in {2, 3}:
+        sample_vial_product_types = {
+            "sample_vial_250ml@v1": 2,
+            "sample_vial_500ml@v1": 3,
+        }
+        if request.payload_profile in sample_vial_product_types:
+            expected_payload = request.payload_profile
+            resolved_product_type = sample_vial_product_types[request.payload_profile]
     if request.payload_profile != expected_payload:
         raise ValueError(
             f"Site {canonical_site_reference(binding)} 要求负载 {expected_payload}, "
             f"实际为 {request.payload_profile}"
         )
 
-    station = binding.station
     skill_station = station.lower()
     skill_id = f"pick_from_{skill_station}" if request.kind == "pick" else f"place_to_{skill_station}"
     legacy_runner_name = f"_run_{skill_station}_{request.kind}"
     legacy_parameters: dict[str, Any]
     if station in {"S02", "S04", "S10"}:
         legacy_parameters = {"position": binding.controller_position}
-    elif station in {"S03", "S11"}:
+    elif station in {"S03", "S08", "S09", "S11"}:
         legacy_parameters = {
-            "product_type": binding.product_type,
-            "position": binding.sensor_key,
+            "product_type": resolved_product_type,
+            "position": binding.sensor_key if station in {"S03", "S11"} else binding.controller_position,
         }
     elif station == "S072":
         legacy_parameters = {
@@ -741,7 +750,19 @@ def _payload_profile_for_site(binding: SiteControlBinding) -> str:
     if binding.station == "S02":
         return "tip_box@v1"
     if binding.station in {"S03", "S11"}:
-        return "beaker_500ml@v1" if binding.product_type == 1 else "sample_vial_500ml@v1"
+        return {
+            1: "beaker_500ml@v1",
+            2: "sample_vial_250ml@v1",
+            3: "sample_vial_500ml@v1",
+        }[binding.product_type]
+    if binding.station == "S08":
+        return "sample_vial_250ml@v1" if binding.product_type == 1 else "liquid_reagent_bottle_100ml@v1"
+    if binding.station == "S09":
+        return {
+            1: "tip_box@v1",
+            2: "liquid_reagent_bottle_100ml@v1",
+            3: "beaker_500ml@v1",
+        }[binding.product_type]
     if binding.station == "S072" and binding.site_label.startswith("P"):
         return "powder_container@v1"
     if binding.station in {"S04", "S05", "S06", "S072"}:
@@ -777,10 +798,14 @@ def _payload_profile_for_resource(resource: Any) -> str:
     identity = " ".join(discriminators)
     if "beaker_500ml" in identity or "szlab_beaker_500ml" in identity or "beaker" in discriminators:
         return "beaker_500ml@v1"
+    max_volume = resource.get("max_volume") if isinstance(resource, Mapping) else getattr(resource, "max_volume", None)
+    if "sample_vial_250ml" in identity or (
+        "sample_vial" in discriminators and max_volume in (250_000, 250_000.0)
+    ):
+        return "sample_vial_250ml@v1"
     if "sample_vial_500ml" in identity or "sample_vial" in discriminators:
-        max_volume = getattr(resource, "max_volume", None)
         if max_volume not in (None, 500_000, 500_000.0):
-            raise ValueError("当前标准 Site 仅支持 500 mL 样品瓶")
+            raise ValueError("当前标准 Site 仅支持 250 mL 或 500 mL 样品瓶")
         return "sample_vial_500ml@v1"
     if "liquid_reagent_bottle_100ml" in identity or "liquid_reagent" in discriminators:
         return "liquid_reagent_bottle_100ml@v1"
@@ -812,11 +837,16 @@ def _capture_workflow_execution_identity() -> Mapping[str, str]:
     """兼容导入；旧 OS 没有 execution identity 时由调用方 fail-closed。"""
 
     try:
-        from unilabos.observability.runtime import (
+        from unilabos.utils.tracing import (
             capture_workflow_execution_identity,
         )
     except ImportError:
-        return {}
+        try:
+            from unilabos.observability.runtime import (
+                capture_workflow_execution_identity,
+            )
+        except ImportError:
+            return {}
     return capture_workflow_execution_identity()
 
 

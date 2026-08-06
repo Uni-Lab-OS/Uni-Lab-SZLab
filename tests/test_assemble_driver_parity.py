@@ -24,6 +24,7 @@ from szlab_poly_studio.devices.szlab_mixer_stirrer.device import (
 )
 from szlab_poly_studio.devices.szlab_poly_plc.device import wait_sensor_conditions
 from szlab_poly_studio.devices.szlab_s08_cap_station.device import (
+    CAP_CACHE_LENGTH,
     CAP_STORAGE_SLOT_SENSORS,
     SENSOR_CAP_STATION,
     S08ProcessType,
@@ -237,6 +238,55 @@ def test_s08_open_process_checks_station_and_cap_slot_transition() -> None:
 
     assert before == {SENSOR_CAP_STATION[2]: True, CAP_STORAGE_SLOT_SENSORS[4]: False}
     assert after == {SENSOR_CAP_STATION[2]: True, CAP_STORAGE_SLOT_SENSORS[4]: True}
+
+
+def test_s08_material_wrappers_namespace_cap_tracking_by_container_role(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    device = SZLabS08CapStationDevice(plc_gateway=MemoryGateway())
+    calls: list[dict[str, Any]] = []
+
+    def process_cap(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return {"success": True, "message": "ok"}
+
+    monkeypatch.setattr(device, "process_cap", process_cap)
+    container = {"uuid": "container-001"}
+    device.process_liquid_reagent_100ml_cap_with_material(
+        container=container,
+        operation="open",
+        sample_id="sample-opc-001",
+    )
+    device.process_sample_vial_250ml_cap_with_material(
+        container=container,
+        operation="open",
+        sample_id="sample-opc-001",
+    )
+    device.process_sample_vial_250ml_cap_with_material(
+        container=container,
+        operation="close",
+        sample_id="sample-opc-001",
+    )
+
+    reagent_tracking_id = calls[0]["sample_id"]
+    sample_vial_open_tracking_id = calls[1]["sample_id"]
+    sample_vial_close_tracking_id = calls[2]["sample_id"]
+    assert reagent_tracking_id != sample_vial_open_tracking_id
+    assert sample_vial_open_tracking_id == sample_vial_close_tracking_id
+    assert bytes(reagent_tracking_id).decode() == "R:sample-opc-001"
+    assert bytes(sample_vial_open_tracking_id).decode() == "S:sample-opc-001"
+
+
+def test_s08_namespaced_cap_tracking_stays_within_plc_cache_limit() -> None:
+    device = SZLabS08CapStationDevice(plc_gateway=MemoryGateway())
+
+    first = device._cap_tracking_sample_id("样品-" * 20, namespace="S")
+    second = device._cap_tracking_sample_id("样品-" * 20, namespace="S")
+    reagent = device._cap_tracking_sample_id("样品-" * 20, namespace="R")
+
+    assert first == second
+    assert first != reagent
+    assert len(first) == CAP_CACHE_LENGTH
 
 
 def test_s09_holds_parameter_signal_until_done_and_checks_material() -> None:
