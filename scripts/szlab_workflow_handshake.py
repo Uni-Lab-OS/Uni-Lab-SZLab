@@ -1056,6 +1056,8 @@ class WorkflowHandshakeSimulator:
         return WORKFLOW_COMPONENTS[self.workflow]
 
     def initialization_values(self) -> dict[str, Any]:
+        """返回当前工作流场景启动前应写入 PLC 的可验证初始值。"""
+
         components = self.enabled_components
         values: dict[str, Any] = {}
         if components & ROBOT_COMPONENTS:
@@ -1065,6 +1067,7 @@ class WorkflowHandshakeSimulator:
                     ROBOT_WRITE_ALLOWED: True,
                     ROBOT_WRITE_DONE: False,
                     ROBOT_TASK_COMPLETE: 0,
+                    ROBOT_TOOL_PAYLOAD_SENSOR: False,
                 }
             )
         if "robot_s03" in components:
@@ -1121,8 +1124,6 @@ class WorkflowHandshakeSimulator:
                     S072_ROBOT_PRODUCT: 0,
                 }
             )
-        if self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in components:
-            values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update(
                 {
@@ -1169,6 +1170,8 @@ class WorkflowHandshakeSimulator:
         return values
 
     def cleanup_values(self) -> dict[str, Any]:
+        """返回停止握手场景时用于撤销模拟物理状态的安全复位值。"""
+
         components = self.enabled_components
         values: dict[str, Any] = {}
         if components & ROBOT_COMPONENTS:
@@ -1177,6 +1180,7 @@ class WorkflowHandshakeSimulator:
                     ROBOT_HOME: False,
                     ROBOT_WRITE_ALLOWED: False,
                     ROBOT_TASK_COMPLETE: 0,
+                    ROBOT_TOOL_PAYLOAD_SENSOR: False,
                 }
             )
         if "robot_s03" in components:
@@ -1220,8 +1224,6 @@ class WorkflowHandshakeSimulator:
                     S072_ROBOT_PRODUCT: 0,
                 }
             )
-        if self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in components:
-            values[ROBOT_TOOL_PAYLOAD_SENSOR] = False
         if "s07" in components:
             values.update(
                 {
@@ -1376,6 +1378,14 @@ class WorkflowHandshakeSimulator:
         raise ValueError(f"不支持的机器人任务号: {task}")
 
     def _step_robot(self, now: float) -> list[HandshakeEvent]:
+        """推进机器人握手状态机并返回本轮产生的物理执行事件。
+
+        参数：``now`` 是调用方提供的单调时钟秒值，用于判定模拟动作是否到期。
+        返回：本轮接受、完成或复位的握手事件列表；没有状态变化时返回空列表。
+        安全约束：取放料完成时先同步库位与夹爪物理证据，再发布 Robot_Home 和
+        完成码；倒料不会改变夹爪持料状态，避免伪造已放料见证。
+        """
+
         cycle = self.robot
         events: list[HandshakeEvent] = []
         if cycle.phase == "idle":
@@ -1403,17 +1413,16 @@ class WorkflowHandshakeSimulator:
                     )
                 )
         elif cycle.phase == "executing" and now >= cycle.due_at:
-            occupied = STANDARD_ROBOT_TASK_KIND.get(cycle.process) == "place"
+            # 任务类型决定动作完成后的库位占用和夹爪持料物理证据。
+            task_kind = STANDARD_ROBOT_TASK_KIND.get(cycle.process)
+            occupied = task_kind == "place"
             if cycle.sensor:
                 self.adapter.write(cycle.sensor, occupied)
-            standard_kind = STANDARD_ROBOT_TASK_KIND.get(cycle.process)
-            if (
-                self.workflow == S07_MATERIAL_WORKFLOW or "robot_standard" in self.enabled_components
-            ) and standard_kind in {"pick", "place"}:
-                self.adapter.write(
-                    ROBOT_TOOL_PAYLOAD_SENSOR,
-                    standard_kind == "pick",
-                )
+            tool_holding: bool | None = None
+            if task_kind in {"pick", "place"}:
+                tool_holding = task_kind == "pick"
+                # 夹爪传感器仅提供物理执行见证，不替代库存系统的物料结算。
+                self.adapter.write(ROBOT_TOOL_PAYLOAD_SENSOR, tool_holding)
             rearmed_sensor = ""
             if cycle.process == 13:
                 self._s071_loaded_sensor = cycle.sensor
@@ -1433,6 +1442,11 @@ class WorkflowHandshakeSimulator:
                     {
                         "task_number": cycle.process,
                         "occupied": occupied,
+                        **(
+                            {"tool_holding": tool_holding}
+                            if tool_holding is not None
+                            else {}
+                        ),
                         **({"position": cycle.position} if cycle.position else {}),
                         **({"sensor": cycle.sensor} if cycle.sensor else {}),
                         **({"rearmed_sensor": rearmed_sensor} if rearmed_sensor else {}),
