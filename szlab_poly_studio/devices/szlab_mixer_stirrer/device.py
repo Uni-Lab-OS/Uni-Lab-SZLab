@@ -91,6 +91,39 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
     def status(self) -> str:
         return self._status
 
+    @topic_config(period=0.5)
+    def get_material_present_position_1(self) -> bool:
+        return self._material_present(1)
+
+    @topic_config(period=0.5)
+    def get_material_present_position_2(self) -> bool:
+        return self._material_present(2)
+
+    @topic_config(period=0.5)
+    def get_material_present_position_3(self) -> bool:
+        return self._material_present(3)
+
+    @topic_config(period=0.5)
+    def get_material_present_position_4(self) -> bool:
+        return self._material_present(4)
+
+    @topic_config(period=0.5)
+    def get_material_present_position_5(self) -> bool:
+        return self._material_present(5)
+
+    @topic_config(period=0.5)
+    def get_material_present_position_6(self) -> bool:
+        return self._material_present(6)
+
+    @not_action
+    def _material_present(self, position: int) -> bool:
+        return bool(
+            self._read_variable(
+                s04_material_sensor_var(position),
+                use_cache=False,
+            )
+        )
+
     @not_action
     def disconnect(self) -> None:
         if self._client is not None:
@@ -180,7 +213,35 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
         reader = self._plc_gateway if self._plc_gateway is not None else self._client
         return wait_variable_true(reader, variable, timeout=self.timeout, interval=1.0)
 
-    @action(description="执行 S04 磁搅加工")
+    @action(
+        description="执行 S04 磁搅加工",
+        preconditions=[
+            {
+                "id": "material_present",
+                "parameter": "position",
+                "properties": {
+                    "1": "material_present_position_1",
+                    "2": "material_present_position_2",
+                    "3": "material_present_position_3",
+                    "4": "material_present_position_4",
+                    "5": "material_present_position_5",
+                    "6": "material_present_position_6",
+                },
+                "sensors": {
+                    "1": "传感器状态_上位机[2].NO[10]",
+                    "2": "传感器状态_上位机[2].NO[11]",
+                    "3": "传感器状态_上位机[2].NO[12]",
+                    "4": "传感器状态_上位机[2].NO[13]",
+                    "5": "传感器状态_上位机[2].NO[14]",
+                    "6": "传感器状态_上位机[2].NO[15]",
+                },
+                "expected": True,
+                "policy": "fail_fast",
+                "max_age_seconds": 2.0,
+                "message": "位置 {position} 无物料，无法开始磁搅",
+            }
+        ],
+    )
     def run_stirring(
         self,
         position: int = 1,
