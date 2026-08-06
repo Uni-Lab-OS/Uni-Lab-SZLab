@@ -9,7 +9,15 @@ from unilabos.registry.decorators import action, device, not_action, topic_confi
 from unilabos.registry.placeholder_type import ResourceSlot
 
 from szlab_poly_studio.common.action_logging import install_action_logging
-from szlab_poly_studio.common.plc_gateway import UnifiedPLCGatewayMixin
+from szlab_poly_studio.common.action_phase_feedback import (
+    publish_action_phase,
+    publish_completion_phase,
+    wait_with_action_feedback,
+)
+from szlab_poly_studio.common.plc_gateway import (
+    PLCActionGateway,
+    UnifiedPLCGatewayMixin,
+)
 from szlab_poly_studio.devices.szlab_mixer_stirrer.sensors import (
     S04_POSITION_RANGE,
     S04_PROCESS_MODES,
@@ -274,8 +282,31 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             return self._reset_pc_to_plc_defaults(position)
 
         material_sensor = s04_material_sensor_var(position)
-        if not self._wait_variable_true(material_sensor):
+        material_ready, material_actual, material_elapsed = wait_with_action_feedback(
+            variable=material_sensor,
+            expected=True,
+            phase="waiting_precondition",
+            position=position,
+            timeout=float(self.timeout),
+            read=lambda: self._read_variable(material_sensor, use_cache=False),
+            wait=lambda: self._wait_variable_true(material_sensor),
+            poll=isinstance(self._plc_gateway, PLCActionGateway),
+            precondition="material_present",
+        )
+        if not material_ready:
             self._status = "Error"
+            publish_action_phase(
+                "terminal",
+                position,
+                "timeout",
+                sensor=material_sensor,
+                precondition="material_present",
+                expected_value=True,
+                actual_value=material_actual,
+                elapsed_s=round(material_elapsed, 3),
+                timeout_s=float(self.timeout),
+                remaining_s=0.0,
+            )
             return {
                 "success": False,
                 "status": "rejected",
@@ -284,9 +315,23 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             }
         if not self._wait_variable_equal(s04_status_var(position), 1):
             self._status = "Error"
+            publish_action_phase(
+                "terminal",
+                position,
+                "timeout",
+                sensor=s04_status_var(position),
+                expected_value=1,
+            )
             return {"success": False, "message": f"{station} 空闲状态等待超时", "data": {"station": station}}
         if not self._wait_allow_processing(position):
             self._status = "Error"
+            publish_action_phase(
+                "terminal",
+                position,
+                "timeout",
+                sensor=s04_allow_var(position),
+                expected_value=True,
+            )
             return {"success": False, "message": f"{station} 允许加工等待超时", "data": {"station": station}}
 
         pre_reset_result = self._reset_pc_to_plc_defaults(position, include_params_written=False)
@@ -294,6 +339,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             return pre_reset_result
 
         duration_ms = int(float(duration) * 1000)
+        publish_action_phase("writing_parameters", position, "started")
         try:
             self._write_variable(s04_process_var(position), mode)
             self._write_variable(s04_speed_var(position), int(speed))
@@ -304,27 +350,66 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
         except Exception as exc:
             self._reset_pc_to_plc_defaults(position)
             self._status = "Error"
+            publish_action_phase("terminal", position, "failed", error=str(exc))
             return {"success": False, "message": str(exc), "data": {"station": station}}
 
+        publish_action_phase("processing", position, "started", duration_s=float(duration))
         done = False
         wait_error: Exception | None = None
+        completion_started_at = time.monotonic()
+        publish_completion_phase(
+            position=position,
+            sensor=s04_done_var(position),
+            timeout=float(self.timeout),
+            elapsed=0.0,
+            outcome="waiting",
+            actual=None,
+        )
         try:
             done = self._wait_done(position)
         except Exception as exc:
             wait_error = exc
         finally:
             reset_result = self._reset_pc_to_plc_defaults(position)
+        completion_elapsed = max(0.0, time.monotonic() - completion_started_at)
+        publish_completion_phase(
+            position=position,
+            sensor=s04_done_var(position),
+            timeout=float(self.timeout),
+            elapsed=completion_elapsed,
+            outcome="satisfied" if done else "timeout",
+            actual=True if done else None,
+        )
         if wait_error is not None:
             self._status = "Error"
+            publish_action_phase("terminal", position, "failed", error=str(wait_error))
             return {"success": False, "message": str(wait_error), "data": {"station": station}}
         if not done:
             self._status = "Error"
+            publish_action_phase(
+                "terminal",
+                position,
+                "timeout",
+                sensor=s04_done_var(position),
+                expected_value=True,
+                actual_value=None,
+                elapsed_s=round(completion_elapsed, 3),
+                timeout_s=float(self.timeout),
+                remaining_s=0.0,
+            )
             return {"success": False, "message": f"{station} 加工完成等待超时", "data": {"station": station}}
         if not reset_result.get("success", False):
             return reset_result
 
         if not self._wait_variable_true(material_sensor):
             self._status = "Error"
+            publish_action_phase(
+                "terminal",
+                position,
+                "verification_failed",
+                sensor=material_sensor,
+                expected_value=True,
+            )
             return {
                 "success": False,
                 "status": "verification_failed",
@@ -335,6 +420,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
         self._status = "Idle"
         self._last_position = position
         self._last_mode = mode
+        publish_action_phase("terminal", position, "succeeded")
         return {
             "success": True,
             "message": f"{station} 磁搅加工完成，工艺 {S04_PROCESS_MODES[mode]}",
