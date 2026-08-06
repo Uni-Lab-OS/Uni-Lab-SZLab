@@ -6,6 +6,7 @@ from typing import Any
 
 from unilabos.ros.action_feedback import attach_action_feedback
 
+from szlab_poly_studio.common.action_phase_feedback import wait_with_action_feedback
 from szlab_poly_studio.devices.szlab_mixer_stirrer.device import (
     SzlabMixerMagneticStirrerDevice,
 )
@@ -90,6 +91,10 @@ def test_success_reports_all_execution_phases_with_monotonic_sequences() -> None
     ]
     assert [item["feedback_sequence"] for item in feedback] == list(range(1, len(feedback) + 1))
     assert all(item["job_uuid"] == "job-s04" for item in feedback)
+    assert [item["diagnostic_event"] for item in feedback[:2]] == [
+        "precondition_check_started",
+        "satisfied",
+    ]
 
 
 def test_material_timeout_terminal_retains_last_sensor_observation() -> None:
@@ -106,3 +111,40 @@ def test_material_timeout_terminal_retains_last_sensor_observation() -> None:
     assert terminal["elapsed_s"] >= 0
     assert terminal["timeout_s"] == 0.01
     assert terminal["remaining_s"] == 0.0
+    precondition_events = [
+        item["diagnostic_event"]
+        for item in feedback
+        if item["phase"] == "waiting_precondition"
+    ]
+    assert precondition_events[0] == "precondition_check_started"
+    assert precondition_events[-1] == "timed_out"
+
+
+def test_polled_gateway_reports_started_waiting_and_timed_out() -> None:
+    feedback: list[dict[str, Any]] = []
+    with attach_action_feedback(
+        lambda payload: feedback.append(payload) is None,
+        job_uuid="job-poll",
+        task_uuid="task-poll",
+        device_id="szlab_mixer_stirrer",
+        action_name="run_stirring",
+    ):
+        result = wait_with_action_feedback(
+            variable="传感器状态_上位机[2].NO[10]",
+            expected=True,
+            phase="waiting_precondition",
+            position=1,
+            timeout=0.0,
+            read=lambda: False,
+            wait=lambda: False,
+            poll=True,
+            interval=0.0,
+            precondition="material_present",
+        )
+
+    assert result[0] is False
+    assert [item["diagnostic_event"] for item in feedback] == [
+        "precondition_check_started",
+        "waiting",
+        "timed_out",
+    ]

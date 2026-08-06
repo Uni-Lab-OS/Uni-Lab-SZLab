@@ -27,7 +27,12 @@ def wait_with_action_feedback(
     started_at = time.monotonic()
     last_actual: Any = None
 
-    def report(outcome: str, *, force: bool = False) -> None:
+    def report(
+        diagnostic_event: str,
+        outcome: str,
+        *,
+        force: bool = False,
+    ) -> None:
         elapsed = max(0.0, time.monotonic() - started_at)
         publish_action_feedback(
             phase,
@@ -35,6 +40,7 @@ def wait_with_action_feedback(
                 "position": position,
                 "sensor": variable,
                 "precondition": precondition,
+                "diagnostic_event": diagnostic_event,
                 "expected_value": expected,
                 "actual_value": last_actual,
                 "elapsed_s": round(elapsed, 3),
@@ -51,7 +57,7 @@ def wait_with_action_feedback(
             last_actual = read()
         except Exception:
             last_actual = None
-        report("waiting", force=True)
+        report("precondition_check_started", "waiting", force=True)
         success = wait()
         if success:
             last_actual = expected
@@ -60,21 +66,33 @@ def wait_with_action_feedback(
                 last_actual = read()
             except Exception:
                 pass
-        report("satisfied" if success else "timeout", force=True)
+        report(
+            "satisfied" if success else "timed_out",
+            "satisfied" if success else "timeout",
+            force=True,
+        )
         return success, last_actual, max(0.0, time.monotonic() - started_at)
 
-    report("waiting", force=True)
+    try:
+        last_actual = read()
+    except Exception:
+        last_actual = None
+    report("precondition_check_started", "waiting", force=True)
+    if last_actual == expected:
+        report("satisfied", "satisfied", force=True)
+        return True, last_actual, max(0.0, time.monotonic() - started_at)
+    report("waiting", "waiting", force=True)
     while time.monotonic() - started_at <= timeout:
         try:
             last_actual = read()
         except Exception:
             last_actual = None
         if last_actual == expected:
-            report("satisfied", force=True)
+            report("satisfied", "satisfied", force=True)
             return True, last_actual, max(0.0, time.monotonic() - started_at)
-        report("waiting")
+        report("waiting", "waiting")
         time.sleep(interval)
-    report("timeout", force=True)
+    report("timed_out", "timeout", force=True)
     return False, last_actual, max(0.0, time.monotonic() - started_at)
 
 
