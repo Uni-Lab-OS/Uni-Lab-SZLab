@@ -344,7 +344,7 @@ class SzlabMixerPhotoShottingDevice(UnifiedPLCGatewayMixin):
             "data": data,
         }
 
-    @action(description="对 S05 中的烧杯拍照检测并显式透传物料与命名结果")
+    @action(displayname="S05 烧杯拍照检测", description="对 S05 中的烧杯拍照检测并显式透传物料与命名结果")
     def inspect_beaker(
         self,
         beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],

@@ -741,7 +741,7 @@ class SzlabMixerRobotDevice(
         )
         return {**result, "resource": resource}
 
-    @action(description="标准物理取 500 mL 烧杯；保留精确 ResourceSlot 模板约束")
+    @action(displayname="机械臂取烧杯", description="标准物理取 500 mL 烧杯；保留精确 ResourceSlot 模板约束")
     def pick_beaker(
         self,
         beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],
@@ -976,7 +976,7 @@ class SzlabMixerRobotDevice(
                 "product_type": product_type,
             }
 
-    @action(description="将机械臂持有的 500 mL 烧杯倒入 S08 的 250 mL 样品瓶")
+    @action(displayname="烧杯倒入样品瓶", description="将机械臂持有的 500 mL 烧杯倒入 S08 的 250 mL 样品瓶")
     def pour_beaker_into_vial(
         self,
         beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],

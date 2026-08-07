@@ -594,7 +594,7 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
             "message": str(result.get("message", "")),
         }
 
-    @action(description="使用两路已绑定溶剂向 S06 烧杯加液（物料感知）")
+    @action(displayname="S06 双路溶剂加液", description="使用两路已绑定溶剂向 S06 烧杯加液（物料感知）")
     def add_solvent_with_materials(
         self,
         beaker: Annotated[

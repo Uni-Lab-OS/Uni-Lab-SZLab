@@ -912,7 +912,7 @@ class SzlabMixerPipettingStationDevice(UnifiedPLCGatewayMixin):
             "logs": logs,
         }
 
-    @action(description="使用试剂瓶和 TIP 向 S09 烧杯移液（物料感知）")
+    @action(displayname="S09 试剂移液", description="使用试剂瓶和 TIP 向 S09 烧杯移液（物料感知）")
     def add_liquid_with_materials(
         self,
         beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],

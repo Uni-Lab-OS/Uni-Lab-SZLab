@@ -444,7 +444,7 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
             raise ValueError("powder_site 必须是 P01..P10 或 1..10")
         return position
 
-    @action(description="S07 粉罐扫码盘点")
+    @action(displayname="S07 粉桶扫码盘点", description="S07 粉罐扫码盘点")
     def scan_powder_cartridges(self, timeout: float = 300.0) -> dict[str, Any]:
         self._reset_unilab_written_params(PROCESS_SCAN_CARTRIDGES)
         result = self._run_s07_process(PROCESS_SCAN_CARTRIDGES, timeout)
@@ -470,7 +470,7 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
         result["position"] = position
         return result
 
-    @action(description="将指定 S07 转盘 Site 转到已验证的粉桶上下料位")
+    @action(displayname="S07 粉桶转位", description="将指定 S07 转盘 Site 转到已验证的粉桶上下料位")
     def prepare_powder_cartridge_site(
         self,
         powder_cartridge: ResourceSlot,
@@ -610,7 +610,7 @@ class SZLabS07SolidAdditionDevice(UnifiedPLCGatewayMixin):
             "beaker": beaker,
         }
 
-    @action(description="使用已装入 S07 的粗、精注粉桶向同一烧杯投粉（物料感知）")
+    @action(displayname="S07 双粉桶注粉", description="使用已装入 S07 的粗、精注粉桶向同一烧杯投粉（物料感知）")
     def dose_powder_with_two_materials(
         self,
         coarse_powder_cartridge: Annotated[

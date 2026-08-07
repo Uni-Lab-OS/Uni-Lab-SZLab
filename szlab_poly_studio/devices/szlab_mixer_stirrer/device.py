@@ -292,7 +292,7 @@ class SzlabMixerMagneticStirrerDevice(UnifiedPLCGatewayMixin):
             },
         }
 
-    @action(description="对 S04 中的烧杯执行磁搅并显式透传物料")
+    @action(displayname="S04 烧杯磁搅", description="对 S04 中的烧杯执行磁搅并显式透传物料")
     def stir_beaker(
         self,
         beaker: Annotated[ResourceSlot, AllowedResourceTemplates(beaker_500ml)],

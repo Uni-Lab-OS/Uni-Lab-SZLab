@@ -1050,7 +1050,7 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             "container": container,
         }
 
-    @action(description="对 250 mL 样品瓶执行 S08 开/关盖并显式透传物料")
+    @action(displayname="S08 样品瓶开关盖", description="对 250 mL 样品瓶执行 S08 开/关盖并显式透传物料")
     def process_sample_vial_250ml_cap_with_material(
         self,
         container: Annotated[
@@ -1077,7 +1077,7 @@ class SZLabS08CapStationDevice(UnifiedPLCGatewayMixin):
             "container": container,
         }
 
-    @action(description="对 100 mL 液体试剂瓶执行 S08 开/关盖并显式透传物料")
+    @action(displayname="S08 试剂瓶开关盖", description="对 100 mL 液体试剂瓶执行 S08 开/关盖并显式透传物料")
     def process_liquid_reagent_100ml_cap_with_material(
         self,
         container: Annotated[
