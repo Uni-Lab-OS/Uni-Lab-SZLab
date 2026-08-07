@@ -20,7 +20,7 @@ def test_repository_compiles_as_the_szlab_domain_package(repo_root: Path) -> Non
     assert (repo_root / "package.yaml").is_file()
     assert len(catalog.definitions.devices) == 9
     assert len(catalog.definitions.resources) == 20
-    assert len(catalog.definitions.workflows) == 16
+    assert len(catalog.definitions.workflows) == 17
     assert sum(len(device.details["actions"]) for device in catalog.definitions.devices) == 98
     asset_paths = {asset.logical_path for asset in catalog.assets}
     assert any(path.endswith(".xacro") for path in asset_paths)

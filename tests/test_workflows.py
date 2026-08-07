@@ -152,18 +152,45 @@ def test_s06_material_workflow_forms_one_resource_slot_chain(repo_root: Path) ->
     calls = _action_sequence(source)
 
     assert calls == [
-        "szlab_mixer_robot.pick_beaker_from_s03",
-        "szlab_mixer_robot.place_beaker_to_s06",
+        "szlab_mixer_robot.pick",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
         "szlab_mixer_pump.add_solvent_to_beaker",
-        "szlab_mixer_robot.pick_beaker_from_s06",
     ]
     assert isinstance(workflow.returns, ast.Name)
-    assert workflow.returns.id == "S06MaterialWorkflowResult"
+    assert workflow.returns.id == "S06搬运加液Result"
     assert "ResourceSlot" in source
     assert "AllowedResourceTemplates(beaker_500ml)" in source
-    assert "beaker=picked.beaker" in source
-    assert "beaker=placed.beaker" in source
-    assert "beaker=addition.beaker" in source
+    assert 'mount=resource_ref("s3_unused_beaker")' in source
+    assert "resource=source_beaker" in source
+    assert "resource=picked.resource" in source
+    assert "resource=placed.resource" in source
+    assert "beaker=committed.resource" in source
+
+
+def test_s04_material_workflow_uses_standard_transfer_and_stirring_contract(
+    repo_root: Path,
+) -> None:
+    source = (
+        repo_root / "szlab_poly_studio/workflows/s04_robot_stirring.py"
+    ).read_text(encoding="utf-8")
+    workflow = _workflow_function(source)
+    calls = _action_sequence(source)
+
+    assert calls == [
+        "szlab_mixer_robot.pick",
+        "szlab_mixer_robot.place",
+        "host_node.transfer_resource",
+        "szlab_mixer_stirrer.stir_beaker",
+    ]
+    assert isinstance(workflow.returns, ast.Name)
+    assert workflow.returns.id == "S04搬运搅拌Result"
+    assert "AllowedResourceTemplates(beaker_500ml)" in source
+    assert 'mount=resource_ref("s3_unused_beaker")' in source
+    assert "resource=source_beaker" in source
+    assert "resource=picked.resource" in source
+    assert "resource=placed.resource" in source
+    assert "beaker=committed.resource" in source
 
 
 def test_s06_material_actions_define_the_resource_slot_at_the_action_boundary(

@@ -34,3 +34,5 @@ workflows:
     source: szlab_poly_studio/workflows/material_transfer.py
   - workflow_uuid: 6d9fb3e2-4dcb-5f23-93b4-74d1b6083393
     source: szlab_poly_studio/workflows/single_sample_atomic_material.py
+  - workflow_uuid: 0a6b3005-833d-491b-9fd4-fe6545846dab
+    source: szlab_poly_studio/workflows/beaker_transfer_chain.py

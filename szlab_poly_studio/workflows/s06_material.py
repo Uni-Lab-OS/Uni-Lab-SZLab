@@ -1,67 +1,41 @@
-# 以 500 mL 烧杯 ResourceSlot 为主线的 S06 单工作流。
-
-from typing import Annotated, TypedDict
-
-from pydantic import Field
-from unilabos.registry.annotations import AllowedResourceTemplates
-from unilabos.registry.placeholder_type import ResourceSlot
-from unilabos.workflow.authoring import device, workflow_definition
+from typing import TypedDict
 
 from szlab_poly_studio.devices.szlab_mixer_pump.device import SzlabMixerPumpDevice
 from szlab_poly_studio.devices.szlab_mixer_robot.device import SzlabMixerRobotDevice
 from szlab_poly_studio.resources.materials import beaker_500ml
-
-szlab_mixer_robot: SzlabMixerRobotDevice = device("szlab_mixer_robot")
-szlab_mixer_pump: SzlabMixerPumpDevice = device("szlab_mixer_pump")
-
-
-class S06MaterialWorkflowResult(TypedDict):
-    beaker: Annotated[
-        ResourceSlot,
-        AllowedResourceTemplates(beaker_500ml),
-        Field(description="完成 S06 加液并被取回的 500 mL 烧杯"),
-    ]
-    addition_message: str
+from unilabos.ros.nodes.presets.host_node import HostNode
+from unilabos.registry.placeholder_type import ResourceSlot
+from unilabos.workflow.authoring import device, workflow, MaterialFlowRole, material_source, resource_ref
 
 
-@workflow_definition(
+class S06搬运加液Result(TypedDict):
+    beaker: ResourceSlot
+    message: str
+
+
+szlabmixerpumpdevice: SzlabMixerPumpDevice = device('szlab_mixer_pump')
+szlabmixerrobotdevice: SzlabMixerRobotDevice = device('szlab_mixer_robot')
+hostnode: HostNode = device('host_node')
+
+
+@workflow(
     workflow_uuid="f372fd2d-447e-5f97-85e4-f90628e9f472",
-    displayname="S06 材料感知加液",
-    description="从 S03 取烧杯、放入 S06 加液，再从 S06 取回。",
+    displayname='S06 搬运加液',
+    description='从 S03 获取现有 500 mL 烧杯，按标准物料转运合同搬入 S06；物理动作成功后由 Host 提交物料归属，再执行物料感知加液。',
 )
 def szlab_material_s06_workflow(
     *,
-    beaker: Annotated[
-        ResourceSlot,
-        AllowedResourceTemplates(beaker_500ml),
-        Field(description="当前位于 S03、等待进入 S06 的 500 mL 烧杯"),
-    ],
     pump: int = 1,
     volume: int = 8,
-) -> S06MaterialWorkflowResult:
-    # unilab:node_uuid=79839eb7-f30d-5251-b802-90631d819fff
-    picked = szlab_mixer_robot.pick_beaker_from_s03(
-        beaker=beaker,
-        product_type=1,
-        position="1-1",
-    )
+) -> S06搬运加液Result:
+    # unilab:node_uuid=27001d16-d1e8-541a-832b-6e23660bcb12
+    source_beaker = material_source(resource_template=beaker_500ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid='fd9ab57f-dcc8-5636-a65f-d304a5fa87ae', site=None, slot_range=None, flow_role=MaterialFlowRole.PRIMARY_SAMPLE)
+    # unilab:node_uuid=9c35ad8e-dbb9-5824-af71-34a81a6bb1d0
+    picked = szlabmixerrobotdevice.pick(resource=source_beaker, site='L1B1', warehouse=resource_ref("s3_unused_beaker"))
     # unilab:node_uuid=e357c916-fb2d-5e5c-bea5-7eb5e69def5c
-    placed = szlab_mixer_robot.place_beaker_to_s06(
-        beaker=picked.beaker,
-    )
+    placed = szlabmixerrobotdevice.place(resource=picked.resource, site='S061', warehouse=resource_ref("s06_process_warehouse"))
+    # unilab:node_uuid=00f1887d-e991-584d-a7eb-45b3794a253c
+    committed = hostnode.transfer_resource(mount_resource=resource_ref("s06_process_warehouse"), resource=placed.resource, site='S061', target_device='szlab_mixer_pump')
     # unilab:node_uuid=fd5fc6bf-a26b-54af-8bb0-68fd377a7394
-    addition = szlab_mixer_pump.add_solvent_to_beaker(
-        beaker=placed.beaker,
-        pump=pump,
-        volume=volume,
-        skip_level_check=False,
-        beaker_true_means_present=True,
-    )
-    # unilab:node_uuid=799e7e12-7147-58ce-8924-873406b1dcb2
-    picked_after_addition = szlab_mixer_robot.pick_beaker_from_s06(
-        beaker=addition.beaker,
-    )
-    return {
-        "beaker": picked_after_addition.beaker,
-        "addition_message": addition.message,
-    }
+    addition = szlabmixerpumpdevice.add_solvent_to_beaker(beaker=committed.resource, beaker_true_means_present=True, pump=pump, skip_level_check=False, volume=volume)
+    return {'beaker': addition.beaker, 'message': addition.message}
