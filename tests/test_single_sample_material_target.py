@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 
 
@@ -140,10 +141,14 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
     } <= _resource_ref_ids(source)
 
 
-def test_production_beaker_source_site_matches_first_transfer(
+def test_production_beaker_source_is_graph_independent_and_starts_at_l1b1(
     repo_root: Path,
 ) -> None:
-    """固定库位流程不能让 admission 选料位置与机器人取料位置分离。"""
+    """证明烧杯来源不固化设备图 UUID，首个物理转运仍从 L1B1 取料。
+
+    参数：``repo_root`` 是 SZLab 仓库根目录，用于读取生产工作流源码。
+    返回：无；断言失败表示物料来源（MaterialSource）与库位（Site）合同漂移。
+    """
 
     production = (
         repo_root
@@ -177,8 +182,80 @@ def test_production_beaker_source_site_matches_first_transfer(
         if keyword.arg == "source_site"
     )
 
-    assert ast.literal_eval(source_site) == "f3dc4d3b-36a5-5121-be42-7225eebc6586"
+    assert ast.literal_eval(source_site) is None
     assert ast.literal_eval(transfer_site) == "L1B1"
+
+
+def test_plc_sim_graph_provides_single_sample_inventory_and_transfer_sites(
+    repo_root: Path,
+) -> None:
+    """证明 PLC-Sim 图提供单样品工作流引用的全部物料与转运库位。
+
+    参数：``repo_root`` 是 SZLab 仓库根目录，用于读取工作流及 PLC-Sim 图。
+    返回：无；断言失败表示运行图不能承载该工作流的物料准入或库位转运。
+    """
+
+    production = (
+        repo_root
+        / "szlab_poly_studio/workflows/single_sample_atomic_material.py"
+    )
+    module = ast.parse(production.read_text(encoding="utf-8"))
+    workflow = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "s_z_lab_单样品全流程_物料感知"
+    )
+    graph_path = repo_root / "deployment/graphs/szlab-plc-sim-local.json"
+    graph = json.loads(graph_path.read_text(encoding="utf-8"))
+    nodes_by_id = {node["id"]: node for node in graph["nodes"]}
+
+    source_mounts: set[str] = set()
+    for call in ast.walk(workflow):
+        if not (
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id == "material_source"
+        ):
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+        mount_call = keywords["mount"]
+        assert isinstance(mount_call, ast.Call)
+        source_mounts.add(ast.literal_eval(mount_call.args[0]))
+
+    for mount_id in source_mounts:
+        sites = nodes_by_id[mount_id]["config"].get("sites", [])
+        assert sites, f"PLC-Sim 物料来源 {mount_id} 缺少库位目录"
+        assert any(site.get("occupied_by") for site in sites), (
+            f"PLC-Sim 物料来源 {mount_id} 缺少初始物料占用"
+        )
+
+    beaker_sites = nodes_by_id["s3_unused_beaker"]["config"]["sites"]
+    assert beaker_sites[0]["name"] == "L1B1"
+    assert beaker_sites[0]["content_type"] == ["szlab_beaker_500ml"]
+
+    for call in ast.walk(workflow):
+        if not (
+            isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name)
+            and call.func.id == "s_z_lab_标准物料转运"
+        ):
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+        for side in ("source", "target"):
+            warehouse_call = keywords[f"{side}_warehouse"]
+            assert isinstance(warehouse_call, ast.Call)
+            warehouse_id = ast.literal_eval(warehouse_call.args[0])
+            if nodes_by_id[warehouse_id]["type"] != "warehouse":
+                continue
+            expected_site = ast.literal_eval(keywords[f"{side}_site"])
+            configured_sites = {
+                site["name"]
+                for site in nodes_by_id[warehouse_id]["config"].get("sites", [])
+            }
+            assert expected_site in configured_sites, (
+                f"PLC-Sim 资源 {warehouse_id} 缺少转运库位 {expected_site}"
+            )
 
 
 def test_standard_transfer_uses_implicit_material_passthrough(

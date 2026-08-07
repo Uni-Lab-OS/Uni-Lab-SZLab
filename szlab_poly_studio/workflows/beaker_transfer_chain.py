@@ -19,7 +19,7 @@ class SZLab烧杯五工位搬运Result(TypedDict):
 )
 def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
     # unilab:node_uuid=08f74d07-4815-56ff-9694-1283c127388b
-    source_beaker = material_source(resource_template=beaker_500ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid=None, site='f3dc4d3b-36a5-5121-be42-7225eebc6586', slot_range=None, flow_role=MaterialFlowRole.PRIMARY_SAMPLE)
+    source_beaker = material_source(resource_template=beaker_500ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid=None, site=None, slot_range=None, flow_role=MaterialFlowRole.PRIMARY_SAMPLE)
     # unilab:node_uuid=0f1e66ac-12e9-5a36-b4e3-91b415a2c297
     beaker_at_s0721 = s_z_lab_标准物料转运(resource=source_beaker, source_site='L1B1', source_warehouse=resource_ref("s3_unused_beaker"), target_device='szlab_s07_solid_addition', target_site='S0721', target_warehouse=resource_ref("s07_process_warehouse"))
     # unilab:node_uuid=68d5f0f0-8a26-5d5a-ae20-146e40793c51

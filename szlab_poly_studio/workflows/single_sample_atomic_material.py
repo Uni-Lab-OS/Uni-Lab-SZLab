@@ -54,7 +54,7 @@ def s_z_lab_单样品全流程_物料感知(
     pipette_volume_raw: Annotated[int, Field(ge=1)] = 5000,
 ) -> SZLab单样品全流程物料感知Result:
     # unilab:node_uuid=c6551edc-856a-55f8-91a3-d9c7243fb636
-    source_beaker = material_source(resource_template=beaker_500ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid=None, site='f3dc4d3b-36a5-5121-be42-7225eebc6586', slot_range=None, flow_role=MaterialFlowRole.PRIMARY_SAMPLE)
+    source_beaker = material_source(resource_template=beaker_500ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid=None, site=None, slot_range=None, flow_role=MaterialFlowRole.PRIMARY_SAMPLE)
     # unilab:node_uuid=71e3add0-cc3b-5657-8763-2ce15d823077
     source_sample_vial = material_source(resource_template=sample_vial_250ml, mode='existing', mount=resource_ref("s3_unused_beaker"), material_uuid=None, site=None, slot_range=None, flow_role=MaterialFlowRole.CONSUMABLE)
     # unilab:node_uuid=0164a018-80c0-52ac-9350-47e8b5cdec01

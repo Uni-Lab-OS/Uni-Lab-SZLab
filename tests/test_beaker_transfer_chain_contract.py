@@ -91,3 +91,29 @@ def test_transfer_chain_is_registered_with_matching_identity() -> None:
     package_yaml = (REPO_ROOT / "package.yaml").read_text(encoding="utf-8")
     assert f"workflow_uuid: {WORKFLOW_UUID}" in package_yaml
     assert "source: szlab_poly_studio/workflows/beaker_transfer_chain.py" in package_yaml
+
+
+def test_transfer_chain_source_site_is_graph_independent() -> None:
+    """验证烧杯来源由库存权威按挂载点解析，而非绑定某张设备图的库位 UUID。
+
+    参数：无。
+    返回：无；断言来源库位为动态解析。
+    """
+
+    tree = ast.parse(SOURCE_PATH.read_text(encoding="utf-8"))
+    workflow = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "s_z_lab_烧杯五工位搬运"
+    )
+    source_assignment = next(
+        statement
+        for statement in workflow.body
+        if isinstance(statement, ast.Assign)
+        and isinstance(statement.value, ast.Call)
+        and isinstance(statement.value.func, ast.Name)
+        and statement.value.func.id == "material_source"
+    )
+
+    site = _keyword(source_assignment.value, "site")
+    assert isinstance(site, ast.Constant) and site.value is None
