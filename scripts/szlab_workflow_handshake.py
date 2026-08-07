@@ -557,7 +557,12 @@ def _robot_common() -> tuple[Requirement, ...]:
 
 
 def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec, ...]:
-    """返回仓库当前 18 个 Python 工作流的先决条件目录。"""
+    """返回仓库当前 18 个 Python 工作流的先决条件目录。
+
+    参数：``position`` 是 S04 调试库位编号；``pump`` 是 S06 储液泵选择。
+    返回：工作流（Workflow）标识、动作及 PLC 先决条件的不可变目录。
+    异常：库位编号或储液泵选择超出支持范围时抛出 ``ValueError``。
+    """
 
     position = int(position)
     pump = int(pump)
@@ -832,7 +837,7 @@ def build_workflow_specs(position: int = 1, pump: int = 1) -> tuple[WorkflowSpec
             (
                 *standard_transfer_requirements,
                 _opc_eq(S03_BEAKER_SENSOR, True, note="S3-L1B1 取料源位必须有烧杯"),
-                _opc_eq(s072_sensor(1), False, note="S0721 必须为空"),
+                _opc_eq(s072_sensor(2), False, note="S0722 必须为空"),
                 _opc_eq(S06_BEAKER_SENSOR, False, note="S061 必须为空"),
                 _opc_eq(S09_STATION_SENSOR[1], False, note="S09 BEAKER1 必须为空"),
                 _opc_eq(s04_sensor(1), False, note="S041 必须为空"),
@@ -1069,7 +1074,12 @@ class WorkflowHandshakeSimulator:
         return WORKFLOW_COMPONENTS[self.workflow]
 
     def initialization_values(self) -> dict[str, Any]:
-        """返回当前工作流场景启动前应写入 PLC 的可验证初始值。"""
+        """返回当前工作流场景启动前应写入 PLC 的可验证初始值。
+
+        参数：无；使用当前代理的工作流选择和调试参数。
+        返回：PLC 节点名到仿真初值的映射；在位值仅是传感器观测，
+        不改写物料或库位（Site）的权威事实。
+        """
 
         components = self.enabled_components
         values: dict[str, Any] = {}
@@ -1100,7 +1110,7 @@ class WorkflowHandshakeSimulator:
             values.update(
                 {
                     S03_BEAKER_SENSOR: True,
-                    s072_sensor(1): False,
+                    s072_sensor(2): False,
                     S06_BEAKER_SENSOR: False,
                     S09_STATION_SENSOR[1]: False,
                     s04_sensor(1): False,
@@ -1194,7 +1204,11 @@ class WorkflowHandshakeSimulator:
         return values
 
     def cleanup_values(self) -> dict[str, Any]:
-        """返回停止握手场景时用于撤销模拟物理状态的安全复位值。"""
+        """返回停止握手场景时用于撤销模拟物理状态的安全复位值。
+
+        参数：无；使用当前代理启用的协议组件。
+        返回：仅包含代理所有 PLC 输出的复位映射，不覆盖 Edge 输入。
+        """
 
         components = self.enabled_components
         values: dict[str, Any] = {}
@@ -1289,7 +1303,7 @@ class WorkflowHandshakeSimulator:
             values.update(
                 {
                     S03_BEAKER_SENSOR: False,
-                    s072_sensor(1): False,
+                    s072_sensor(2): False,
                     S06_BEAKER_SENSOR: False,
                     S09_STATION_SENSOR[1]: False,
                     s04_sensor(1): False,

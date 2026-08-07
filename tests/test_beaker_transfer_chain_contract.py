@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).parents[1]
 SOURCE_PATH = REPO_ROOT / "szlab_poly_studio" / "workflows" / "beaker_transfer_chain.py"
 WORKFLOW_UUID = "0a6b3005-833d-491b-9fd4-fe6545846dab"
@@ -28,11 +27,15 @@ def _resource_ref(call: ast.Call, name: str) -> str:
 
 
 def test_transfer_chain_uses_five_ordered_standard_transfers() -> None:
+    """验证同一烧杯经 S0722 按五段固定路径线性转运。
+
+    参数：无。
+    返回：无；断言每段的源/目标库位、仓库和目标设备。
+    """
+
     tree = ast.parse(SOURCE_PATH.read_text(encoding="utf-8"))
     workflow = next(
-        node
-        for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name == "s_z_lab_烧杯五工位搬运"
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "s_z_lab_烧杯五工位搬运"
     )
     assignments = [
         statement
@@ -45,13 +48,16 @@ def test_transfer_chain_uses_five_ordered_standard_transfers() -> None:
 
     assert len(assignments) == 5
     assert [(_constant(item.value, "source_site"), _constant(item.value, "target_site")) for item in assignments] == [
-        ("L1B1", "S0721"),
-        ("S0721", "S061"),
+        ("L1B1", "S0722"),
+        ("S0722", "S061"),
         ("S061", "BEAKER1"),
         ("BEAKER1", "S041"),
         ("S041", "S051"),
     ]
-    assert [(_resource_ref(item.value, "source_warehouse"), _resource_ref(item.value, "target_warehouse")) for item in assignments] == [
+    assert [
+        (_resource_ref(item.value, "source_warehouse"), _resource_ref(item.value, "target_warehouse"))
+        for item in assignments
+    ] == [
         ("s3_unused_beaker", "s07_process_warehouse"),
         ("s07_process_warehouse", "s06_process_warehouse"),
         ("s06_process_warehouse", "szlab_mixer_pipetting_station"),
@@ -82,9 +88,7 @@ def test_transfer_chain_is_registered_with_matching_identity() -> None:
     decorator = next(
         item
         for item in workflow.decorator_list
-        if isinstance(item, ast.Call)
-        and isinstance(item.func, ast.Name)
-        and item.func.id == "workflow"
+        if isinstance(item, ast.Call) and isinstance(item.func, ast.Name) and item.func.id == "workflow"
     )
     assert _constant(decorator, "workflow_uuid") == WORKFLOW_UUID
 
@@ -102,9 +106,7 @@ def test_transfer_chain_source_site_is_graph_independent() -> None:
 
     tree = ast.parse(SOURCE_PATH.read_text(encoding="utf-8"))
     workflow = next(
-        node
-        for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name == "s_z_lab_烧杯五工位搬运"
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "s_z_lab_烧杯五工位搬运"
     )
     source_assignment = next(
         statement

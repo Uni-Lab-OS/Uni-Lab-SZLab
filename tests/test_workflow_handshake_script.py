@@ -187,6 +187,12 @@ def test_standard_transfer_updates_site_and_tool_payload_witnesses() -> None:
 
 
 def test_beaker_transfer_chain_handshake_moves_one_beaker_across_all_sites() -> None:
+    """验证五工位握手使用 S0722 交接位逐段更新烧杯在位观测。
+
+    参数：无。
+    返回：无；断言五段取放后的源/目标传感器状态。
+    """
+
     adapter = MemoryAdapter()
     simulator = handshake.WorkflowHandshakeSimulator(
         adapter,
@@ -198,7 +204,7 @@ def test_beaker_transfer_chain_handshake_moves_one_beaker_across_all_sites() -> 
 
     assert adapter.read(handshake.S03_BEAKER_SENSOR) is True
     for sensor in (
-        handshake.s072_sensor(1),
+        handshake.s072_sensor(2),
         handshake.S06_BEAKER_SENSOR,
         handshake.S09_STATION_SENSOR[1],
         handshake.s04_sensor(1),
@@ -209,8 +215,8 @@ def test_beaker_transfer_chain_handshake_moves_one_beaker_across_all_sites() -> 
     clock = 0.0
     steps = (
         (6, handshake.S03_BEAKER_SENSOR, False),
-        (15, handshake.s072_sensor(1), True),
-        (16, handshake.s072_sensor(1), False),
+        (15, handshake.s072_sensor(2), True),
+        (16, handshake.s072_sensor(2), False),
         (11, handshake.S06_BEAKER_SENSOR, True),
         (12, handshake.S06_BEAKER_SENSOR, False),
         (19, handshake.S09_STATION_SENSOR[1], True),
@@ -221,7 +227,7 @@ def test_beaker_transfer_chain_handshake_moves_one_beaker_across_all_sites() -> 
     )
     for task, sensor, occupied in steps:
         if task in (15, 16):
-            adapter.write(handshake.S072_ROBOT_PRODUCT, 1)
+            adapter.write(handshake.S072_ROBOT_PRODUCT, 2)
         elif task in (19, 20):
             adapter.write(handshake.S09_TRANSFER_PRODUCT, 3)
             adapter.write(handshake.S09_TRANSFER_POSITION, 1)
