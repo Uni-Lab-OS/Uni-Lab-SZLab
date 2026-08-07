@@ -1,4 +1,4 @@
-from unilabos.workflow.authoring import device, workflow_definition
+from unilabos.workflow.authoring import device, workflow_definition, workflow_output
 
 from szlab_poly_studio.devices.szlab_mixer_photoshotting.device import (
     SzlabMixerPhotoShottingDevice,
@@ -15,7 +15,7 @@ szlab_mixer_pump: SzlabMixerPumpDevice = device("szlab_mixer_pump")
     workflow_uuid="335da2e9-024b-562f-8bf8-35dba0b52a90",
     displayname="堆栈、S05 与 S06 联调",
 )
-def szlab_stack_s05_s06_workflow() -> None:
+def szlab_stack_s05_s06_workflow():
     # unilab:node_uuid=7cc804f2-86e3-5a87-9db9-06ecacdf711a
     stack = szlab_poly_plc.get_stack_status()  # noqa: F841
     # unilab:node_uuid=6d6d1ca1-c85d-5c3b-9bac-aa6ecc9651c8
@@ -33,3 +33,4 @@ def szlab_stack_s05_s06_workflow() -> None:
         skip_robot=True,
         beaker_true_means_present=True,
     )
+    return workflow_output()
