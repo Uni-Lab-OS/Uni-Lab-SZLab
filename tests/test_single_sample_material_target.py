@@ -177,7 +177,7 @@ def test_production_beaker_source_site_matches_first_transfer(
         if keyword.arg == "source_site"
     )
 
-    assert ast.literal_eval(source_site) == "114e7c6c-9e2b-5d4c-b578-9fe6112a6b35"
+    assert ast.literal_eval(source_site) == "f3dc4d3b-36a5-5121-be42-7225eebc6586"
     assert ast.literal_eval(transfer_site) == "L1B1"
 
 
