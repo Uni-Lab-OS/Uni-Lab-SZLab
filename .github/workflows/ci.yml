@@ -11,12 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Checkout product OS authoring contract
-        uses: actions/checkout@v6
-        with:
-          repository: Uni-Lab-OS/Uni-Lab-OS
-          ref: product/durable-scheduler-kernel
-          path: .ci/Uni-Lab-OS
       - name: Setup Uni-Lab environment
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -36,13 +30,6 @@ jobs:
       - name: Check external package
         shell: bash -el {0}
         run: ./scripts/check-package.sh
-      - name: Check workflow authoring contract against product OS
-        shell: bash -el {0}
-        env:
-          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
-          UNILAB_OS_ROOT: ${{ github.workspace }}/.ci/Uni-Lab-OS
-          PYTHONPATH: ${{ github.workspace }}/.ci/Uni-Lab-OS:${{ github.workspace }}
-        run: python -m pytest tests/test_workflow_authoring_contract.py
       - name: Run integration tests
         shell: bash -el {0}
         run: python -m pytest

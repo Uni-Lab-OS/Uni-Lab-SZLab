@@ -1,4 +1,4 @@
-from unilabos.workflow.authoring import device, workflow_definition, workflow_output
+from unilabos.workflow.authoring import device, workflow_definition
 
 from szlab_poly_studio.devices.szlab_s08_cap_station.device import (
     SZLabS08CapStationDevice,
@@ -11,7 +11,7 @@ szlab_s08_cap_station: SZLabS08CapStationDevice = device("szlab_s08_cap_station"
     workflow_uuid="230df44a-c725-551d-b43b-303ab5bd90ea",
     displayname="S08 开关盖联调",
 )
-def s08_cap_workflow():
+def s08_cap_workflow() -> None:
     # unilab:node_uuid=b50cb6c7-539b-5b0c-8a02-61037a1fb3bc
     opened = szlab_s08_cap_station.process_cap_with_sample_parts(  # noqa: F841
         operation="open",
@@ -30,4 +30,3 @@ def s08_cap_workflow():
         sample_id_3=103,
         timeout=300.0,
     )
-    return workflow_output()

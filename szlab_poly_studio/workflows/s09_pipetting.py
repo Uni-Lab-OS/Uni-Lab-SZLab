@@ -1,10 +1,12 @@
-from unilabos.workflow.authoring import device, workflow_definition, workflow_output
+from unilabos.workflow.authoring import device, workflow_definition
 
 from szlab_poly_studio.devices.szlab_mixer_pipetting_station.device import (
     SzlabMixerPipettingStationDevice,
 )
 
-szlab_mixer_pipetting_station_device: SzlabMixerPipettingStationDevice = device("szlab_mixer_pipetting_station")
+szlab_mixer_pipetting_station_device: SzlabMixerPipettingStationDevice = device(
+    "szlab_mixer_pipetting_station"
+)
 
 
 @workflow_definition(
@@ -15,7 +17,7 @@ def s09_移液调试(
     *,
     liquid_bottle_index: int = 1,
     volume_ul: int = 100,
-):
+) -> None:
     # unilab:node_uuid=78f5737a-694c-56fd-b6dd-fcd35a6dcedc
     prepared = szlab_mixer_pipetting_station_device.prepare_liquid_station()  # noqa: F841
     # unilab:node_uuid=b316e4f0-8cf8-5457-a723-7b67ad5b8758
@@ -35,4 +37,3 @@ def s09_移液调试(
     )
     # unilab:node_uuid=61b329f0-4476-555c-8286-bf8bf29dd824
     released = szlab_mixer_pipetting_station_device.release_station()  # noqa: F841
-    return workflow_output()

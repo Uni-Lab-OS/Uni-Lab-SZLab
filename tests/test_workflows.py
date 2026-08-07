@@ -59,7 +59,7 @@ def _workflow_function(source: str) -> ast.FunctionDef:
         and any(
             isinstance(decorator, ast.Call)
             and isinstance(decorator.func, ast.Name)
-            and decorator.func.id in {"workflow", "workflow_definition"}
+            and decorator.func.id == "workflow_definition"
             for decorator in node.decorator_list
         )
     ]
@@ -131,30 +131,19 @@ def test_package_workflows_use_the_current_decorator_and_return_contract(repo_ro
             for item in workflow.decorator_list
             if isinstance(item, ast.Call)
             and isinstance(item.func, ast.Name)
-            and item.func.id in {"workflow", "workflow_definition"}
+            and item.func.id == "workflow_definition"
         )
         keywords = {keyword.arg for keyword in decorator.keywords}
 
         assert {"workflow_uuid", "displayname"} <= keywords
         assert keywords <= {"workflow_uuid", "displayname", "description"}
-        imports = {
+        assert workflow.returns is not None
+        assert "workflow_output" not in {
             alias.name
             for node in ast.parse(source).body
             if isinstance(node, ast.ImportFrom)
             for alias in node.names
         }
-        if workflow.returns is None:
-            assert "workflow_output" in imports
-            terminal = workflow.body[-1]
-            assert isinstance(terminal, ast.Return)
-            assert isinstance(terminal.value, ast.Call)
-            assert isinstance(terminal.value.func, ast.Name)
-            assert terminal.value.func.id == "workflow_output"
-            assert not terminal.value.args
-            assert not terminal.value.keywords
-        else:
-            assert isinstance(workflow.returns, ast.Name)
-            assert "workflow_output" not in imports
 
 
 def test_s06_material_workflow_forms_one_resource_slot_chain(repo_root: Path) -> None:

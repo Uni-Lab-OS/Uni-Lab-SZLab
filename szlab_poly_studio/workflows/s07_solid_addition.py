@@ -1,4 +1,4 @@
-from unilabos.workflow.authoring import device, workflow_definition, workflow_output
+from unilabos.workflow.authoring import device, workflow_definition
 
 from szlab_poly_studio.devices.szlab_s07_solid_addition.device import (
     SZLabS07SolidAdditionDevice,
@@ -15,7 +15,7 @@ def szlab_s07_solid_addition_workflow(
     *,
     cartridge_position: int = 1,
     target_weight: float = 10.0,
-):
+) -> None:
     # unilab:node_uuid=8f12aaee-28d9-5688-90f9-d02827c93a07
     scanned = szlab_s07_solid_addition.scan_powder_cartridges(timeout=300.0)  # noqa: F841
     # unilab:node_uuid=b5c96f65-75c2-504c-86b9-c18bc2bf138c
@@ -32,4 +32,3 @@ def szlab_s07_solid_addition_workflow(
         params_json="",
         timeout=300.0,
     )
-    return workflow_output()

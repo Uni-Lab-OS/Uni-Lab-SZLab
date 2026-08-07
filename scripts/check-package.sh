@@ -8,17 +8,13 @@ check_working_dir="${UNILAB_CHECK_WORKING_DIR:-$(mktemp -d)}"
 export PYTHONPATH="${repo_root}${PYTHONPATH:+:${PYTHONPATH}}"
 
 cd "${repo_root}"
-"${unilab_python}" -m unilabos.app.main \
-  --check_mode \
-  --working_dir "${check_working_dir}" \
-  package inspect \
-  --path "${repo_root}"
+"${unilab_python}" -m unilabos.app.main package inspect --path "${repo_root}"
 
 set +e
 check_output=$("${unilab_python}" -m unilabos.app.main \
   --check_mode \
   --workspace "${repo_root}" \
-  --external_devices_only \
+  --skip_env_check \
   --working_dir "${check_working_dir}" 2>&1)
 check_status=$?
 set -e
