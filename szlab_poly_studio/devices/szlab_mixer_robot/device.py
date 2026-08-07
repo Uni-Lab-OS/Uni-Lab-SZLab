@@ -35,7 +35,10 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_WRITE_ALLOWED_VARIABLE,
     ROBOT_WRITE_DONE_VARIABLE,
 )
-from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import SZLabStandardRobotGateway
+from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
+    SZLabStandardRobotGateway,
+    standard_site_presence_check_enabled,
+)
 from szlab_poly_studio.resources.materials import beaker_500ml, sample_vial_250ml
 
 _UNSET = object()
@@ -291,6 +294,15 @@ class SzlabMixerRobotDevice(
 
     @not_action
     def _ensure_sensor_gate(self, sensor_variable: str, expected: bool, message: str) -> dict[str, Any] | None:
+        """按当前动作见证策略执行单个机器人库位传感器前置检查。
+
+        参数：``sensor_variable`` 是 PLC 变量，``expected`` 是期望在位值，
+        ``message`` 是拒绝原因。
+        返回：检查通过或被动作策略禁用时返回 ``None``，否则返回拒绝详情。
+        """
+
+        if not standard_site_presence_check_enabled():
+            return None
         if os.environ.get("SKIP_SENSOR_PRECHECK") == "1":
             return None
         if not sensor_variable:
@@ -371,6 +383,14 @@ class SzlabMixerRobotDevice(
         station: str,
         data: dict[str, Any],
     ) -> tuple[dict[str, bool], dict[str, bool]]:
+        """解析旧驱动在当前标准动作中应执行的库位传感器条件。
+
+        参数：``task`` 是取放类型，``station`` 是工位，``data`` 是动作参数。
+        返回：动作前和动作后的 PLC 传感器期望值；动作级禁用时均为空。
+        """
+
+        if not standard_site_presence_check_enabled():
+            return {}, {}
         if station in {"S01", "S072"}:
             return {}, {}
         custom_preconditions = data.get("pre_sensor_conditions")
@@ -712,12 +732,23 @@ class SzlabMixerRobotDevice(
         resource: ResourceSlot,
         warehouse: ResourceSlot,
         site: str,
+        check_site_presence: bool = True,
+        check_tool_payload: bool = True,
     ) -> StandardRobotTransferStatus:
+        """执行标准物理取料并按调用参数选择现场见证。
+
+        参数：``resource`` 是物料占位符，``warehouse`` 与 ``site`` 定位来源
+        库位；两个 ``check_*`` 参数分别控制来源在位和夹爪负载检测。
+        返回：标准机械臂命令状态，并原样透传物料占位符。
+        """
+
         result = self._standard_gateway().execute_site(
             kind="pick",
             resource=resource,
             warehouse=warehouse,
             site=site,
+            check_site_presence=check_site_presence,
+            check_tool_payload=check_tool_payload,
         )
         return {**result, "resource": resource}
 
@@ -732,12 +763,23 @@ class SzlabMixerRobotDevice(
         resource: ResourceSlot,
         warehouse: ResourceSlot,
         site: str,
+        check_site_presence: bool = True,
+        check_tool_payload: bool = True,
     ) -> StandardRobotTransferStatus:
+        """执行标准物理放料并按调用参数选择现场见证。
+
+        参数：``resource`` 是物料占位符，``warehouse`` 与 ``site`` 定位目标
+        库位；两个 ``check_*`` 参数分别控制目标在位和夹爪负载检测。
+        返回：标准机械臂命令状态，并原样透传物料占位符。
+        """
+
         result = self._standard_gateway().execute_site(
             kind="place",
             resource=resource,
             warehouse=warehouse,
             site=site,
+            check_site_presence=check_site_presence,
+            check_tool_payload=check_tool_payload,
         )
         return {**result, "resource": resource}
 

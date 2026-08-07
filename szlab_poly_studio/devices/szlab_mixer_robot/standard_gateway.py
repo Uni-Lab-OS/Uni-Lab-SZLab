@@ -7,6 +7,7 @@ import sqlite3
 import threading
 import time
 from collections.abc import Callable, Mapping
+from contextvars import ContextVar
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -26,6 +27,22 @@ from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
 )
 
 TOOL_PAYLOAD_SENSOR_VARIABLE = "传感器状态_上位机[3].NO[6]"
+_SITE_PRESENCE_CHECK_ENABLED: ContextVar[bool] = ContextVar(
+    "szlab_standard_site_presence_check_enabled",
+    default=True,
+)
+
+
+def standard_site_presence_check_enabled() -> bool:
+    """返回当前标准机械臂动作是否要求库位在位见证。
+
+    参数：无；读取当前执行上下文中的动作级见证策略。
+    返回：``True`` 表示旧驱动必须执行库位传感器前后检查。
+    """
+
+    return _SITE_PRESENCE_CHECK_ENABLED.get()
+
+
 class CommandState(str, Enum):
     ACCEPTED = "ACCEPTED"
     RUNNING = "RUNNING"
@@ -56,10 +73,18 @@ class StandardRobotRequest:
     source_boot_id: str
     monotonic_sequence: int
     material_context: Mapping[str, Any]
+    check_site_presence: bool = True
+    check_tool_payload: bool = True
     source: str = "unilabos"
     protocol_version: str = "unilab.robot/v1"
 
     def __post_init__(self) -> None:
+        """校验标准机械臂请求的身份、序列和见证策略。
+
+        参数：无；校验当前不可变请求实例。
+        返回：无；字段不合法时抛出 ``ValueError`` 或 ``TypeError``。
+        """
+
         required = {
             "command_id": self.command_id,
             "site": self.site,
@@ -81,10 +106,20 @@ class StandardRobotRequest:
             raise ValueError("monotonic_sequence 必须是 1..2^63-1 的整数")
         if not isinstance(self.material_context, Mapping):
             raise TypeError("material_context 必须是对象")
+        if not isinstance(self.check_site_presence, bool):
+            raise TypeError("check_site_presence 必须是布尔值")
+        if not isinstance(self.check_tool_payload, bool):
+            raise TypeError("check_tool_payload 必须是布尔值")
         json.dumps(_jsonable(self.material_context), ensure_ascii=False, sort_keys=True)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        """生成用于持久化和幂等指纹的请求字典。
+
+        参数：无；序列化当前请求。
+        返回：JSON 兼容字典；仅持久化被关闭的见证项，以兼容既有默认请求指纹。
+        """
+
+        payload = {
             "kind": self.kind,
             "command_id": self.command_id,
             "site": self.site,
@@ -97,6 +132,11 @@ class StandardRobotRequest:
             "source": self.source,
             "protocol_version": self.protocol_version,
         }
+        if not self.check_site_presence:
+            payload["check_site_presence"] = False
+        if not self.check_tool_payload:
+            payload["check_tool_payload"] = False
+        return payload
 
     def fingerprint(self) -> str:
         payload = json.dumps(self.to_dict(), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -450,8 +490,15 @@ class SZLabStandardRobotGateway:
         resource: Any,
         warehouse: Any,
         site: str,
+        check_site_presence: bool = True,
+        check_tool_payload: bool = True,
     ) -> dict[str, Any]:
-        """由 WorkflowNodeJob 身份和最小业务参数生成可重放请求。"""
+        """由作业身份、库位和动作级见证策略生成可重放请求。
+
+        参数：``kind`` 是取放类型；``resource``、``warehouse`` 与 ``site``
+        定位物料及物理库位；两个 ``check_*`` 参数分别控制在位和夹爪见证。
+        返回：标准命令的公开执行状态；逻辑物料/库位事实不在此方法修改。
+        """
 
         try:
             workflow_identity = self.execution_identity_provider()
@@ -486,6 +533,8 @@ class SZLabStandardRobotGateway:
                 "warehouse": warehouse,
                 "workflow_identity": dict(workflow_identity),
             },
+            check_site_presence=check_site_presence,
+            check_tool_payload=check_tool_payload,
             source="unilabos-workflow-node-job",
         )
         return self.execute(request)
@@ -526,6 +575,9 @@ class SZLabStandardRobotGateway:
             self.boot_id,
             "命令已下发到既有 SZLab PLC 握手驱动",
         )
+        site_check_token = _SITE_PRESENCE_CHECK_ENABLED.set(
+            request.check_site_presence
+        )
         try:
             legacy_result = self.adapter.execute(command)
         except Exception as exc:  # communication may have failed after dispatch
@@ -535,6 +587,8 @@ class SZLabStandardRobotGateway:
                 self.boot_id,
                 f"PLC 派发后结果不确定: {exc}",
             ).public_result()
+        finally:
+            _SITE_PRESENCE_CHECK_ENABLED.reset(site_check_token)
 
         if not isinstance(legacy_result, Mapping):
             return self.journal.update(
@@ -554,7 +608,12 @@ class SZLabStandardRobotGateway:
             message = str(legacy_result.get("message") or "旧驱动未确认动作成功")
             return self.journal.update(request.command_id, state, self.boot_id, message, output).public_result()
 
-        witness_ok, witness_message, witnesses = self._observe_completion(request.kind, legacy_result)
+        witness_ok, witness_message, witnesses = self._observe_completion(
+            request.kind,
+            legacy_result,
+            check_site_presence=request.check_site_presence,
+            check_tool_payload=request.check_tool_payload,
+        )
         output["witnesses"] = witnesses
         state = CommandState.SUCCEEDED if witness_ok else CommandState.UNKNOWN
         return self.journal.update(
@@ -572,6 +631,12 @@ class SZLabStandardRobotGateway:
         return record.public_result()
 
     def reconcile(self, command_id: str) -> dict[str, Any]:
+        """重新读取允许启用的物理见证并尝试对账未知命令。
+
+        参数：``command_id`` 是持久化标准机械臂命令标识。
+        返回：命令当前公开状态；动作级禁用的见证不会在对账时恢复读取。
+        """
+
         record = self.journal.get(command_id)
         if record is None:
             return _public_rejection(command_id, self.boot_id, "命令不存在")
@@ -584,7 +649,14 @@ class SZLabStandardRobotGateway:
         kind = str(record.request.get("kind", ""))
         if kind not in {"pick", "place"}:
             return record.public_result()
-        witness_ok, witness_message, witnesses = self._observe_completion(kind, legacy_result)
+        witness_ok, witness_message, witnesses = self._observe_completion(
+            kind,
+            legacy_result,
+            check_site_presence=bool(
+                record.request.get("check_site_presence", True)
+            ),
+            check_tool_payload=bool(record.request.get("check_tool_payload", True)),
+        )
         if not witness_ok:
             return self.journal.update(
                 command_id,
@@ -602,6 +674,12 @@ class SZLabStandardRobotGateway:
         ).public_result()
 
     def _validate_request(self, request: StandardRobotRequest):
+        """校验运动许可、版本、负载和启用的夹爪前置见证。
+
+        参数：``request`` 是已经持久化的标准机械臂请求。
+        返回：可交给旧 PLC Adapter 的厂商中立机器人指令（RobotCommand）。
+        """
+
         if not self.actions_enabled:
             raise RuntimeError("标准 pick/place 尚未启用；必须先完成现场许可与见证映射验收")
         if not self.permit_asserts_remote_auto:
@@ -627,25 +705,54 @@ class SZLabStandardRobotGateway:
 
         command = _robot_command_from_request(request)
 
-        tool_holding = bool(self.owner._read_variable(self.tool_payload_sensor_variable, use_cache=False))
-        if request.kind == "pick" and tool_holding:
-            raise RuntimeError("pick 前机械手夹爪已有物料")
-        if request.kind == "place" and not tool_holding:
-            raise RuntimeError("place 前机械手夹爪未见证持料")
+        if request.check_tool_payload:
+            tool_holding = bool(
+                self.owner._read_variable(
+                    self.tool_payload_sensor_variable,
+                    use_cache=False,
+                )
+            )
+            if request.kind == "pick" and tool_holding:
+                raise RuntimeError("pick 前机械手夹爪已有物料")
+            if request.kind == "place" and not tool_holding:
+                raise RuntimeError("place 前机械手夹爪未见证持料")
         return command
 
     def _observe_completion(
         self,
         kind: Literal["pick", "place"] | str,
         legacy_result: Mapping[str, Any],
+        *,
+        check_site_presence: bool = True,
+        check_tool_payload: bool = True,
     ) -> tuple[bool, str, dict[str, Any]]:
+        """核对动作完成后的 Robot_Home 及显式启用的物理见证。
+
+        参数：``kind`` 是取放类型，``legacy_result`` 是旧驱动结果；两个
+        ``check_*`` 参数分别控制库位在位和夹爪负载读取。
+        返回：见证是否一致、中文说明和诊断字段；禁用项明确标记为跳过。
+        """
+
         site_sensor_key = "source_sensor_variable" if kind == "pick" else "target_sensor_variable"
         site_sensor = str(legacy_result.get(site_sensor_key) or "")
-        if not site_sensor:
+        if check_site_presence and not site_sensor:
             return False, f"{kind} 缺少工位物料见证变量", {}
         try:
-            site_present = bool(self.owner._read_variable(site_sensor, use_cache=False))
-            tool_holding = bool(self.owner._read_variable(self.tool_payload_sensor_variable, use_cache=False))
+            site_present = (
+                bool(self.owner._read_variable(site_sensor, use_cache=False))
+                if check_site_presence
+                else None
+            )
+            tool_holding = (
+                bool(
+                    self.owner._read_variable(
+                        self.tool_payload_sensor_variable,
+                        use_cache=False,
+                    )
+                )
+                if check_tool_payload
+                else None
+            )
             robot_home = bool(self.owner._read_variable(ROBOT_HOME_VARIABLE, use_cache=False))
         except Exception as exc:
             return False, f"完成后见证读取失败: {exc}", {}
@@ -653,18 +760,29 @@ class SZLabStandardRobotGateway:
         expected_site = kind == "place"
         expected_tool = kind == "pick"
         witnesses = {
-            "site_sensor": site_sensor,
+            "site_presence_check": check_site_presence,
+            "site_sensor": site_sensor if check_site_presence else "",
             "site_present": site_present,
             "expected_site_present": expected_site,
-            "tool_sensor": self.tool_payload_sensor_variable,
+            "tool_payload_check": check_tool_payload,
+            "tool_sensor": self.tool_payload_sensor_variable if check_tool_payload else "",
             "tool_holding": tool_holding,
             "expected_tool_holding": expected_tool,
             "robot_home": robot_home,
             "completion_value": _jsonable(legacy_result.get("completion_value")),
         }
-        if site_present != expected_site or tool_holding != expected_tool or not robot_home:
+        if (
+            (check_site_presence and site_present != expected_site)
+            or (check_tool_payload and tool_holding != expected_tool)
+            or not robot_home
+        ):
             return False, f"{kind} 完成见证不一致，保持 UNKNOWN，禁止自动重发", witnesses
-        return True, f"{kind} 已由 PLC 完成、工位在位、夹爪和 Robot_Home 共同见证", witnesses
+        enabled_witnesses = ["PLC 完成码", "Robot_Home"]
+        if check_site_presence:
+            enabled_witnesses.append("工位在位")
+        if check_tool_payload:
+            enabled_witnesses.append("夹爪负载")
+        return True, f"{kind} 已由 {'、'.join(enabled_witnesses)} 见证", witnesses
 
 
 def _record_from_row(row: sqlite3.Row) -> CommandRecord:

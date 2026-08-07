@@ -16,7 +16,8 @@ class SZLab烧杯五工位搬运Result(TypedDict):
     displayname="S03→S07→S06→S09→S04→S05 烧杯搬运",
     description=(
         "从 S3-L1B1 取烧杯，依次经 S0722、S061、BEAKER1、S041 转运，"
-        "最后放到 S051；每段均使用标准物料转运并提交 OS 物料位置。"
+        "最后放到 S051；S0722、S061、S051 不读取在位传感器，整条链不读取"
+        "夹爪负载，其余库位保留在位见证，每段仍提交 OS 物料位置。"
     ),
 )
 def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
@@ -46,6 +47,8 @@ def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
         target_device="szlab_s07_solid_addition",
         target_site="S0722",
         target_warehouse=resource_ref("s07_process_warehouse"),
+        check_target_presence=False,
+        check_gripper_payload=False,
     )
     # unilab:node_uuid=68d5f0f0-8a26-5d5a-ae20-146e40793c51
     beaker_at_s06 = s_z_lab_标准物料转运(
@@ -55,6 +58,9 @@ def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
         target_device="szlab_mixer_pump",
         target_site="S061",
         target_warehouse=resource_ref("s06_process_warehouse"),
+        check_source_presence=False,
+        check_target_presence=False,
+        check_gripper_payload=False,
     )
     # unilab:node_uuid=4499a4bc-01d8-5de5-ba8b-a289558aecc0
     beaker_at_s09 = s_z_lab_标准物料转运(
@@ -64,6 +70,8 @@ def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
         target_device="szlab_mixer_pipetting_station",
         target_site="BEAKER1",
         target_warehouse=resource_ref("szlab_mixer_pipetting_station"),
+        check_source_presence=False,
+        check_gripper_payload=False,
     )
     # unilab:node_uuid=e25a0f92-dccc-577c-94fd-129861a44a8a
     beaker_at_s041 = s_z_lab_标准物料转运(
@@ -73,6 +81,7 @@ def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
         target_device="szlab_mixer_stirrer",
         target_site="S041",
         target_warehouse=resource_ref("s04_process_warehouse"),
+        check_gripper_payload=False,
     )
     # unilab:node_uuid=a2d777e4-4635-553f-85c5-4f67135868af
     beaker_at_s05 = s_z_lab_标准物料转运(
@@ -82,5 +91,7 @@ def s_z_lab_烧杯五工位搬运() -> SZLab烧杯五工位搬运Result:
         target_device="szlab_mixer_photoshotting",
         target_site="S051",
         target_warehouse=resource_ref("s05_process_warehouse"),
+        check_target_presence=False,
+        check_gripper_payload=False,
     )
     return {"beaker": beaker_at_s05.resource}

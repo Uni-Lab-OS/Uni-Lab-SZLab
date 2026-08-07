@@ -26,6 +26,23 @@ def _resource_ref(call: ast.Call, name: str) -> str:
     return str(value.args[0].value)
 
 
+def _bool_keyword(call: ast.Call, name: str, *, default: bool = True) -> bool:
+    """读取工作流调用中的布尔关键字，缺省时使用动作默认值。
+
+    参数：``call`` 是调用节点，``name`` 是参数名，``default`` 是缺省值。
+    返回：静态布尔参数值。
+    """
+
+    value = next(
+        (keyword.value for keyword in call.keywords if keyword.arg == name),
+        None,
+    )
+    if value is None:
+        return default
+    assert isinstance(value, ast.Constant) and isinstance(value.value, bool)
+    return value.value
+
+
 def test_transfer_chain_uses_five_ordered_standard_transfers() -> None:
     """验证同一烧杯经 S0722 按五段固定路径线性转运。
 
@@ -70,6 +87,20 @@ def test_transfer_chain_uses_five_ordered_standard_transfers() -> None:
         "szlab_mixer_pipetting_station",
         "szlab_mixer_stirrer",
         "szlab_mixer_photoshotting",
+    ]
+    assert [
+        (
+            _bool_keyword(item.value, "check_source_presence"),
+            _bool_keyword(item.value, "check_target_presence"),
+            _bool_keyword(item.value, "check_gripper_payload"),
+        )
+        for item in assignments
+    ] == [
+        (True, False, False),
+        (False, False, False),
+        (False, True, False),
+        (True, True, False),
+        (True, False, False),
     ]
 
     first_resource = _keyword(assignments[0].value, "resource")

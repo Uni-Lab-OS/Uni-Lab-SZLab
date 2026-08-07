@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
+
+from unilabos.utils.tracing import attach_workflow_execution_identity
 
 from szlab_poly_studio.common.site_control_bindings import (
     canonical_site_reference,
@@ -10,6 +13,7 @@ from szlab_poly_studio.common.site_control_bindings import (
     resolve_s07_process_site,
     resolve_s071_site,
 )
+from szlab_poly_studio.devices.szlab_mixer_robot.device import SzlabMixerRobotDevice
 from szlab_poly_studio.devices.szlab_mixer_robot.robot_tasks import (
     ROBOT_HOME_VARIABLE,
     ROBOT_WRITE_ALLOWED_VARIABLE,
@@ -22,7 +26,6 @@ from szlab_poly_studio.devices.szlab_mixer_robot.standard_gateway import (
     _payload_profile_for_resource,
     _robot_command_from_request,
 )
-from unilabos.utils.tracing import attach_workflow_execution_identity
 
 SOURCE_SENSOR = resolve_s071_site("L1C1").presence_variable
 TARGET_SENSOR = resolve_s07_process_site("P01").presence_variable
@@ -77,6 +80,78 @@ class FakeLegacyRobot:
             "target_sensor_variable": TARGET_SENSOR,
             "completion_value": 1,
         }
+
+
+class ReadTrackingLegacyRobot(FakeLegacyRobot):
+    """记录标准网关实际读取的 PLC 变量，验证动作级见证旁路。"""
+
+    def __init__(self) -> None:
+        """初始化假机器人及空的 PLC 读取记录。
+
+        参数：无。
+        返回：无；构造可执行标准动作的内存 PLC 状态。
+        """
+
+        super().__init__()
+        self.read_variables: list[str] = []
+
+    def _read_variable(self, name: str, use_cache: bool = False):
+        """记录并返回指定 PLC 变量。
+
+        参数：``name`` 是变量名，``use_cache`` 仅保持驱动接口兼容。
+        返回：内存 PLC 中的当前值。
+        """
+
+        self.read_variables.append(name)
+        return super()._read_variable(name, use_cache=use_cache)
+
+    def _complete_unwitnessed_place(self, station: str, site: str) -> dict[str, Any]:
+        """模拟 S05/S06 放料并确认旧驱动没有生成在位检查条件。
+
+        参数：``station`` 是机器人工位，``site`` 是规范局部库位标签。
+        返回：兼容旧驱动的成功结果。
+        """
+
+        sensor = resolve_robot_site_reference(
+            {"id": f"{station.lower()}_process_warehouse"},
+            site,
+        ).presence_variable
+        before, after = SzlabMixerRobotDevice._robot_sensor_requirements(
+            self,
+            "place",
+            station,
+            {"target_sensor_variable": sensor},
+        )
+        assert before == {}
+        assert after == {}
+        self.dispatch_count += 1
+        self.variables[sensor] = True
+        self.variables[TOOL_PAYLOAD_SENSOR_VARIABLE] = False
+        return {
+            "success": True,
+            "message": f"legacy {station} place complete",
+            "status": "completed",
+            "target_sensor_variable": sensor,
+            "completion_value": 1,
+        }
+
+    def _run_s05_place(self) -> dict[str, Any]:
+        """模拟不执行 S05 在位检测的放料。
+
+        参数：无。
+        返回：旧驱动成功结果。
+        """
+
+        return self._complete_unwitnessed_place("S05", "S051")
+
+    def _run_s06_place(self) -> dict[str, Any]:
+        """模拟不执行 S06 在位检测的放料。
+
+        参数：无。
+        返回：旧驱动成功结果。
+        """
+
+        return self._complete_unwitnessed_place("S06", "S061")
 
 
 def gateway(tmp_path, robot: FakeLegacyRobot, **overrides) -> SZLabStandardRobotGateway:
@@ -285,6 +360,40 @@ def test_site_action_uses_workflow_node_job_as_command_identity(tmp_path) -> Non
     assert first["command_id"] == f"workflow-node-job:{NODE_JOB_UUID}"
     assert replay == first
     assert robot.dispatch_count == 1
+
+
+def test_site_action_can_skip_selected_site_and_tool_witness_reads(tmp_path) -> None:
+    """验证动作级旁路不会读取 S0722、S05、S06 或夹爪负载。
+
+    参数：``tmp_path`` 是 pytest 提供的命令日志临时目录。
+    返回：无；断言动作仍由 PLC 完成码和 Robot_Home 确认成功。
+    """
+
+    cases = (
+        ("s07_process_warehouse", "S0722"),
+        ("s06_process_warehouse", "S061"),
+        ("s05_process_warehouse", "S051"),
+    )
+    for index, (warehouse_id, site) in enumerate(cases, start=1):
+        robot = ReadTrackingLegacyRobot()
+        target = gateway(tmp_path / f"case-{index}", robot)
+
+        result = target.execute_site(
+            kind="place",
+            resource={"uuid": f"beaker-{index}", "category": "beaker"},
+            warehouse={"uuid": f"warehouse-{index}", "id": warehouse_id},
+            site=site,
+            check_site_presence=False,
+            check_tool_payload=False,
+        )
+
+        assert result["state"] == "SUCCEEDED"
+        assert resolve_robot_site_reference(
+            {"id": warehouse_id},
+            site,
+        ).presence_variable not in robot.read_variables
+        assert TOOL_PAYLOAD_SENSOR_VARIABLE not in robot.read_variables
+        assert ROBOT_HOME_VARIABLE in robot.read_variables
 
 
 def test_default_identity_provider_reads_current_os_runtime_context() -> None:
