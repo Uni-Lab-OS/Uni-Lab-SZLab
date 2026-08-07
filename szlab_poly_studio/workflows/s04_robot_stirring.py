@@ -14,10 +14,12 @@ szlab_mixer_magnetic_stirrer_device: SzlabMixerMagneticStirrerDevice = device('s
 def s04_机械臂与磁搅联调(
     *,
     position: int = 1,
-) -> None:
+):
     # unilab:node_uuid=a9ae236b-d422-52c5-8805-9cbe48fa56e1
     placed = szlab_mixer_robot_device.submit_place_to_s04(position=position, sample_id='beaker-1')
     # unilab:node_uuid=2acdc328-6d38-52f2-abbb-badc6664370c
     stirring = szlab_mixer_magnetic_stirrer_device.run_stirring(duration=30.0, mode=3, position=position, reset=False, safe_temperature=80.0, speed=300.0, temperature=25.0)
     # unilab:node_uuid=9d98a536-2855-5644-9a6f-26e8b36d9785
     picked = szlab_mixer_robot_device.submit_pick_from_s04(position=position)
+    return {}
+

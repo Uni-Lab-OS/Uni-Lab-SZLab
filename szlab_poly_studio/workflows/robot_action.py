@@ -12,8 +12,10 @@ szlab_mixer_robot_device: SzlabMixerRobotDevice = device('szlab_mixer_robot')
 def 机械臂单工位取放调试(
     *,
     position: int = 1,
-) -> None:
+):
     # unilab:node_uuid=1ab6e8b9-0e11-59d9-aa11-2213fbd43a1b
     placed = szlab_mixer_robot_device.submit_place_to_s04(position=position, sample_id='debug-beaker')
     # unilab:node_uuid=16d36efa-a735-5a13-bb9d-23658f3f53cd
     picked = szlab_mixer_robot_device.submit_pick_from_s04(position=position)
+    return {}
+

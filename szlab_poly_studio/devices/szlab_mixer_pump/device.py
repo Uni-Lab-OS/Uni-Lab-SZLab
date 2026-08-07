@@ -479,9 +479,11 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         volume: int = 1,
         direction: Literal["aspirate", "dispense"] = "aspirate",
         pipeline: Literal["aspirate", "dispense", "air"] = "aspirate",
-        pump: int | None = None,
+        pump: int = 0,
     ) -> dict[str, Any]:
-        if pump is not None:
+        # pump=0 表示不覆盖 process；避免 Optional[int] 生成 v1 非法的
+        # type:["integer","null"] 连接点 schema。
+        if pump != 0:
             process = pump
         return self._execute_s06_step(
             process,
@@ -499,12 +501,13 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         skip_level_check: bool = False,
         skip_robot: bool = True,
         beaker_true_means_present: bool = True,
-        pump: int | None = None,
-        volume: int | None = None,
+        pump: int = 0,
+        volume: int = 0,
     ) -> dict[str, Any]:
-        if pump is not None:
+        # 0 = 未指定（兼容旧 Optional 语义）；非 0 才覆盖 process/体积。
+        if pump != 0:
             process = pump
-        if volume is not None:
+        if volume != 0:
             if process in {1, 3}:
                 volume_pump_1 = volume
             if process in {2, 3}:
@@ -551,8 +554,8 @@ class SzlabMixerPumpDevice(UnifiedPLCGatewayMixin):
         skip_level_check: bool = False,
         skip_robot: bool = True,
         beaker_true_means_present: bool = True,
-        pump: int | None = None,
-        volume: int | None = None,
+        pump: int = 0,
+        volume: int = 0,
     ) -> dict[str, Any]:
         return self._run_solvent_addition(
             process=process,

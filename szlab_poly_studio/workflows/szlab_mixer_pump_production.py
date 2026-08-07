@@ -13,6 +13,8 @@ def s06_加液生产流程(
     *,
     pump: int = 1,
     volume: int = 8,
-) -> None:
+):
     # unilab:node_uuid=958e8abc-1cb6-5d75-b1cb-eaf0524b3a54
     addition = szlab_mixer_pump_device.run_solvent_addition(beaker_true_means_present=True, process=1, pump=pump, skip_level_check=False, skip_robot=True, volume=volume, volume_pump_1=1, volume_pump_2=1)
+    return {}
+

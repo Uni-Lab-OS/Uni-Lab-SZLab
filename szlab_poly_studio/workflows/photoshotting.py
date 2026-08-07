@@ -12,6 +12,8 @@ szlab_mixer_photo_shotting_device: SzlabMixerPhotoShottingDevice = device('szlab
 def s05_拍照链路调试(
     *,
     sample_id: str = 'debug-sample',
-) -> None:
+):
     # unilab:node_uuid=692b3746-83cc-53e2-836c-e8b201b95184
     photo = szlab_mixer_photo_shotting_device.take_photo(inspection_result='', photo_path='', require_material=False, sample_id=sample_id)
+    return {}
+

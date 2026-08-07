@@ -92,6 +92,10 @@ class FakeMoveItClient:
     def ready(self) -> bool:
         return True
 
+    def wait_until_ready(self, timeout_sec: float = 180.0) -> bool:
+        del timeout_sec
+        return self.ready()
+
     def execute_joint_target(
         self,
         *,

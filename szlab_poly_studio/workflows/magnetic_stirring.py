@@ -15,6 +15,8 @@ def s04_磁搅单工位调试(
     speed: int = 300,
     temperature: int = 25,
     duration: float = 30.0,
-) -> None:
+):
     # unilab:node_uuid=194ed35e-9c30-5a2d-9da5-9e70ff3992e4
     stirring = szlab_mixer_magnetic_stirrer_device.run_stirring(duration=duration, mode=3, position=position, reset=False, safe_temperature=80.0, speed=speed, temperature=temperature)
+    return {}
+

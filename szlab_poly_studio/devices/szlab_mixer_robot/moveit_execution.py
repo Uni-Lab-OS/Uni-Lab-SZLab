@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import hashlib
 import json
 import math
+import time
 from typing import Any, Protocol
 from uuid import uuid4
 
@@ -26,6 +27,8 @@ from szlab_poly_studio.devices.szlab_mixer_robot.execution_backend import (
 
 class MoveItJointClient(Protocol):
     def ready(self) -> bool: ...
+
+    def wait_until_ready(self, timeout_sec: float = 180.0) -> bool: ...
 
     def execute_joint_target(
         self,
@@ -108,8 +111,13 @@ class SZLabMoveItExecutionAdapter:
     ) -> ResolvedSiteAction:
         if operation not in {"pick", "place"}:
             raise ValueError(f"未知 MoveIt Site Action: {operation}")
-        if not self.client.ready():
-            raise BackendRejectedError("MoveIt 或 joint_states 尚未就绪")
+        # Windows + full-station URDF 下 move_group 常需 1–2 分钟才 advertise
+        # /move_action；立刻 ready() 会把 workflow job 打成失败。阻塞等待期间
+        # 依赖全局 MultiThreadedExecutor 其它线程推进 discovery / joint_states。
+        if not self.client.wait_until_ready(timeout_sec=180.0):
+            raise BackendRejectedError(
+                "MoveIt 或 joint_states 在 180s 内仍未就绪（/move_action 或 /joint_states）"
+            )
         raw_site = self.site_targets.get(target_site)
         if not isinstance(raw_site, Mapping):
             raise ValueError(f"MoveIt 点位集没有 Site: {target_site}")
@@ -348,6 +356,7 @@ class UniLabOSMoveItJointClient:
         self._moveit.max_acceleration = bounded_speed
         self._joint_state_max_age = 2.0
         self._execution_timeout = max(0.1, float(execution_timeout))
+        self._ready_poll_period = 0.2
 
     def ready(self) -> bool:
         state = self._moveit.joint_state
@@ -358,6 +367,15 @@ class UniLabOSMoveItJointClient:
             and age <= self._joint_state_max_age
             and self._moveit.move_action_server_ready()
         )
+
+    def wait_until_ready(self, timeout_sec: float = 180.0) -> bool:
+        deadline = time.monotonic() + max(0.0, float(timeout_sec))
+        while True:
+            if self.ready():
+                return True
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(self._ready_poll_period)
 
     def execute_joint_target(
         self,

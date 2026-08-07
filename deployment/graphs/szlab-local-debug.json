@@ -2495,13 +2495,13 @@
       },
       "config": {
         "plc_device_id": "szlab_poly_plc",
-        "standard_execution_backend": "plc_program",
+        "standard_execution_backend": "moveit_sim",
         "standard_actions_enabled": true,
         "standard_program_version": "szlab-mixer-moveit-sim@v1",
         "standard_point_set_version": "szlab-mixer-moveit-sim-demo@v1",
         "standard_moveit_binding_version": "szlab-mixer-moveit-sim-bindings@v1",
         "standard_moveit_hardware_profile_ref": "szlab-mixer-moveit-sim@v1",
-        "standard_moveit_simulation_only": false,
+        "standard_moveit_simulation_only": true,
         "standard_moveit_speed": 0.1,
         "standard_moveit_final_joint_tolerance": 0.01,
         "standard_moveit_site_targets": {
