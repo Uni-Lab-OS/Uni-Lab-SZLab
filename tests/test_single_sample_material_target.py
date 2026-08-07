@@ -140,6 +140,47 @@ def test_production_single_sample_workflow_has_the_same_location_boundary(
     } <= _resource_ref_ids(source)
 
 
+def test_production_beaker_source_site_matches_first_transfer(
+    repo_root: Path,
+) -> None:
+    """固定库位流程不能让 admission 选料位置与机器人取料位置分离。"""
+
+    production = (
+        repo_root
+        / "szlab_poly_studio/workflows/single_sample_atomic_material.py"
+    )
+    module = ast.parse(production.read_text(encoding="utf-8"))
+    workflow = next(
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "s_z_lab_单样品全流程_物料感知"
+    )
+    assignments = {
+        target.id: node.value
+        for node in ast.walk(workflow)
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+    }
+    source_call = assignments["source_beaker"]
+    transfer_call = assignments["beaker_at_s07"]
+    assert isinstance(source_call, ast.Call)
+    assert isinstance(transfer_call, ast.Call)
+
+    source_site = next(
+        keyword.value for keyword in source_call.keywords if keyword.arg == "site"
+    )
+    transfer_site = next(
+        keyword.value
+        for keyword in transfer_call.keywords
+        if keyword.arg == "source_site"
+    )
+
+    assert ast.literal_eval(source_site) == "114e7c6c-9e2b-5d4c-b578-9fe6112a6b35"
+    assert ast.literal_eval(transfer_site) == "L1B1"
+
+
 def test_standard_transfer_uses_implicit_material_passthrough(
     repo_root: Path,
 ) -> None:
